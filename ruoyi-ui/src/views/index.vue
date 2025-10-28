@@ -39,6 +39,32 @@
               <div class="tab-body" />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="领导看板" name="leader">
+              <div class="leader-header">
+                <div class="leader-left">
+                  <span class="leader-title">领导班子年度考核</span>
+                  <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
+                  <el-tag size="small" class="leader-dept">{{ selectedDeptNode && selectedDeptNode.label ? selectedDeptNode.label : '未选择组织' }}</el-tag>
+                </div>
+                <div class="leader-right">
+                  <span class="label">年度</span>
+                  <el-date-picker
+                    v-model="selectedYear"
+                    type="year"
+                    placeholder="选择年度"
+                    value-format="yyyy"
+                    :default-value="new Date()"
+                    @change="onYearChange"
+                    size="small"
+                  />
+                </div>
+              </div>
+              <el-alert
+                class="leader-alert"
+                type="info"
+                :closable="false"
+                description="进入看板，默认展示的是当前年度的考核结果。"
+                show-icon
+              />
               <div class="tab-body" />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('org')" label="单位看板" name="org">
@@ -73,7 +99,17 @@ export default {
       selectedDeptId: undefined,
       defaultExpandedKeys: [],
       selectedDeptNode: null,
-      visibleTabKeys: ["charts", "teacher", "student", "leader", "org"]
+      selectedElNode: null,
+      visibleTabKeys: ["charts", "teacher", "student", "leader", "org"],
+      selectedYear: String(new Date().getFullYear())
+    }
+  },
+  computed: {
+    orgTypeText() {
+      const type = this.resolveOrgType(this.selectedElNode)
+      if (type === 'leader') return '领导班子'
+      if (type === 'teaching') return '教学组织'
+      return '其他组织'
     }
   },
   watch: {
@@ -85,6 +121,28 @@ export default {
     this.getDeptTree()
   },
   methods: {
+    // 基于机构编码判定组织类型（优先），回退到名称
+    resolveOrgType(node) {
+      let n = node
+      while (n) {
+        const code = n && n.data && (n.data.orgCode || n.data.org_code)
+        if (code && typeof code === 'string') {
+          const prefix = code.slice(0, 2)
+          if (prefix === '00') return 'leader'
+          if (prefix === '01') return 'teaching'
+        }
+        n = n.parent
+      }
+      // 代码缺失时回退到名称判断
+      n = node
+      while (n) {
+        const label = (n && (n.label || (n.data && n.data.label))) ? String(n.label || n.data.label) : ''
+        if (label.includes('领导班子')) return 'leader'
+        if (label.includes('教学组织')) return 'teaching'
+        n = n.parent
+      }
+      return null
+    },
     getDeptTree() {
       deptTreeSelect().then(response => {
         this.deptOptions = response.data || []
@@ -97,35 +155,41 @@ export default {
             if (this.$refs.tree) {
               this.$refs.tree.setCurrentKey(root.id)
             }
-            this.computeVisibleTabs(root)
+            const rootNode = this.$refs.tree ? this.$refs.tree.getNode(root.id) : null
+            this.selectedElNode = rootNode
+            this.computeVisibleTabs(rootNode)
           }
         })
       })
+    },
+    onYearChange() {
+      // 这里预留与后端接口的交互，根据 selectedYear 重新拉取看板数据
+      // 当前仅做表头效果，不触发数据加载
     },
     filterNode(value, data) {
       if (!value) return true
       return (data.label || "").indexOf(value) !== -1
     },
-    handleNodeClick(data) {
+    handleNodeClick(data, node) {
       this.selectedDeptId = data.id
       this.selectedDeptNode = data
-      this.computeVisibleTabs(data)
+      this.selectedElNode = node
+      this.computeVisibleTabs(node)
     },
     computeVisibleTabs(node) {
-      const label = (node && node.label) ? String(node.label) : ""
-      // 若为领导班子，仅显示图表看板与领导看板
-      if (label.includes("领导班子")) {
+      // 优先使用机构编码判断，失败则回退到名称
+      const type = this.resolveOrgType(node)
+      if (type === 'leader') {
         this.visibleTabKeys = ["charts", "leader"]
         if (!["charts", "leader"].includes(this.activeTab)) this.activeTab = "charts"
         return
       }
-      // 若为教学组织，显示除领导看板外的其他看板
-      if (label.includes("教学组织")) {
+      if (type === 'teaching') {
         this.visibleTabKeys = ["charts", "teacher", "student", "org"]
         if (!this.visibleTabKeys.includes(this.activeTab)) this.activeTab = "charts"
         return
       }
-      // 其他情况，显示空状态，不展示任何看板
+      // 其他情况，显示空状态
       this.visibleTabKeys = []
       this.activeTab = "charts"
     }
@@ -145,6 +209,33 @@ export default {
 }
 .tab-body {
   min-height: 400px;
+}
+.leader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f5f7fa;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+}
+.leader-left {
+  display: flex;
+  align-items: center;
+}
+.leader-title {
+  font-weight: 600;
+  margin-right: 10px;
+}
+.leader-dept {
+  margin-left: 8px;
+}
+.leader-right .label {
+  margin-right: 8px;
+  color: #606266;
+}
+.leader-alert {
+  margin: 12px 0;
 }
 .empty-state {
   min-height: 400px;
