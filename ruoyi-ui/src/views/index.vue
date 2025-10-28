@@ -65,7 +65,51 @@
                 description="进入看板，默认展示的是当前年度的考核结果。"
                 show-icon
               />
-              <div class="tab-body" />
+              <div class="tab-body">
+                <el-table :data="leaderTableData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
+                  <el-table-column prop="personId" label="人员编号" width="110" />
+                  <el-table-column prop="name" label="姓名" width="100" />
+                  <el-table-column prop="unitPath" label="单位(展示单位名称XX/XX/XX)" min-width="220" />
+                  <el-table-column prop="birthdate" label="出生年月" width="120" />
+                  <el-table-column prop="age" label="年龄" width="80" />
+                  <el-table-column prop="title" label="职称" width="100" />
+                  <el-table-column prop="cycle" label="评定周期" width="120" />
+
+                  <el-table-column label="基础科目 20%">
+                    <el-table-column prop="baseBasicKnowledge" label="基本知识 20%" width="140" />
+                    <el-table-column label="体育 30%">
+                      <el-table-column prop="baseSportsTrack" label="田径" width="100" />
+                      <el-table-column prop="baseSportsRope" label="跳绳" width="100" />
+                      <el-table-column prop="baseSportsLongJump" label="跳远" width="100" />
+                    </el-table-column>
+                    <el-table-column prop="baseGroupA" label="共同A 25%" width="120" />
+                    <el-table-column prop="baseGroupB" label="共同B 25%" width="120" />
+                    <el-table-column prop="baseTotal" label="成绩" width="100" />
+                  </el-table-column>
+
+                  <el-table-column label="共同科目30%">
+                    <el-table-column prop="commonSubject1" label="课目1" width="100" />
+                    <el-table-column prop="commonSubject2" label="课目2" width="100" />
+                    <el-table-column prop="commonSubject3" label="课目3" width="100" />
+                    <el-table-column prop="commonSubject4" label="课目4" width="100" />
+                    <el-table-column prop="commonSubject5" label="课目5" width="100" />
+                    <el-table-column prop="commonSubject6" label="课目6" width="100" />
+                    <el-table-column prop="commonSubject7" label="课目7" width="100" />
+                    <el-table-column prop="commonSubject8" label="课目8" width="100" />
+                    <el-table-column prop="commonTotal" label="成绩" width="100" />
+                  </el-table-column>
+
+                  <el-table-column prop="jobBusiness" label="岗位业务 50%" width="130" />
+
+                  <el-table-column label="综合成绩">
+                    <el-table-column prop="comprehensivePercent" label="百分制" width="120" />
+                    <el-table-column prop="comprehensiveLevel" label="四级制 不合格，合格，良好，优秀" width="180" />
+                  </el-table-column>
+
+                  <el-table-column prop="remark" label="备注" min-width="120" />
+                  <el-table-column prop="description" label="说明" min-width="120" />
+                </el-table>
+              </div>
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('org')" label="单位看板" name="org">
               <div class="tab-body" />
@@ -86,6 +130,7 @@
 import { deptTreeSelect } from "@/api/system/user"
 import { Splitpanes, Pane } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
+import { getLeaderAssessmentData } from "@/mock/mockData"
 
 export default {
   name: "Index",
@@ -101,7 +146,8 @@ export default {
       selectedDeptNode: null,
       selectedElNode: null,
       visibleTabKeys: ["charts", "teacher", "student", "leader", "org"],
-      selectedYear: String(new Date().getFullYear())
+      selectedYear: String(new Date().getFullYear()),
+      leaderTableData: []
     }
   },
   computed: {
@@ -115,6 +161,16 @@ export default {
   watch: {
     deptName(val) {
       if (this.$refs.tree) this.$refs.tree.filter(val)
+    },
+    activeTab(val) {
+      if (val === 'leader') {
+        this.loadLeaderData()
+      }
+    },
+    selectedYear() {
+      if (this.activeTab === 'leader') {
+        this.loadLeaderData()
+      }
     }
   },
   created() {
@@ -163,8 +219,13 @@ export default {
       })
     },
     onYearChange() {
-      // 这里预留与后端接口的交互，根据 selectedYear 重新拉取看板数据
-      // 当前仅做表头效果，不触发数据加载
+      // 年度切换时重新加载领导看板数据
+      if (this.activeTab === 'leader') {
+        this.loadLeaderData()
+      }
+    },
+    loadLeaderData() {
+      this.leaderTableData = getLeaderAssessmentData(this.selectedYear)
     },
     filterNode(value, data) {
       if (!value) return true
