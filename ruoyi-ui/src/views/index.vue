@@ -18,7 +18,7 @@
             :data="deptOptions"
             :props="defaultProps"
             node-key="id"
-            default-expand-all
+            :default-expanded-keys="defaultExpandedKeys"
             highlight-current
             :filter-node-method="filterNode"
             :expand-on-click-node="false"
@@ -66,7 +66,8 @@ export default {
       deptOptions: [],
       defaultProps: { children: "children", label: "label" },
       activeTab: "charts",
-      selectedDeptId: undefined
+      selectedDeptId: undefined,
+      defaultExpandedKeys: []
     }
   },
   watch: {
@@ -81,6 +82,16 @@ export default {
     getDeptTree() {
       deptTreeSelect().then(response => {
         this.deptOptions = response.data || []
+        this.$nextTick(() => {
+          const root = (this.deptOptions && this.deptOptions.length > 0) ? this.deptOptions[0] : null
+          if (root) {
+            this.defaultExpandedKeys = [root.id]
+            this.selectedDeptId = root.id
+            if (this.$refs.tree) {
+              this.$refs.tree.setCurrentKey(root.id)
+            }
+          }
+        })
       })
     },
     filterNode(value, data) {
