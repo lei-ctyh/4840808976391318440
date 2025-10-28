@@ -45,7 +45,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="权重" prop="weightPercent">
+      <el-form-item label="权重" prop="weightPercent" v-if="queryParams.scoringMethod === '1'">
         <el-input
           v-model="queryParams.weightPercent"
           placeholder="请输入权重"
@@ -103,8 +103,12 @@
           <dict-tag :options="dict.type.sms_scoring_method" :value="scope.row.scoringMethod"/>
         </template>
       </el-table-column>
+      <el-table-column label="权重" align="center" prop="weightPercent">
+        <template slot-scope="scope">
+          <span v-if="scope.row.scoringMethod === '1'">{{ scope.row.weightPercent }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="权重" align="center" prop="weightPercent" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -134,7 +138,7 @@
 
     <!-- 添加或修改考试项管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="formRules" label-width="80px">
         <el-form-item label="父考试项ID" prop="parentId">
           <treeselect v-model="form.parentId" :options="itemOptions" :normalizer="normalizer" placeholder="请选择父考试项ID" />
         </el-form-item>
@@ -163,11 +167,11 @@
             ></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="权重" prop="weightPercent" v-if="form.scoringMethod === '1'">
+          <el-input v-model="form.weightPercent" placeholder="请输入权重" />
+        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="权重" prop="weightPercent">
-          <el-input v-model="form.weightPercent" placeholder="请输入权重" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -218,19 +222,27 @@ export default {
       },
       // 表单参数
       form: {},
-      // 表单校验
-      rules: {
-        itemName: [
-          { required: true, message: "考试项名称不能为空", trigger: "blur" }
-        ],
-        weightPercent: [
-          { required: true, message: "权重不能为空", trigger: "blur" }
-        ]
-      }
+      // 表单校验（根据核定方式动态控制权重是否必填）
+      rules: {}
     }
   },
   created() {
     this.getList()
+  },
+  computed: {
+    formRules() {
+      return {
+        parentId: [
+          { required: true, message: "父考试项ID不能为空", trigger: "change" }
+        ],
+        itemName: [
+          { required: true, message: "考试项名称不能为空", trigger: "blur" }
+        ],
+        weightPercent: this.form.scoringMethod === '1'
+          ? [{ required: true, message: "权重不能为空", trigger: "blur" }]
+          : []
+      }
+    }
   },
   methods: {
     /** 查询考试项管理列表 */
@@ -273,7 +285,7 @@ export default {
         parentId: null,
         itemName: null,
         orderNum: null,
-        status: null,
+        status: '0',
         scoringMethod: null,
         remark: null,
         weightPercent: null
