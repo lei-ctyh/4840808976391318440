@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SmsExamItemMapper">
+    
+    <resultMap type="SmsExamItem" id="SmsExamItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="itemName"    column="item_name"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="status"    column="status"    />
+        <result property="scoringMethod"    column="scoring_method"    />
+        <result property="remark"    column="remark"    />
+        <result property="weightPercent"    column="weight_percent"    />
+    </resultMap>
+
+    <sql id="selectSmsExamItemVo">
+        select item_id, parent_id, item_name, order_num, status, scoring_method, remark, weight_percent from sms_exam_item
+    </sql>
+
+    <select id="selectSmsExamItemList" parameterType="SmsExamItem" resultMap="SmsExamItemResult">
+        <include refid="selectSmsExamItemVo"/>
+        <where>  
+            <if test="parentId != null "> and parent_id = #{parentId}</if>
+            <if test="itemName != null  and itemName != ''"> and item_name like concat('%', #{itemName}, '%')</if>
+            <if test="orderNum != null "> and order_num = #{orderNum}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="scoringMethod != null  and scoringMethod != ''"> and scoring_method = #{scoringMethod}</if>
+            <if test="weightPercent != null "> and weight_percent = #{weightPercent}</if>
+        </where>
+    </select>
+    
+    <select id="selectSmsExamItemByItemId" parameterType="Long" resultMap="SmsExamItemResult">
+        <include refid="selectSmsExamItemVo"/>
+        where item_id = #{itemId}
+    </select>
+
+    <insert id="insertSmsExamItem" parameterType="SmsExamItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into sms_exam_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">parent_id,</if>
+            <if test="itemName != null and itemName != ''">item_name,</if>
+            <if test="orderNum != null">order_num,</if>
+            <if test="status != null">status,</if>
+            <if test="scoringMethod != null">scoring_method,</if>
+            <if test="remark != null">remark,</if>
+            <if test="weightPercent != null">weight_percent,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">#{parentId},</if>
+            <if test="itemName != null and itemName != ''">#{itemName},</if>
+            <if test="orderNum != null">#{orderNum},</if>
+            <if test="status != null">#{status},</if>
+            <if test="scoringMethod != null">#{scoringMethod},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="weightPercent != null">#{weightPercent},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSmsExamItem" parameterType="SmsExamItem">
+        update sms_exam_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="itemName != null and itemName != ''">item_name = #{itemName},</if>
+            <if test="orderNum != null">order_num = #{orderNum},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="scoringMethod != null">scoring_method = #{scoringMethod},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="weightPercent != null">weight_percent = #{weightPercent},</if>
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <delete id="deleteSmsExamItemByItemId" parameterType="Long">
+        delete from sms_exam_item where item_id = #{itemId}
+    </delete>
+
+    <delete id="deleteSmsExamItemByItemIds" parameterType="String">
+        delete from sms_exam_item where item_id in 
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </delete>
+</mapper>
