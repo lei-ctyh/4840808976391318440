@@ -58,13 +58,7 @@
                   />
                 </div>
               </div>
-              <el-alert
-                class="leader-alert"
-                type="info"
-                :closable="false"
-                description="进入看板，默认展示的是当前年度的考核结果。"
-                show-icon
-              />
+              
               <div class="tab-body">
                 <el-table :data="leaderTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
                   <el-table-column prop="personId" label="人员编号" width="110" />
