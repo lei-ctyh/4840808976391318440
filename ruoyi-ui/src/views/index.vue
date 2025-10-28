@@ -66,7 +66,7 @@
                 show-icon
               />
               <div class="tab-body">
-                <el-table :data="leaderTableData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
+                <el-table :data="leaderTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
                   <el-table-column prop="personId" label="人员编号" width="110" />
                   <el-table-column prop="name" label="姓名" width="100" />
                   <el-table-column prop="unitPath" label="单位(展示单位名称XX/XX/XX)" min-width="220" />
@@ -109,6 +109,18 @@
                   <el-table-column prop="remark" label="备注" min-width="120" />
                   <el-table-column prop="description" label="说明" min-width="120" />
                 </el-table>
+                <div class="table-pagination">
+                  <el-pagination
+                    background
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="leaderPagination.total"
+                    :page-size="leaderPagination.pageSize"
+                    :current-page="leaderPagination.currentPage"
+                    :page-sizes="[10, 20, 50]"
+                    @size-change="handleLeaderSizeChange"
+                    @current-change="handleLeaderCurrentChange"
+                  />
+                </div>
               </div>
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('org')" label="单位看板" name="org">
@@ -147,7 +159,8 @@ export default {
       selectedElNode: null,
       visibleTabKeys: ["charts", "teacher", "student", "leader", "org"],
       selectedYear: String(new Date().getFullYear()),
-      leaderTableData: []
+      leaderTableData: [],
+      leaderPagination: { currentPage: 1, pageSize: 10, total: 0 }
     }
   },
   computed: {
@@ -156,6 +169,11 @@ export default {
       if (type === 'leader') return '领导班子'
       if (type === 'teaching') return '教学组织'
       return '其他组织'
+    },
+    leaderTablePageData() {
+      const start = (this.leaderPagination.currentPage - 1) * this.leaderPagination.pageSize
+      const end = start + this.leaderPagination.pageSize
+      return this.leaderTableData.slice(start, end)
     }
   },
   watch: {
@@ -226,6 +244,15 @@ export default {
     },
     loadLeaderData() {
       this.leaderTableData = getLeaderAssessmentData(this.selectedYear)
+      this.leaderPagination.total = this.leaderTableData.length
+      this.leaderPagination.currentPage = 1
+    },
+    handleLeaderSizeChange(size) {
+      this.leaderPagination.pageSize = size
+      this.leaderPagination.currentPage = 1
+    },
+    handleLeaderCurrentChange(page) {
+      this.leaderPagination.currentPage = page
     },
     filterNode(value, data) {
       if (!value) return true
@@ -297,6 +324,10 @@ export default {
 }
 .leader-alert {
   margin: 12px 0;
+}
+.table-pagination {
+  margin-top: 12px;
+  text-align: right;
 }
 .empty-state {
   min-height: 400px;
