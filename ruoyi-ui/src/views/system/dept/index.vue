@@ -56,6 +56,7 @@
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
+      <el-table-column prop="orgCode" label="机构编码" width="200"></el-table-column>
       <el-table-column prop="deptName" label="部门名称" width="260"></el-table-column>
       <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
       <el-table-column prop="status" label="状态" width="100">
@@ -120,20 +121,8 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="负责人" prop="leader">
-              <el-input v-model="form.leader" placeholder="请输入负责人" maxlength="20" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="联系电话" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入联系电话" maxlength="11" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" placeholder="请输入邮箱" maxlength="50" />
+            <el-form-item label="机构编码" prop="orgCode">
+              <el-input v-model="form.orgCode" placeholder="请输入机构编码" maxlength="64" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -202,19 +191,9 @@ export default {
         orderNum: [
           { required: true, message: "显示排序不能为空", trigger: "blur" }
         ],
-        email: [
-          {
-            type: "email",
-            message: "请输入正确的邮箱地址",
-            trigger: ["blur", "change"]
-          }
-        ],
-        phone: [
-          {
-            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-            message: "请输入正确的手机号码",
-            trigger: "blur"
-          }
+        orgCode: [
+          { required: true, message: "机构编码不能为空", trigger: "blur" },
+          { min: 1, max: 64, message: "机构编码长度不能超过64字符", trigger: "blur" }
         ]
       }
     }
@@ -254,9 +233,7 @@ export default {
         parentId: undefined,
         deptName: undefined,
         orderNum: undefined,
-        leader: undefined,
-        phone: undefined,
-        email: undefined,
+        orgCode: undefined,
         status: "0"
       }
       this.resetForm("form")

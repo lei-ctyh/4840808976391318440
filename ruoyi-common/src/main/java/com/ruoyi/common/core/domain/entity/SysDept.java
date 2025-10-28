@@ -43,6 +43,9 @@ public class SysDept extends BaseEntity
     /** 邮箱 */
     private String email;
 
+    /** 机构编码 */
+    private String orgCode;
+
     /** 部门状态:0正常,1停用 */
     private String status;
 
@@ -181,6 +184,18 @@ public class SysDept extends BaseEntity
         this.children = children;
     }
 
+    @NotBlank(message = "机构编码不能为空")
+    @Size(min = 1, max = 64, message = "机构编码长度不能超过64个字符")
+    public String getOrgCode()
+    {
+        return orgCode;
+    }
+
+    public void setOrgCode(String orgCode)
+    {
+        this.orgCode = orgCode;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -192,6 +207,7 @@ public class SysDept extends BaseEntity
             .append("leader", getLeader())
             .append("phone", getPhone())
             .append("email", getEmail())
+            .append("orgCode", getOrgCode())
             .append("status", getStatus())
             .append("delFlag", getDelFlag())
             .append("createBy", getCreateBy())
