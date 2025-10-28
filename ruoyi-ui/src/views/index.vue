@@ -28,7 +28,7 @@
       </pane>
       <pane size="82">
         <div class="right-pane">
-          <el-tabs v-model="activeTab" type="card">
+          <el-tabs v-if="visibleTabKeys.length > 0" v-model="activeTab" type="card">
             <el-tab-pane v-if="visibleTabKeys.includes('charts')" label="图表看板" name="charts">
               <div class="tab-body" />
             </el-tab-pane>
@@ -45,6 +45,10 @@
               <div class="tab-body" />
             </el-tab-pane>
           </el-tabs>
+          <div v-else class="empty-state">
+            <i class="el-icon-info" />
+            <span>当前组织类型暂无可用看板，请选择“领导班子”或“教学组织”节点。</span>
+          </div>
         </div>
       </pane>
     </splitpanes>
@@ -121,9 +125,9 @@ export default {
         if (!this.visibleTabKeys.includes(this.activeTab)) this.activeTab = "charts"
         return
       }
-      // 其他情况，默认全部显示
-      this.visibleTabKeys = ["charts", "teacher", "student", "leader", "org"]
-      if (!this.visibleTabKeys.includes(this.activeTab)) this.activeTab = "charts"
+      // 其他情况，显示空状态，不展示任何看板
+      this.visibleTabKeys = []
+      this.activeTab = "charts"
     }
   }
 }
@@ -141,5 +145,15 @@ export default {
 }
 .tab-body {
   min-height: 400px;
+}
+.empty-state {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+}
+.empty-state .el-icon-info {
+  margin-right: 8px;
 }
 </style>
