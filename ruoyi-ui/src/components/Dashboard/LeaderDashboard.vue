@@ -20,6 +20,77 @@
       </span>
     </el-dialog>
 
+    <!-- 数据导入对话框 -->
+    <el-dialog title="导入领导班子考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
+      <div>
+        <div class="import-tips">
+          <el-alert
+            title="导入说明"
+            type="info"
+            :closable="false"
+            show-icon>
+            <div slot="description">
+              <p>1. 请先下载导入模板，按照模板格式填写数据</p>
+              <p>2. 支持.xls和.xlsx格式的Excel文件</p>
+              <p>3. 必填字段：人员编号、姓名、评定周期</p>
+              <p>4. 如果存在相同人员和年度的记录，可选择是否覆盖</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <div class="import-actions" style="margin: 20px 0;">
+          <el-button type="primary" icon="el-icon-document" @click="downloadImportTemplate">下载导入模板</el-button>
+          <el-checkbox v-model="updateSupport" style="margin-left: 20px;">覆盖已存在的数据</el-checkbox>
+        </div>
+
+        <div class="import-upload">
+          <el-upload
+            ref="importUpload"
+            :limit="1"
+            accept=".xlsx,.xls"
+            :headers="uploadHeaders"
+            :action="uploadImportUrl"
+            :data="uploadData"
+            :on-progress="handleImportProgress"
+            :on-success="handleImportSuccess"
+            :on-error="handleImportError"
+            :before-upload="beforeImportUpload"
+            :auto-upload="false"
+            drag>
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传xlsx/xls文件，且不超过10MB</div>
+          </el-upload>
+        </div>
+
+        <!-- 导入进度 -->
+        <div v-if="importProgress.show" class="import-progress" style="margin-top: 20px;">
+          <el-progress 
+            :percentage="importProgress.percentage" 
+            :status="importProgress.status"
+            :stroke-width="18">
+          </el-progress>
+          <p class="progress-text">{{ importProgress.text }}</p>
+        </div>
+
+        <!-- 导入结果 -->
+        <div v-if="importResult.show" class="import-result" style="margin-top: 20px;">
+          <el-alert
+            :title="importResult.title"
+            :type="importResult.type"
+            :closable="false"
+            show-icon>
+            <div slot="description" v-html="importResult.message"></div>
+          </el-alert>
+        </div>
+      </div>
+      
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancelImport">取消</el-button>
+        <el-button type="primary" @click="submitImport" :loading="importing" :disabled="!hasImportFile">开始导入</el-button>
+      </span>
+    </el-dialog>
+
     <!-- 领导看板头部 -->
     <div class="leader-header">
       <div class="leader-left">
@@ -109,9 +180,11 @@
 </template>
 
 <script>
-import { getLeaderAssessmentData } from "@/mock/mockData"
+import { getLeaderAssessmentData } from "@/api/dashboard"
+import { downloadImportTemplate } from "@/api/system/leaderAssessment"
+import { getToken } from "@/utils/auth"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/sms/template"
+import { bindTemplate, resolveTemplate } from "@/api/system/template"
 
 export default {
   name: "LeaderDashboard",
@@ -132,13 +205,37 @@ export default {
   },
   data() {
     return {
-      selectedYear: String(new Date().getFullYear()),
+      selectedYear: new Date().getFullYear().toString(),
       leaderTableData: [],
-      leaderPagination: { currentPage: 1, pageSize: 10, total: 0 },
+      leaderPagination: {
+        currentPage: 1,
+        pageSize: 10,
+        total: 0
+      },
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
-      baseApi: process.env.VUE_APP_BASE_API
+      baseApi: process.env.VUE_APP_BASE_API,
+      // 数据导入相关
+      importDialogVisible: false,
+      importing: false,
+      updateSupport: false,
+      hasImportFile: false,
+      uploadHeaders: {},
+      uploadImportUrl: process.env.VUE_APP_BASE_API + '/system/leaderAssessment/importData',
+      uploadData: {},
+      importProgress: {
+        show: false,
+        percentage: 0,
+        status: '',
+        text: ''
+      },
+      importResult: {
+        show: false,
+        title: '',
+        type: '',
+        message: ''
+      }
     }
   },
   computed: {
@@ -192,7 +289,9 @@ export default {
       this.loadLeaderData()
     },
     handleImportClick() {
-      this.$message.info('导入由后端处理，前端不再解析文件')
+      this.resetImportState()
+      this.importDialogVisible = true
+      this.setupUploadHeaders()
     },
     handleExportClick() {
       this.$message.info('导出由后端生成文件，前端不再导出')
@@ -290,6 +389,153 @@ export default {
         console.error('解析模板失败:', error)
         this.$message.error('查找模板失败: ' + (error.msg || '未知错误'))
       }
+    },
+    
+    // 数据导入相关方法
+    resetImportState() {
+      this.importing = false
+      this.hasImportFile = false
+      this.updateSupport = false
+      this.importProgress.show = false
+      this.importProgress.percentage = 0
+      this.importProgress.status = ''
+      this.importProgress.text = ''
+      this.importResult.show = false
+      this.uploadData = {}
+      if (this.$refs.importUpload) {
+        this.$refs.importUpload.clearFiles()
+      }
+    },
+    
+    setupUploadHeaders() {
+      this.uploadHeaders = {
+        Authorization: 'Bearer ' + getToken()
+      }
+      this.uploadData = {
+        updateSupport: this.updateSupport,
+        year: this.selectedYear
+      }
+    },
+    
+    async downloadImportTemplate() {
+      try {
+        const response = await downloadImportTemplate()
+        const blob = new Blob([response], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `领导班子考核数据导入模板_${this.selectedYear}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+        this.$message.success('模板下载成功')
+      } catch (error) {
+        console.error('下载模板失败:', error)
+        this.$message.error('下载模板失败: ' + (error.msg || '未知错误'))
+      }
+    },
+    
+    beforeImportUpload(file) {
+      const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                     file.type === 'application/vnd.ms-excel'
+      const isLt10M = file.size / 1024 / 1024 < 10
+      
+      if (!isExcel) {
+        this.$message.error('只能上传Excel文件!')
+        return false
+      }
+      if (!isLt10M) {
+        this.$message.error('上传文件大小不能超过10MB!')
+        return false
+      }
+      
+      this.hasImportFile = true
+      this.uploadData.updateSupport = this.updateSupport
+      this.uploadData.year = this.selectedYear
+      return true
+    },
+    
+    handleImportProgress(event, file, fileList) {
+      this.importProgress.show = true
+      this.importProgress.percentage = Math.round(event.percent)
+      this.importProgress.status = 'active'
+      this.importProgress.text = '正在上传文件...'
+    },
+    
+    handleImportSuccess(response, file, fileList) {
+      this.importing = false
+      this.importProgress.show = false
+      
+      if (response.code === 200) {
+        this.importResult.show = true
+        this.importResult.title = '导入成功'
+        this.importResult.type = 'success'
+        
+        const result = response.data || {}
+        let message = `<p>导入完成！</p>`
+        if (result.successCount > 0) {
+          message += `<p>成功导入 ${result.successCount} 条记录</p>`
+        }
+        if (result.updateCount > 0) {
+          message += `<p>更新 ${result.updateCount} 条记录</p>`
+        }
+        if (result.skipCount > 0) {
+          message += `<p>跳过 ${result.skipCount} 条记录</p>`
+        }
+        if (result.errorCount > 0) {
+          message += `<p style="color: #f56c6c;">失败 ${result.errorCount} 条记录</p>`
+        }
+        if (result.errors && result.errors.length > 0) {
+          message += `<p style="color: #f56c6c;">错误详情：</p>`
+          result.errors.slice(0, 5).forEach(error => {
+            message += `<p style="color: #f56c6c; font-size: 12px;">• ${error}</p>`
+          })
+          if (result.errors.length > 5) {
+            message += `<p style="color: #f56c6c; font-size: 12px;">... 还有 ${result.errors.length - 5} 个错误</p>`
+          }
+        }
+        
+        this.importResult.message = message
+        
+        // 刷新数据
+        this.loadLeaderData()
+      } else {
+        this.importResult.show = true
+        this.importResult.title = '导入失败'
+        this.importResult.type = 'error'
+        this.importResult.message = `<p>${response.msg || '导入过程中发生错误'}</p>`
+      }
+    },
+    
+    handleImportError(error, file, fileList) {
+      this.importing = false
+      this.importProgress.show = false
+      this.importResult.show = true
+      this.importResult.title = '导入失败'
+      this.importResult.type = 'error'
+      this.importResult.message = `<p>文件上传失败: ${error.message || '未知错误'}</p>`
+    },
+    
+    submitImport() {
+      if (!this.hasImportFile) {
+        this.$message.warning('请先选择要导入的文件')
+        return
+      }
+      
+      this.importing = true
+      this.importResult.show = false
+      this.uploadData.updateSupport = this.updateSupport
+      this.uploadData.year = this.selectedYear
+      
+      this.$refs.importUpload.submit()
+    },
+    
+    cancelImport() {
+      this.importDialogVisible = false
+      this.resetImportState()
     }
   }
 }
@@ -347,5 +593,45 @@ export default {
   color: #909399;
   font-size: 12px;
   margin-top: 8px;
+}
+
+/* 导入对话框样式 */
+.import-tips {
+  margin-bottom: 20px;
+}
+
+.import-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-top: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.import-upload {
+  margin: 20px 0;
+}
+
+.import-progress {
+  padding: 15px;
+  background: #f5f7fa;
+  border-radius: 4px;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 10px;
+  color: #606266;
+  font-size: 14px;
+}
+
+.import-result {
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.import-result .el-alert__description p {
+  margin: 5px 0;
 }
 </style>
