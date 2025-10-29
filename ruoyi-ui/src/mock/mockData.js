@@ -88,6 +88,8 @@ export function getLeaderAssessmentData(year) {
       jobBusiness,
       comprehensivePercent,
       comprehensiveLevel,
+      totalScore: comprehensivePercent, // 总成绩与综合成绩相同
+      totalRating: comprehensiveLevel,  // 总评定与综合评定相同
       remark: "",
       description: ""
     };
