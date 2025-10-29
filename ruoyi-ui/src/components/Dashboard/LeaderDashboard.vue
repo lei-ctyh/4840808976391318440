@@ -24,7 +24,7 @@
       <div class="leader-left">
         <span class="leader-title">领导班子年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
-        <el-tag size="small" class="leader-dept">{{ selectedDeptNode && selectedDeptNode.label ? selectedDeptNode.label : '未选择组织' }}</el-tag>
+        <el-tag size="small" class="leader-dept">{{ organizationPath }}</el-tag>
       </div>
       <div class="leader-right">
         <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
@@ -122,6 +122,10 @@ export default {
     orgTypeText: {
       type: String,
       default: '其他组织'
+    },
+    organizationPath: {
+      type: String,
+      default: '未选择组织'
     }
   },
   data() {
@@ -140,7 +144,8 @@ export default {
       const start = (this.leaderPagination.currentPage - 1) * this.leaderPagination.pageSize
       const end = start + this.leaderPagination.pageSize
       return this.leaderTableData.slice(start, end)
-    }
+    },
+
   },
   watch: {
     templateUrl(val) {

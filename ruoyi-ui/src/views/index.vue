@@ -40,8 +40,9 @@
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="领导看板" name="leader">
               <leader-dashboard 
-                :selected-dept="selectedDeptNode" 
+                :selected-dept-node="selectedDeptNode" 
                 :org-type-text="orgTypeText"
+                :organization-path="organizationPath"
               />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('org')" label="单位看板" name="org">
@@ -100,6 +101,30 @@ export default {
       if (type === 'leader') return '领导班子'
       if (type === 'teaching') return '教学组织'
       return '其他组织'
+    },
+    organizationPath() {
+      if (!this.selectedElNode || !this.selectedDeptNode) {
+        return '未选择组织'
+      }
+      
+      // 构建完整的组织路径
+      const buildPath = (node) => {
+        const path = []
+        let current = node
+        
+        while (current) {
+          if (current.data && current.data.label) {
+            path.unshift(current.data.label)
+          } else if (current.label) {
+            path.unshift(current.label)
+          }
+          current = current.parent
+        }
+        
+        return path.length > 0 ? path.join(' / ') : '未知组织'
+      }
+      
+      return buildPath(this.selectedElNode)
     }
   },
   watch: {
