@@ -28,6 +28,17 @@
       </pane>
       <pane size="82">
         <div class="right-pane">
+          <el-dialog title="导入考核数据 (Excel)" :visible.sync="importDialogVisible" width="500px">
+            <div>
+              <p>请选择符合模板的 Excel 文件以导入数据。</p>
+              <input type="file" accept=".xlsx,.xls" @change="onImportFileSelected" />
+              <p class="tip">建议先“下载模板”，填好后再导入。</p>
+            </div>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="importDialogVisible = false">取消</el-button>
+              <el-button type="primary" @click="confirmImport">导入</el-button>
+            </span>
+          </el-dialog>
           <el-tabs v-if="visibleTabKeys.length > 0" v-model="activeTab" type="card">
             <el-tab-pane v-if="visibleTabKeys.includes('charts')" label="图表看板" name="charts">
               <div class="tab-body" />
@@ -46,6 +57,9 @@
                   <el-tag size="small" class="leader-dept">{{ selectedDeptNode && selectedDeptNode.label ? selectedDeptNode.label : '未选择组织' }}</el-tag>
                 </div>
                 <div class="leader-right">
+                  <el-button type="primary" icon="el-icon-upload" size="small" @click="openImportDialog">导入</el-button>
+                  <el-button icon="el-icon-download" size="small" @click="exportLeaderExcel">导出</el-button>
+                  <el-button icon="el-icon-document" size="small" @click="downloadLeaderExcelTemplate">下载模板</el-button>
                   <span class="label">年度</span>
                   <el-date-picker
                     v-model="selectedYear"
@@ -155,6 +169,8 @@ export default {
       selectedYear: String(new Date().getFullYear()),
       leaderTableData: [],
       leaderPagination: { currentPage: 1, pageSize: 10, total: 0 }
+      ,importDialogVisible: false,
+      importSelectedFile: null
     }
   },
   computed: {
@@ -236,6 +252,164 @@ export default {
         this.loadLeaderData()
       }
     },
+    openImportDialog() {
+      this.importDialogVisible = true
+      this.importSelectedFile = null
+    },
+    onImportFileSelected(e) {
+      const files = e.target.files
+      if (files && files[0]) {
+        this.importSelectedFile = files[0]
+      }
+    },
+    async confirmImport() {
+      if (!this.importSelectedFile) {
+        this.$message.warning('请先选择 Excel 文件')
+        return
+      }
+      const XLSX = await this.ensureXLSX()
+      try {
+        const buf = await this.importSelectedFile.arrayBuffer()
+        const wb = XLSX.read(new Uint8Array(buf), { type: 'array' })
+        const sheetName = wb.SheetNames[0]
+        const sheet = wb.Sheets[sheetName]
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 })
+        if (!rows || rows.length === 0) {
+          this.$message.error('Excel 内容为空')
+          return
+        }
+        const hasGroupHeader = rows[0].some(v => ['基本信息','基础课目','共同课目','综合成绩'].includes(String(v || '').trim()))
+        const header = hasGroupHeader ? (rows[1] || []) : (rows[0] || [])
+        const dataRows = hasGroupHeader ? rows.slice(2) : rows.slice(1)
+        const map = {
+          '人员编号': 'personId',
+          '姓名': 'name',
+          '单位': 'unitPath',
+          '出生年月': 'birthdate',
+          '年龄': 'age',
+          '职称': 'title',
+          '评定周期': 'cycle',
+          '基本知识': 'baseBasicKnowledge',
+          '田径': 'baseSportsTrack',
+          '跳绳': 'baseSportsRope',
+          '跳远': 'baseSportsLongJump',
+          '共同A': 'baseGroupA',
+          '共同B': 'baseGroupB',
+          '基础成绩': 'baseTotal',
+          '课目1': 'commonSubject1',
+          '课目2': 'commonSubject2',
+          '课目3': 'commonSubject3',
+          '课目4': 'commonSubject4',
+          '课目5': 'commonSubject5',
+          '课目6': 'commonSubject6',
+          '课目7': 'commonSubject7',
+          '课目8': 'commonSubject8',
+          '共同成绩': 'commonTotal',
+          '岗位业务': 'jobBusiness',
+          '百分制': 'comprehensivePercent',
+          '四级制': 'comprehensiveLevel',
+          '备注': 'remark',
+          '说明': 'description'
+        }
+        const keyIndex = header.map(h => map[String(h).trim()] || null)
+        const data = dataRows
+          .filter(r => Array.isArray(r) && r.some(c => c != null && String(c).trim() !== ''))
+          .map(r => {
+            const obj = {}
+            keyIndex.forEach((key, idx) => {
+              if (key) obj[key] = r[idx] !== undefined ? r[idx] : ''
+            })
+            if (!obj.cycle) obj.cycle = `${this.selectedYear}年度`
+            return obj
+          })
+        this.leaderTableData = data
+        this.leaderPagination.total = this.leaderTableData.length
+        this.leaderPagination.currentPage = 1
+        this.importDialogVisible = false
+        this.$message.success('导入完成')
+      } catch (err) {
+        console.error(err)
+        this.$message.error('Excel 解析失败，请检查文件格式')
+      }
+    },
+    async exportLeaderExcel() {
+      const XLSX = await this.ensureXLSX()
+      const headerTop = [
+        '基本信息','','','','','','',
+        '基础课目','','','','','','',
+        '共同课目','','','','','','','','',
+        '岗位业务',
+        '综合成绩','',
+        '备注','说明'
+      ]
+      const headerLeaf = [
+        '人员编号','姓名','单位','出生年月','年龄','职称','评定周期',
+        '基本知识','田径','跳绳','跳远','共同A','共同B','基础成绩',
+        '课目1','课目2','课目3','课目4','课目5','课目6','课目7','课目8','共同成绩',
+        '岗位业务','百分制','四级制','备注','说明'
+      ]
+      const mapOrder = [
+        'personId','name','unitPath','birthdate','age','title','cycle',
+        'baseBasicKnowledge','baseSportsTrack','baseSportsRope','baseSportsLongJump','baseGroupA','baseGroupB','baseTotal',
+        'commonSubject1','commonSubject2','commonSubject3','commonSubject4','commonSubject5','commonSubject6','commonSubject7','commonSubject8','commonTotal',
+        'jobBusiness','comprehensivePercent','comprehensiveLevel','remark','description'
+      ]
+      const dataRows = this.leaderTableData.map(item => mapOrder.map(k => item[k] != null ? item[k] : ''))
+      const aoa = [headerTop, headerLeaf, ...dataRows]
+      const ws = XLSX.utils.aoa_to_sheet(aoa)
+      ws['!merges'] = [
+        // A1:G1 基本信息
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+        // H1:N1 基础课目
+        { s: { r: 0, c: 7 }, e: { r: 0, c: 13 } },
+        // O1:V1 共同课目（8课目+共同成绩）
+        { s: { r: 0, c: 14 }, e: { r: 0, c: 22 } },
+        // W1:W1 岗位业务（不合并）—保留单元格即可
+        // X1:Y1 综合成绩
+        { s: { r: 0, c: 24 }, e: { r: 0, c: 25 } }
+      ]
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, '领导考核')
+      XLSX.writeFile(wb, `领导考核_${this.selectedYear}.xlsx`)
+    },
+    async downloadLeaderExcelTemplate() {
+      const XLSX = await this.ensureXLSX()
+      const headerTop = [
+        '基本信息','','','','','','',
+        '基础课目','','','','','','',
+        '共同课目','','','','','','','','',
+        '岗位业务',
+        '综合成绩','',
+        '备注','说明'
+      ]
+      const headerLeaf = [
+        '人员编号','姓名','单位','出生年月','年龄','职称','评定周期',
+        '基本知识','田径','跳绳','跳远','共同A','共同B','基础成绩',
+        '课目1','课目2','课目3','课目4','课目5','课目6','课目7','课目8','共同成绩',
+        '岗位业务','百分制','四级制','备注','说明'
+      ]
+      const aoa = [headerTop, headerLeaf]
+      const ws = XLSX.utils.aoa_to_sheet(aoa)
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+        { s: { r: 0, c: 7 }, e: { r: 0, c: 13 } },
+        { s: { r: 0, c: 14 }, e: { r: 0, c: 22 } },
+        { s: { r: 0, c: 24 }, e: { r: 0, c: 25 } }
+      ]
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, '领导考核模板')
+      XLSX.writeFile(wb, '领导考核模板.xlsx')
+    },
+    async ensureXLSX() {
+      if (window && window.XLSX) return window.XLSX
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+        script.onload = () => resolve(window.XLSX)
+        script.onerror = () => reject(new Error('XLSX 加载失败'))
+        document.head.appendChild(script)
+      })
+    },
     loadLeaderData() {
       this.leaderTableData = getLeaderAssessmentData(this.selectedYear)
       this.leaderPagination.total = this.leaderTableData.length
@@ -315,6 +489,9 @@ export default {
 .leader-right .label {
   margin-right: 8px;
   color: #606266;
+}
+.leader-right .el-button {
+  margin-right: 8px;
 }
 .leader-alert {
   margin: 12px 0;
