@@ -37,6 +37,14 @@ public interface SysDeptMapper
     public SysDept selectDeptById(Long deptId);
 
     /**
+     * 根据机构编码查询信息
+     * 
+     * @param orgCode 机构编码
+     * @return 部门信息
+     */
+    public SysDept selectDeptByOrgCode(String orgCode);
+
+    /**
      * 根据ID查询所有子部门
      * 
      * @param deptId 部门ID
