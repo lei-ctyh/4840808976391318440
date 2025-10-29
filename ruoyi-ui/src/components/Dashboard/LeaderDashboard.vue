@@ -137,7 +137,8 @@ export default {
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
-      baseApi: process.env.VUE_APP_BASE_API
+      baseApi: process.env.VUE_APP_BASE_API,
+      isInitializing: true // 标记是否在初始化阶段
     }
   },
   computed: {
@@ -159,8 +160,16 @@ export default {
     templateUrl(val) {
       if (val) {
         this.templateFileName = String(val).split(',')[0].split('/').pop() || '领导考核模板.xlsx'
-        // 调用bindTemplate绑定模板到当前组织
-        this.bindTemplateToOrg(val)
+        // 只有在currentOrgCode存在时才调用bindTemplate绑定模板到当前组织
+        if (this.currentOrgCode) {
+          this.bindTemplateToOrg(val)
+        }
+      }
+    },
+    currentOrgCode(newVal) {
+      // 只在非初始化阶段且组织编码变为有效值时，如果有模板URL则执行绑定
+      if (newVal && this.templateUrl && !this.isInitializing) {
+        this.bindTemplateToOrg(this.templateUrl)
       }
     },
     selectedYear() {
@@ -175,7 +184,14 @@ export default {
       const name = localStorage.getItem('leaderTemplateFileName')
       if (url) this.templateUrl = url
       if (name) this.templateFileName = name
-    } catch (e) {}
+    } catch (e) {
+      console.warn('读取本地存储失败:', e)
+    }
+    
+    // 初始化完成后设置标志
+    this.$nextTick(() => {
+      this.isInitializing = false
+    })
   },
   methods: {
     onYearChange() {
