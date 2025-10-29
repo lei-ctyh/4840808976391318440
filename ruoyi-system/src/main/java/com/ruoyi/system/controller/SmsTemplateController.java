@@ -45,7 +45,7 @@ public class SmsTemplateController extends BaseController {
                               @RequestParam("year") Integer year) {
         SmsTemplate hit = smsTemplateService.resolveTemplate(orgCode, boardType, year);
         if (hit == null) {
-            return AjaxResult.error("未在机构链找到可用模板");
+            return AjaxResult.success("未在机构链找到可用模板");
         }
         return AjaxResult.success(hit);
     }

@@ -44,7 +44,7 @@
         />
       </div>
     </div>
-    
+
     <!-- 领导看板表格 -->
     <div class="tab-body">
       <el-table :data="leaderTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
@@ -90,7 +90,7 @@
         <el-table-column prop="remark" label="备注" min-width="120" />
         <el-table-column prop="description" label="说明" min-width="120" />
       </el-table>
-      
+
       <!-- 分页 -->
       <div class="table-pagination">
         <el-pagination
@@ -179,7 +179,7 @@ export default {
       if (fileUrl) {
         // 设置文件名
         this.templateFileName = String(fileUrl).split(',')[0].split('/').pop() || '领导考核模板.xlsx'
-        
+
         // 直接执行模板绑定
         if (this.currentOrgCode) {
           this.bindTemplateToOrg(fileUrl)
@@ -225,7 +225,7 @@ export default {
         this.$message.error('无法获取当前组织编码，请重新选择组织')
         return
       }
-      
+
       try {
         const templateData = {
           orgCode: this.currentOrgCode,
@@ -236,17 +236,17 @@ export default {
           fileExt: this.templateFileName.split('.').pop() || 'xlsx',
           status: '1'
         }
-        
+
         await bindTemplate(templateData)
         this.uploadTemplateDialogVisible = false
         this.$message.success('模板绑定成功')
-        
+
         // 更新本地存储（保持兼容性）
         try {
           localStorage.setItem('leaderTemplateUrl', filePath)
           localStorage.setItem('leaderTemplateFileName', this.templateFileName)
         } catch (e) {}
-        
+
       } catch (error) {
         console.error('绑定模板失败:', error)
         this.$message.error('模板绑定失败: ' + (error.msg || '未知错误'))
@@ -258,33 +258,34 @@ export default {
         this.$message.error('无法获取当前组织编码，请重新选择组织')
         return
       }
-      
+
       try {
         const response = await resolveTemplate(
           this.currentOrgCode,
           this.boardType,
           parseInt(this.selectedYear)
         )
-        
+        console.log('resolveTemplate response:', response)
+
         if (response.code === 200 && response.data) {
           // 找到模板，开始下载
           const template = response.data
           const isAbsolute = /^(https?:)?\/\//.test(template.filePath)
           const href = isAbsolute ? template.filePath : (this.baseApi + template.filePath)
-          
+
           const a = document.createElement('a')
           a.href = href
-          a.download = template.fileName || '领导考核模板.xlsx'
+          a.download = template.fileName
           document.body.appendChild(a)
           a.click()
           document.body.removeChild(a)
-          
+
           this.$message.success('模板下载开始')
         } else {
           // 未找到模板
           this.$message.warning('未在组织链找到可用模板，请先上传模板或联系上级组织')
         }
-        
+
       } catch (error) {
         console.error('解析模板失败:', error)
         this.$message.error('查找模板失败: ' + (error.msg || '未知错误'))
