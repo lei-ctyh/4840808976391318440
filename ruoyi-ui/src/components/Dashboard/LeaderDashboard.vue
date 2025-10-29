@@ -188,6 +188,9 @@ export default {
       this.$message.info('导出由后端生成文件，前端不再导出')
     },
     openUploadTemplateDialog() {
+      // 重置上传状态
+      this.templateUrl = ''
+      this.templateFileName = ''
       this.uploadTemplateDialogVisible = true
     },
     downloadTemplateFromServer() {

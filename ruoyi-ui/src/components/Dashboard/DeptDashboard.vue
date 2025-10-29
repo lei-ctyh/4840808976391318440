@@ -335,6 +335,9 @@ export default {
       this.$message.info('导入功能待实现')
     },
     handleUploadTemplate() {
+      // 重置上传状态
+      this.templateUrl = ''
+      this.templateFileName = ''
       this.uploadTemplateDialogVisible = true
     },
     async handleDownloadTemplate() {
