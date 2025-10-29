@@ -33,16 +33,24 @@
               <chart-dashboard />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="教师看板" name="teacher">
-              <teacher-dashboard :selected-dept="selectedDeptNode" />
+              <teacher-dashboard 
+                :selectedDeptNode="selectedDeptNode" 
+                :orgTypeText="orgTypeText"
+                :organizationPath="organizationPath"
+              />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('student')" label="学生看板" name="student">
-              <student-dashboard :selected-dept="selectedDeptNode" />
+              <student-dashboard 
+                :selectedDeptNode="selectedDeptNode" 
+                :orgTypeText="orgTypeText"
+                :organizationPath="organizationPath"
+              />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="领导看板" name="leader">
               <leader-dashboard 
-                :selected-dept-node="selectedDeptNode" 
-                :org-type-text="orgTypeText"
-                :organization-path="organizationPath"
+                :selectedDeptNode="selectedDeptNode" 
+                :orgTypeText="orgTypeText"
+                :organizationPath="organizationPath"
               />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('org')" label="单位看板" name="org">

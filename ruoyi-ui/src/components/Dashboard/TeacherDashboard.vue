@@ -19,126 +19,96 @@
       </span>
     </el-dialog>
 
-    <div class="dashboard-header">
-      <div class="header-left">
-        <h3>教师看板</h3>
-        <el-tag size="small" class="dept-tag">{{ selectedDeptNode && selectedDeptNode.label ? selectedDeptNode.label : '未选择组织' }}</el-tag>
+    <!-- 教师看板头部 -->
+    <div class="teacher-header">
+      <div class="teacher-left">
+        <span class="teacher-title">教师年度考核</span>
+        <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
+        <el-tag size="small" class="teacher-dept">{{ organizationPath }}</el-tag>
       </div>
-      <div class="header-right">
-        <el-button type="primary" icon="el-icon-search" size="small" @click="handleSearch">查询</el-button>
-        <el-button icon="el-icon-refresh" size="small" @click="handleRefresh">刷新</el-button>
-        <el-button icon="el-icon-upload2" size="small" @click="handleImport">导入</el-button>
-        <el-button icon="el-icon-download" size="small" @click="handleExport">导出</el-button>
-        <el-button icon="el-icon-upload" size="small" @click="handleUploadTemplate">上传模板</el-button>
-        <el-button icon="el-icon-document" size="small" @click="handleDownloadTemplate">下载模板</el-button>
-        <span class="label">学期</span>
-        <el-select v-model="selectedSemester" placeholder="选择学期" size="small" @change="onSemesterChange">
-          <el-option label="2024春季" value="2024-spring" />
-          <el-option label="2024秋季" value="2024-autumn" />
-          <el-option label="2025春季" value="2025-spring" />
-        </el-select>
+      <div class="teacher-right">
+        <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
+        <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
+        <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
+        <el-button icon="el-icon-document" size="small" @click="downloadTemplateFromServer">下载模板</el-button>
+        <span class="label">年度</span>
+        <el-date-picker
+          v-model="selectedYear"
+          type="year"
+          placeholder="选择年度"
+          value-format="yyyy"
+          :default-value="new Date()"
+          @change="onYearChange"
+          size="small"
+        />
       </div>
     </div>
     
-    <div class="dashboard-content">
-      <!-- 统计卡片 -->
-      <div class="stats-cards">
-        <div class="stat-card">
-          <div class="stat-icon teacher-icon">
-            <i class="el-icon-user-solid"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ teacherStats.total }}</div>
-            <div class="stat-label">教师总数</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon course-icon">
-            <i class="el-icon-reading"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ teacherStats.courses }}</div>
-            <div class="stat-label">开设课程</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon evaluation-icon">
-            <i class="el-icon-star-on"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ teacherStats.avgRating }}</div>
-            <div class="stat-label">平均评分</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon workload-icon">
-            <i class="el-icon-time"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ teacherStats.avgWorkload }}</div>
-            <div class="stat-label">平均课时</div>
-          </div>
-        </div>
-      </div>
+    <!-- 教师看板表格 -->
+    <div class="tab-body">
+      <el-table :data="teacherTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
+        <el-table-column prop="personId" label="人员编号" width="110" />
+        <el-table-column prop="name" label="姓名" width="100" />
+        <el-table-column prop="unitPath" label="单位(展示单位名称XX/XX/XX)" min-width="220" />
+        <el-table-column prop="birthdate" label="出生年月" width="120" />
+        <el-table-column prop="age" label="年龄" width="80" />
+        <el-table-column prop="title" label="职称" width="100" />
+        <el-table-column prop="cycle" label="评定周期" width="120" />
 
-      <!-- 教师列表 -->
-      <div class="teacher-table">
-        <el-table :data="teacherTablePageData" border size="small" style="width: 100%">
-          <el-table-column prop="teacherId" label="工号" width="120" />
-          <el-table-column prop="name" label="姓名" width="100" />
-          <el-table-column prop="department" label="所属部门" min-width="150" />
-          <el-table-column prop="title" label="职称" width="120" />
-          <el-table-column prop="subject" label="主讲科目" min-width="150" />
-          <el-table-column prop="courseCount" label="课程数" width="80" />
-          <el-table-column prop="studentCount" label="学生数" width="80" />
-          <el-table-column prop="workload" label="课时" width="80" />
-          <el-table-column prop="rating" label="评分" width="80">
-            <template slot-scope="scope">
-              <el-rate
-                v-model="scope.row.rating"
-                disabled
-                show-score
-                text-color="#ff9900"
-                score-template="{value}"
-                :max="5"
-              />
-            </template>
+        <el-table-column label="基础科目 20%">
+          <el-table-column prop="baseBasicKnowledge" label="基本知识 20%" width="140" />
+          <el-table-column label="体育 30%">
+            <el-table-column prop="baseSportsTrack" label="田径" width="100" />
+            <el-table-column prop="baseSportsRope" label="跳绳" width="100" />
+            <el-table-column prop="baseSportsLongJump" label="跳远" width="100" />
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
-            <template slot-scope="scope">
-              <el-tag :type="getStatusType(scope.row.status)" size="mini">
-                {{ scope.row.status }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="150">
-            <template slot-scope="scope">
-              <el-button type="text" size="mini" @click="viewTeacher(scope.row)">查看</el-button>
-              <el-button type="text" size="mini" @click="editTeacher(scope.row)">编辑</el-button>
-              <el-button type="text" size="mini" @click="viewCourses(scope.row)">课程</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        
-        <!-- 分页 -->
-        <div class="table-pagination">
-          <el-pagination
-            background
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="teacherPagination.total"
-            :page-size="teacherPagination.pageSize"
-            :current-page="teacherPagination.currentPage"
-            :page-sizes="[10, 20, 50]"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
+          <el-table-column prop="baseGroupA" label="共同A 25%" width="120" />
+          <el-table-column prop="baseGroupB" label="共同B 25%" width="120" />
+          <el-table-column prop="baseTotal" label="成绩" width="100" />
+        </el-table-column>
+
+        <el-table-column label="共同科目30%">
+          <el-table-column prop="commonSubject1" label="课目1" width="100" />
+          <el-table-column prop="commonSubject2" label="课目2" width="100" />
+          <el-table-column prop="commonSubject3" label="课目3" width="100" />
+          <el-table-column prop="commonSubject4" label="课目4" width="100" />
+          <el-table-column prop="commonSubject5" label="课目5" width="100" />
+          <el-table-column prop="commonSubject6" label="课目6" width="100" />
+          <el-table-column prop="commonSubject7" label="课目7" width="100" />
+          <el-table-column prop="commonSubject8" label="课目8" width="100" />
+          <el-table-column prop="commonTotal" label="成绩" width="100" />
+        </el-table-column>
+
+        <el-table-column prop="jobBusiness" label="岗位业务 50%" width="130" />
+
+        <el-table-column label="综合成绩">
+          <el-table-column prop="comprehensivePercent" label="百分制" width="120" />
+          <el-table-column prop="comprehensiveLevel" label="四级制 不合格，合格，良好，优秀" width="180" />
+        </el-table-column>
+
+        <el-table-column prop="remark" label="备注" min-width="120" />
+        <el-table-column prop="description" label="说明" min-width="120" />
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="table-pagination">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="teacherPagination.total"
+          :page-size="teacherPagination.pageSize"
+          :current-page="teacherPagination.currentPage"
+          :page-sizes="[10, 20, 50]"
+          @size-change="handleTeacherSizeChange"
+          @current-change="handleTeacherCurrentChange"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { getTeacherAssessmentData } from "@/mock/mockData"
 import FileUpload from "@/components/FileUpload"
 import { bindTemplate, resolveTemplate } from "@/api/sms/template"
 
@@ -149,20 +119,21 @@ export default {
     selectedDeptNode: {
       type: Object,
       default: () => null
+    },
+    orgTypeText: {
+      type: String,
+      default: '其他组织'
+    },
+    organizationPath: {
+      type: String,
+      default: '未选择组织'
     }
   },
   data() {
     return {
-      selectedSemester: '2024-autumn',
-      teacherStats: {
-        total: 0,
-        courses: 0,
-        avgRating: 0,
-        avgWorkload: 0
-      },
+      selectedYear: String(new Date().getFullYear()),
       teacherTableData: [],
       teacherPagination: { currentPage: 1, pageSize: 10, total: 0 },
-      // 模板相关数据
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
@@ -175,185 +146,241 @@ export default {
       const end = start + this.teacherPagination.pageSize
       return this.teacherTableData.slice(start, end)
     },
+    // 获取当前选中组织的orgCode
     currentOrgCode() {
-      return this.selectedDeptNode?.orgCode || ''
+      return this.selectedDeptNode && this.selectedDeptNode.orgCode ? this.selectedDeptNode.orgCode : null
     },
+    // 看板类型固定为teacher
     boardType() {
       return 'teacher'
     }
   },
   watch: {
-    selectedSemester() {
+    selectedYear() {
       this.loadTeacherData()
-    },
-    templateUrl(newVal) {
-      if (newVal) {
-        // 文件上传完成后自动绑定模板
-        this.templateFileName = newVal.split('/').pop()
-        this.bindTemplateToOrg()
-      }
     }
   },
   created() {
     this.loadTeacherData()
+    // 读取本地存储的模板信息
+    try {
+      const url = localStorage.getItem('teacherTemplateUrl')
+      const name = localStorage.getItem('teacherTemplateFileName')
+      if (url) this.templateUrl = url
+      if (name) this.templateFileName = name
+    } catch (e) {
+      console.warn('读取本地存储失败:', e)
+    }
   },
   methods: {
-    onSemesterChange() {
-      this.loadTeacherData()
-    },
-    handleSearch() {
-      this.loadTeacherData()
-    },
-    handleRefresh() {
-      this.loadTeacherData()
-    },
-    handleExport() {
-      this.$message.info('导出教师数据')
-    },
-    loadTeacherData() {
-      // 模拟教师统计数据
-      this.teacherStats = {
-        total: 156,
-        courses: 89,
-        avgRating: 4.2,
-        avgWorkload: 16
-      }
-      
-      // 模拟教师表格数据
-      this.teacherTableData = [
-        {
-          teacherId: 'T001',
-          name: '王教授',
-          department: '计算机学院',
-          title: '教授',
-          subject: '数据结构与算法',
-          courseCount: 3,
-          studentCount: 120,
-          workload: 18,
-          rating: 4.8,
-          status: '在职'
-        },
-        {
-          teacherId: 'T002',
-          name: '李副教授',
-          department: '计算机学院',
-          title: '副教授',
-          subject: '操作系统',
-          courseCount: 2,
-          studentCount: 80,
-          workload: 12,
-          rating: 4.5,
-          status: '在职'
-        },
-        {
-          teacherId: 'T003',
-          name: '张讲师',
-          department: '软件学院',
-          title: '讲师',
-          subject: 'Web开发技术',
-          courseCount: 4,
-          studentCount: 160,
-          workload: 20,
-          rating: 4.2,
-          status: '在职'
+    // 处理模板上传成功
+    handleTemplateUpload(fileUrl) {
+      if (fileUrl) {
+        // 设置文件名
+        this.templateFileName = String(fileUrl).split(',')[0].split('/').pop() || '教师考核模板.xlsx'
+
+        // 直接执行模板绑定
+        if (this.currentOrgCode) {
+          this.bindTemplateToOrg(fileUrl)
+        } else {
+          this.$message.warning('请先选择组织后再上传模板')
         }
-        // 可以添加更多模拟数据
-      ]
-      
-      this.teacherPagination.total = this.teacherTableData.length
-      this.teacherPagination.currentPage = 1
-    },
-    getStatusType(status) {
-      const typeMap = {
-        '在职': 'success',
-        '休假': 'warning',
-        '离职': 'info'
       }
-      return typeMap[status] || 'info'
     },
-    viewTeacher(row) {
-      this.$message.info(`查看教师：${row.name}`)
+    onYearChange() {
+      this.loadTeacherData()
     },
-    editTeacher(row) {
-      this.$message.info(`编辑教师：${row.name}`)
+    handleImportClick() {
+      this.$message.info('导入由后端处理，前端不再解析文件')
     },
-    viewCourses(row) {
-      this.$message.info(`查看${row.name}的课程`)
+    handleExportClick() {
+      this.$message.info('导出由后端生成文件，前端不再导出')
     },
-    handleSizeChange(size) {
-      this.teacherPagination.pageSize = size
-      this.teacherPagination.currentPage = 1
-    },
-    handleCurrentChange(page) {
-      this.teacherPagination.currentPage = page
-    },
-    // 模板相关方法
-    handleImport() {
-      this.$message.info('导入功能待实现')
-    },
-    handleUploadTemplate() {
+    openUploadTemplateDialog() {
       // 重置上传状态
       this.templateUrl = ''
       this.templateFileName = ''
       this.uploadTemplateDialogVisible = true
     },
-    async handleDownloadTemplate() {
+    downloadTemplateFromServer() {
+      // 使用resolveTemplate查找可用模板
+      this.resolveAndDownloadTemplate()
+    },
+    loadTeacherData() {
+      // 模拟教师考核数据，使用与领导看板相同的数据结构
+      this.teacherTableData = [
+        {
+          personId: 'T001',
+          name: '王教授',
+          unitPath: '计算机学院/软件工程系/教学组',
+          birthdate: '1975-03',
+          age: 49,
+          title: '教授',
+          cycle: '2024年度',
+          baseBasicKnowledge: 85,
+          baseSportsTrack: 80,
+          baseSportsRope: 85,
+          baseSportsLongJump: 78,
+          baseGroupA: 88,
+          baseGroupB: 82,
+          baseTotal: 83.6,
+          commonSubject1: 90,
+          commonSubject2: 88,
+          commonSubject3: 85,
+          commonSubject4: 87,
+          commonSubject5: 89,
+          commonSubject6: 86,
+          commonSubject7: 88,
+          commonSubject8: 90,
+          commonTotal: 87.9,
+          jobBusiness: 92,
+          comprehensivePercent: 88.5,
+          comprehensiveLevel: '良好',
+          remark: '教学认真负责',
+          description: '专业课教学优秀'
+        },
+        {
+          personId: 'T002',
+          name: '李副教授',
+          unitPath: '计算机学院/计算机科学系/教学组',
+          birthdate: '1980-07',
+          age: 44,
+          title: '副教授',
+          cycle: '2024年度',
+          baseBasicKnowledge: 82,
+          baseSportsTrack: 75,
+          baseSportsRope: 80,
+          baseSportsLongJump: 72,
+          baseGroupA: 85,
+          baseGroupB: 78,
+          baseTotal: 78.8,
+          commonSubject1: 85,
+          commonSubject2: 83,
+          commonSubject3: 80,
+          commonSubject4: 82,
+          commonSubject5: 84,
+          commonSubject6: 81,
+          commonSubject7: 83,
+          commonSubject8: 85,
+          commonTotal: 82.9,
+          jobBusiness: 88,
+          comprehensivePercent: 85.2,
+          comprehensiveLevel: '良好',
+          remark: '科研能力强',
+          description: '理论基础扎实'
+        },
+        {
+          personId: 'T003',
+          name: '张讲师',
+          unitPath: '软件学院/软件工程系/教学组',
+          birthdate: '1985-12',
+          age: 39,
+          title: '讲师',
+          cycle: '2024年度',
+          baseBasicKnowledge: 78,
+          baseSportsTrack: 82,
+          baseSportsRope: 85,
+          baseSportsLongJump: 80,
+          baseGroupA: 80,
+          baseGroupB: 75,
+          baseTotal: 80.0,
+          commonSubject1: 82,
+          commonSubject2: 80,
+          commonSubject3: 78,
+          commonSubject4: 79,
+          commonSubject5: 81,
+          commonSubject6: 77,
+          commonSubject7: 80,
+          commonSubject8: 82,
+          commonTotal: 79.9,
+          jobBusiness: 85,
+          comprehensivePercent: 82.1,
+          comprehensiveLevel: '合格',
+          remark: '工作积极主动',
+          description: '实践能力较强'
+        }
+      ]
+      
+      this.teacherPagination.total = this.teacherTableData.length
+      this.teacherPagination.currentPage = 1
+    },
+    handleTeacherSizeChange(size) {
+      this.teacherPagination.pageSize = size
+      this.teacherPagination.currentPage = 1
+    },
+    handleTeacherCurrentChange(page) {
+      this.teacherPagination.currentPage = page
+    },
+    // 绑定模板到当前组织
+    async bindTemplateToOrg(filePath) {
       if (!this.currentOrgCode) {
-        this.$message.warning('请先选择部门')
+        this.$message.error('无法获取当前组织编码，请重新选择组织')
         return
       }
-      
+
+      try {
+        const templateData = {
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: parseInt(this.selectedYear),
+          filePath: filePath,
+          fileName: this.templateFileName,
+          fileExt: this.templateFileName.split('.').pop() || 'xlsx',
+          status: '1'
+        }
+
+        await bindTemplate(templateData)
+        this.uploadTemplateDialogVisible = false
+        this.$message.success('模板绑定成功')
+
+        // 更新本地存储（保持兼容性）
+        try {
+          localStorage.setItem('teacherTemplateUrl', filePath)
+          localStorage.setItem('teacherTemplateFileName', this.templateFileName)
+        } catch (e) {}
+
+      } catch (error) {
+        console.error('绑定模板失败:', error)
+        this.$message.error('模板绑定失败: ' + (error.msg || '未知错误'))
+      }
+    },
+    // 解析并下载模板
+    async resolveAndDownloadTemplate() {
+      if (!this.currentOrgCode) {
+        this.$message.error('无法获取当前组织编码，请重新选择组织')
+        return
+      }
+
       try {
         const response = await resolveTemplate(
           this.currentOrgCode,
           this.boardType,
-          this.selectedSemester.split('-')[0] // 从学期中提取年份
+          parseInt(this.selectedYear)
         )
-        
+        console.log('resolveTemplate response:', response)
+
         if (response.code === 200 && response.data) {
-          // 使用返回的filePath下载文件
-          const downloadUrl = this.baseApi + response.data.filePath
-          const link = document.createElement('a')
-          link.href = downloadUrl
-          link.download = response.data.fileName || '模板.xlsx'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          this.$message.success('模板下载成功')
+          // 找到模板，开始下载
+          const template = response.data
+          const isAbsolute = /^(https?:)?\/\//.test(template.filePath)
+          const href = isAbsolute ? template.filePath : (this.baseApi + template.filePath)
+
+          const a = document.createElement('a')
+          a.href = href
+          a.download = template.fileName
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+
+          this.$message.success('模板下载开始')
         } else {
-          this.$message.warning('未在组织链找到可用模板')
+          // 未找到模板
+          this.$message.warning('未在组织链找到可用模板，请先上传模板或联系上级组织')
         }
+
       } catch (error) {
-        console.error('下载模板失败:', error)
-        this.$message.error('下载模板失败')
-      }
-    },
-    async bindTemplateToOrg() {
-      if (!this.templateUrl || !this.currentOrgCode) {
-        this.$message.warning('请确保已上传文件并选择了部门')
-        return
-      }
-      
-      try {
-        const response = await bindTemplate({
-          orgCode: this.currentOrgCode,
-          boardType: this.boardType,
-          year: this.selectedSemester.split('-')[0], // 从学期中提取年份
-          filePath: this.templateUrl,
-          fileName: this.templateFileName
-        })
-        
-        if (response.code === 200) {
-          this.$message.success('模板绑定成功')
-          this.uploadTemplateDialogVisible = false
-          this.templateUrl = ''
-          this.templateFileName = ''
-        } else {
-          this.$message.error(response.msg || '模板绑定失败')
-        }
-      } catch (error) {
-        console.error('绑定模板失败:', error)
-        this.$message.error('绑定模板失败')
+        console.error('解析模板失败:', error)
+        this.$message.error('查找模板失败: ' + (error.msg || '未知错误'))
       }
     }
   }
