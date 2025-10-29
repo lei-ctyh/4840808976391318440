@@ -11,6 +11,7 @@
           :file-size="50"
           :is-show-tip="true"
           :action="'/common/upload'"
+          @input="handleTemplateUpload"
         />
         <p class="tip">上传后，"下载模板"将直接从服务器取回该文件。</p>
       </div>
