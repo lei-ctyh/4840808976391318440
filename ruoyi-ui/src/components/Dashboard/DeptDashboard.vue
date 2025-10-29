@@ -1,5 +1,24 @@
 <template>
   <div class="dept-dashboard">
+    <!-- 上传模板对话框 -->
+    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="480px">
+      <div>
+        <p>请选择模板文件并上传到服务器。</p>
+        <file-upload
+          v-model="templateUrl"
+          :limit="1"
+          :file-type="['xls','xlsx']"
+          :file-size="50"
+          :is-show-tip="true"
+          :action="'/common/upload'"
+        />
+        <p class="tip">上传后，"下载模板"将直接从服务器取回该文件。</p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="uploadTemplateDialogVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
+
     <div class="dashboard-header">
       <div class="header-left">
         <h3>单位看板</h3>
@@ -8,7 +27,10 @@
       <div class="header-right">
         <el-button type="primary" icon="el-icon-search" size="small" @click="handleSearch">查询</el-button>
         <el-button icon="el-icon-refresh" size="small" @click="handleRefresh">刷新</el-button>
+        <el-button icon="el-icon-upload2" size="small" @click="handleImport">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExport">导出</el-button>
+        <el-button icon="el-icon-upload" size="small" @click="handleUploadTemplate">上传模板</el-button>
+        <el-button icon="el-icon-document" size="small" @click="handleDownloadTemplate">下载模板</el-button>
         <span class="label">年度</span>
         <el-date-picker
           v-model="selectedYear"
@@ -118,8 +140,12 @@
 </template>
 
 <script>
+import FileUpload from "@/components/FileUpload"
+import { bindTemplate, resolveTemplate } from "@/api/sms/template"
+
 export default {
   name: "DeptDashboard",
+  components: { FileUpload },
   props: {
     selectedDeptNode: {
       type: Object,
@@ -136,7 +162,12 @@ export default {
         budget: 0
       },
       deptTableData: [],
-      deptPagination: { currentPage: 1, pageSize: 10, total: 0 }
+      deptPagination: { currentPage: 1, pageSize: 10, total: 0 },
+      // 模板相关数据
+      uploadTemplateDialogVisible: false,
+      templateUrl: '',
+      templateFileName: '',
+      baseApi: process.env.VUE_APP_BASE_API
     }
   },
   computed: {
@@ -144,11 +175,24 @@ export default {
       const start = (this.deptPagination.currentPage - 1) * this.deptPagination.pageSize
       const end = start + this.deptPagination.pageSize
       return this.deptTableData.slice(start, end)
+    },
+    currentOrgCode() {
+      return this.selectedDeptNode?.orgCode || ''
+    },
+    boardType() {
+      return 'dept'
     }
   },
   watch: {
     selectedYear() {
       this.loadDeptData()
+    },
+    templateUrl(newVal) {
+      if (newVal) {
+        // 文件上传完成后自动绑定模板
+        this.templateFileName = newVal.split('/').pop()
+        this.bindTemplateToOrg()
+      }
     }
   },
   created() {
@@ -285,6 +329,72 @@ export default {
     },
     handleCurrentChange(page) {
       this.deptPagination.currentPage = page
+    },
+    // 模板相关方法
+    handleImport() {
+      this.$message.info('导入功能待实现')
+    },
+    handleUploadTemplate() {
+      this.uploadTemplateDialogVisible = true
+    },
+    async handleDownloadTemplate() {
+      if (!this.currentOrgCode) {
+        this.$message.warning('请先选择部门')
+        return
+      }
+      
+      try {
+        const response = await resolveTemplate(
+          this.currentOrgCode,
+          this.boardType,
+          this.selectedYear
+        )
+        
+        if (response.code === 200 && response.data) {
+          // 使用返回的filePath下载文件
+          const downloadUrl = this.baseApi + response.data.filePath
+          const link = document.createElement('a')
+          link.href = downloadUrl
+          link.download = response.data.fileName || '模板.xlsx'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          this.$message.success('模板下载成功')
+        } else {
+          this.$message.warning('未在组织链找到可用模板')
+        }
+      } catch (error) {
+        console.error('下载模板失败:', error)
+        this.$message.error('下载模板失败')
+      }
+    },
+    async bindTemplateToOrg() {
+      if (!this.templateUrl || !this.currentOrgCode) {
+        this.$message.warning('请确保已上传文件并选择了部门')
+        return
+      }
+      
+      try {
+        const response = await bindTemplate({
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: this.selectedYear,
+          filePath: this.templateUrl,
+          fileName: this.templateFileName
+        })
+        
+        if (response.code === 200) {
+          this.$message.success('模板绑定成功')
+          this.uploadTemplateDialogVisible = false
+          this.templateUrl = ''
+          this.templateFileName = ''
+        } else {
+          this.$message.error(response.msg || '模板绑定失败')
+        }
+      } catch (error) {
+        console.error('绑定模板失败:', error)
+        this.$message.error('绑定模板失败')
+      }
     }
   }
 }

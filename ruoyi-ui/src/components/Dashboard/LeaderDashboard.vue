@@ -110,6 +110,7 @@
 <script>
 import { getLeaderAssessmentData } from "@/mock/mockData"
 import FileUpload from "@/components/FileUpload"
+import { bindTemplate, resolveTemplate } from "@/api/sms/template"
 
 export default {
   name: "LeaderDashboard",
@@ -145,18 +146,21 @@ export default {
       const end = start + this.leaderPagination.pageSize
       return this.leaderTableData.slice(start, end)
     },
-
+    // 获取当前选中组织的orgCode
+    currentOrgCode() {
+      return this.selectedDeptNode && this.selectedDeptNode.orgCode ? this.selectedDeptNode.orgCode : null
+    },
+    // 看板类型固定为leader
+    boardType() {
+      return 'leader'
+    }
   },
   watch: {
     templateUrl(val) {
       if (val) {
         this.templateFileName = String(val).split(',')[0].split('/').pop() || '领导考核模板.xlsx'
-        try {
-          localStorage.setItem('leaderTemplateUrl', val)
-          localStorage.setItem('leaderTemplateFileName', this.templateFileName)
-        } catch (e) {}
-        this.uploadTemplateDialogVisible = false
-        this.$message.success('模板上传成功')
+        // 调用bindTemplate绑定模板到当前组织
+        this.bindTemplateToOrg(val)
       }
     },
     selectedYear() {
@@ -187,18 +191,8 @@ export default {
       this.uploadTemplateDialogVisible = true
     },
     downloadTemplateFromServer() {
-      if (!this.templateUrl) {
-        this.$message.warning('暂无已上传模板，请先点击"上传模板"上传')
-        return
-      }
-      const isAbsolute = /^(https?:)?\/\//.test(this.templateUrl)
-      const href = isAbsolute ? this.templateUrl : (this.baseApi + this.templateUrl)
-      const a = document.createElement('a')
-      a.href = href
-      a.download = this.templateFileName || '领导考核模板.xlsx'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+      // 使用resolveTemplate查找可用模板
+      this.resolveAndDownloadTemplate()
     },
     loadLeaderData() {
       this.leaderTableData = getLeaderAssessmentData(this.selectedYear)
@@ -211,6 +205,77 @@ export default {
     },
     handleLeaderCurrentChange(page) {
       this.leaderPagination.currentPage = page
+    },
+    // 绑定模板到当前组织
+    async bindTemplateToOrg(filePath) {
+      if (!this.currentOrgCode) {
+        this.$message.error('无法获取当前组织编码，请重新选择组织')
+        return
+      }
+      
+      try {
+        const templateData = {
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: parseInt(this.selectedYear),
+          filePath: filePath,
+          fileName: this.templateFileName,
+          fileExt: this.templateFileName.split('.').pop() || 'xlsx',
+          status: '1'
+        }
+        
+        await bindTemplate(templateData)
+        this.uploadTemplateDialogVisible = false
+        this.$message.success('模板绑定成功')
+        
+        // 更新本地存储（保持兼容性）
+        try {
+          localStorage.setItem('leaderTemplateUrl', filePath)
+          localStorage.setItem('leaderTemplateFileName', this.templateFileName)
+        } catch (e) {}
+        
+      } catch (error) {
+        console.error('绑定模板失败:', error)
+        this.$message.error('模板绑定失败: ' + (error.msg || '未知错误'))
+      }
+    },
+    // 解析并下载模板
+    async resolveAndDownloadTemplate() {
+      if (!this.currentOrgCode) {
+        this.$message.error('无法获取当前组织编码，请重新选择组织')
+        return
+      }
+      
+      try {
+        const response = await resolveTemplate(
+          this.currentOrgCode,
+          this.boardType,
+          parseInt(this.selectedYear)
+        )
+        
+        if (response.code === 200 && response.data) {
+          // 找到模板，开始下载
+          const template = response.data
+          const isAbsolute = /^(https?:)?\/\//.test(template.filePath)
+          const href = isAbsolute ? template.filePath : (this.baseApi + template.filePath)
+          
+          const a = document.createElement('a')
+          a.href = href
+          a.download = template.fileName || '领导考核模板.xlsx'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          
+          this.$message.success('模板下载开始')
+        } else {
+          // 未找到模板
+          this.$message.warning('未在组织链找到可用模板，请先上传模板或联系上级组织')
+        }
+        
+      } catch (error) {
+        console.error('解析模板失败:', error)
+        this.$message.error('查找模板失败: ' + (error.msg || '未知错误'))
+      }
     }
   }
 }
