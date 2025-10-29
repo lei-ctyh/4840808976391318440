@@ -393,6 +393,46 @@ export default {
   width: 100%;
 }
 
+.teacher-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f5f7fa;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.teacher-left {
+  display: flex;
+  align-items: center;
+}
+
+.teacher-title {
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.teacher-dept {
+  margin-left: 8px;
+}
+
+.teacher-right {
+  display: flex;
+  align-items: center;
+}
+
+.teacher-right .label {
+  margin-right: 8px;
+  color: #606266;
+}
+
+.teacher-right .el-button,
+.teacher-right .el-date-picker {
+  margin-right: 8px;
+}
+
 .dashboard-header {
   display: flex;
   align-items: center;
