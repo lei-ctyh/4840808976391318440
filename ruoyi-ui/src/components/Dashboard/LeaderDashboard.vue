@@ -11,6 +11,7 @@
           :file-size="50"
           :is-show-tip="true"
           :action="'/common/upload'"
+          @input="handleTemplateUpload"
         />
         <p class="tip">上传后，"下载模板"将直接从服务器取回该文件。</p>
       </div>
@@ -137,8 +138,7 @@ export default {
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
-      baseApi: process.env.VUE_APP_BASE_API,
-      isInitializing: true // 标记是否在初始化阶段
+      baseApi: process.env.VUE_APP_BASE_API
     }
   },
   computed: {
@@ -157,21 +157,6 @@ export default {
     }
   },
   watch: {
-    templateUrl(val) {
-      if (val) {
-        this.templateFileName = String(val).split(',')[0].split('/').pop() || '领导考核模板.xlsx'
-        // 只有在currentOrgCode存在时才调用bindTemplate绑定模板到当前组织
-        if (this.currentOrgCode) {
-          this.bindTemplateToOrg(val)
-        }
-      }
-    },
-    currentOrgCode(newVal) {
-      // 只在非初始化阶段且组织编码变为有效值时，如果有模板URL则执行绑定
-      if (newVal && this.templateUrl && !this.isInitializing) {
-        this.bindTemplateToOrg(this.templateUrl)
-      }
-    },
     selectedYear() {
       this.loadLeaderData()
     }
@@ -187,13 +172,22 @@ export default {
     } catch (e) {
       console.warn('读取本地存储失败:', e)
     }
-    
-    // 初始化完成后设置标志
-    this.$nextTick(() => {
-      this.isInitializing = false
-    })
   },
   methods: {
+    // 处理模板上传成功
+    handleTemplateUpload(fileUrl) {
+      if (fileUrl) {
+        // 设置文件名
+        this.templateFileName = String(fileUrl).split(',')[0].split('/').pop() || '领导考核模板.xlsx'
+        
+        // 直接执行模板绑定
+        if (this.currentOrgCode) {
+          this.bindTemplateToOrg(fileUrl)
+        } else {
+          this.$message.warning('请先选择组织后再上传模板')
+        }
+      }
+    },
     onYearChange() {
       this.loadLeaderData()
     },
