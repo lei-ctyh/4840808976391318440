@@ -43,7 +43,7 @@
         />
       </div>
     </div>
-    
+
     <div class="dashboard-content">
       <!-- 统计卡片 -->
       <div class="stats-cards">
@@ -94,8 +94,8 @@
           <el-table-column prop="staffCount" label="人员数量" width="100" />
           <el-table-column prop="performance" label="绩效评分" width="100">
             <template slot-scope="scope">
-              <el-progress 
-                :percentage="scope.row.performance" 
+              <el-progress
+                :percentage="scope.row.performance"
                 :color="getPerformanceColor(scope.row.performance)"
                 :show-text="true"
                 :format="format => `${format}分`"
@@ -120,7 +120,7 @@
             </template>
           </el-table-column>
         </el-table>
-        
+
         <!-- 分页 -->
         <div class="table-pagination">
           <el-pagination
@@ -141,7 +141,7 @@
 
 <script>
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/sms/template"
+import { bindTemplate, resolveTemplate } from "@/api/system/template"
 
 export default {
   name: "DeptDashboard",
@@ -219,7 +219,7 @@ export default {
         avgScore: 85.6,
         budget: 2580
       }
-      
+
       // 模拟单位表格数据（树形结构）
       this.deptTableData = [
         {
@@ -293,7 +293,7 @@ export default {
           createTime: '2009-09'
         }
       ]
-      
+
       this.deptPagination.total = this.deptTableData.length
       this.deptPagination.currentPage = 1
     },
@@ -345,14 +345,14 @@ export default {
         this.$message.warning('请先选择部门')
         return
       }
-      
+
       try {
         const response = await resolveTemplate(
           this.currentOrgCode,
           this.boardType,
           this.selectedYear
         )
-        
+
         if (response.code === 200 && response.data) {
           // 使用返回的filePath下载文件
           const downloadUrl = this.baseApi + response.data.filePath
@@ -376,7 +376,7 @@ export default {
         this.$message.warning('请确保已上传文件并选择了部门')
         return
       }
-      
+
       try {
         const response = await bindTemplate({
           orgCode: this.currentOrgCode,
@@ -385,7 +385,7 @@ export default {
           filePath: this.templateUrl,
           fileName: this.templateFileName
         })
-        
+
         if (response.code === 200) {
           this.$message.success('模板绑定成功')
           this.uploadTemplateDialogVisible = false

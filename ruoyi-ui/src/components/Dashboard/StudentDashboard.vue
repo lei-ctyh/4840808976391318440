@@ -43,7 +43,7 @@
         />
       </div>
     </div>
-    
+
     <div class="dashboard-content">
       <!-- 学生考核表格 -->
       <div class="student-table">
@@ -55,7 +55,7 @@
           <el-table-column prop="age" label="年龄" width="80" />
           <el-table-column prop="title" label="职称" width="100" />
           <el-table-column prop="cycle" label="评定周期" width="100" />
-          
+
           <!-- 基础科目 20% -->
           <el-table-column label="基础科目 20%" align="center">
             <el-table-column prop="baseBasicKnowledge" label="基本知识 20%" width="100" />
@@ -68,7 +68,7 @@
             <el-table-column prop="baseGroupB" label="共同B 25%" width="100" />
             <el-table-column prop="baseTotal" label="成绩" width="80" />
           </el-table-column>
-          
+
           <!-- 共同科目 30% -->
           <el-table-column label="共同科目30%" align="center">
             <el-table-column prop="commonSubject1" label="课目1" width="80" />
@@ -81,10 +81,10 @@
             <el-table-column prop="commonSubject8" label="课目8" width="80" />
             <el-table-column prop="commonTotal" label="成绩" width="80" />
           </el-table-column>
-          
+
           <!-- 岗位业务 50% -->
           <el-table-column prop="jobBusiness" label="岗位业务 50%" width="120" />
-          
+
           <!-- 综合成绩 -->
           <el-table-column label="综合成绩" align="center">
             <el-table-column prop="comprehensivePercent" label="百分制" width="100" />
@@ -96,11 +96,11 @@
               </template>
             </el-table-column>
           </el-table-column>
-          
+
           <el-table-column prop="remark" label="备注" min-width="120" />
           <el-table-column prop="description" label="说明" min-width="120" />
         </el-table>
-        
+
         <!-- 分页 -->
         <div class="table-pagination">
           <el-pagination
@@ -122,7 +122,7 @@
 <script>
 import { getStudentAssessmentData } from "@/mock/mockData"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/sms/template"
+import { bindTemplate, resolveTemplate } from "@/api/system/template"
 
 export default {
   name: "StudentDashboard",
@@ -312,7 +312,7 @@ export default {
           description: '基础有待加强'
         }
       ]
-      
+
       this.studentPagination.total = this.studentTableData.length
       this.studentPagination.currentPage = 1
     },

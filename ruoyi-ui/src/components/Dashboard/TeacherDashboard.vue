@@ -44,7 +44,7 @@
         />
       </div>
     </div>
-    
+
     <!-- 教师看板表格 -->
     <div class="tab-body">
       <el-table :data="teacherTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
@@ -111,7 +111,7 @@
 <script>
 import { getTeacherAssessmentData } from "@/mock/mockData"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/sms/template"
+import { bindTemplate, resolveTemplate } from "@/api/system/template"
 
 export default {
   name: "TeacherDashboard",
@@ -301,7 +301,7 @@ export default {
           description: '实践能力较强'
         }
       ]
-      
+
       this.teacherPagination.total = this.teacherTableData.length
       this.teacherPagination.currentPage = 1
     },
