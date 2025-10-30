@@ -1,8 +1,47 @@
 <template>
   <div class="leader-dashboard">
     <!-- 上传模板对话框 -->
-    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="480px">
+    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="600px" @open="loadExistingTemplate">
       <div>
+        <!-- 已有模板信息显示 -->
+        <div v-if="existingTemplate" class="existing-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="当前已有模板"
+            type="info"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p><strong>文件名：</strong>{{ existingTemplate.fileName }}</p>
+              <p><strong>上传时间：</strong>{{ existingTemplate.createTime }}</p>
+              <p><strong>文件大小：</strong>{{ formatFileSize(existingTemplate.fileSize) }}</p>
+              <p style="color: #909399; font-size: 12px;">上传新模板将覆盖当前模板</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <!-- 无模板提示 -->
+        <div v-else-if="templateCheckCompleted" class="no-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="暂无模板"
+            type="warning"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p>当前组织暂无上传的模板，请上传新模板。</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <!-- 加载中提示 -->
+        <div v-else class="loading-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="正在检查已有模板..."
+            type="info"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+        
         <p>请选择模板文件并上传到服务器。</p>
         <file-upload
           v-model="templateUrl"
@@ -180,7 +219,7 @@ import { getLeaderAssessmentData } from "@/api/dashboard"
 import { deptTreeSelect } from "@/api/system/user"
 import { getToken } from "@/utils/auth"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/system/template"
+import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/template"
 
 export default {
   name: "LeaderDashboard",
@@ -233,7 +272,10 @@ export default {
         message: ''
       },
       // 部门树数据，用于构建单位显示名称
-      deptTreeData: []
+      deptTreeData: [],
+      // 模板信息回显相关
+      existingTemplate: null,
+      templateCheckCompleted: false
     }
   },
   computed: {
@@ -267,15 +309,6 @@ export default {
   created() {
     this.loadLeaderData()
     this.getDeptTreeData()
-    // 读取本地存储的模板信息
-    try {
-      const url = localStorage.getItem('leaderTemplateUrl')
-      const name = localStorage.getItem('leaderTemplateFileName')
-      if (url) this.templateUrl = url
-      if (name) this.templateFileName = name
-    } catch (e) {
-      console.warn('读取本地存储失败:', e)
-    }
   },
   methods: {
     // 获取部门树数据
@@ -317,6 +350,8 @@ export default {
       this.templateUrl = ''
       this.templateFileName = ''
       this.uploadTemplateDialogVisible = true
+      // 加载已有模板信息
+      this.loadExistingTemplate()
     },
     downloadTemplateFromServer() {
       // 使用resolveTemplate查找可用模板
@@ -486,12 +521,6 @@ export default {
         await bindTemplate(templateData)
         this.uploadTemplateDialogVisible = false
         this.$message.success('模板绑定成功')
-
-        // 更新本地存储（保持兼容性）
-        try {
-          localStorage.setItem('leaderTemplateUrl', filePath)
-          localStorage.setItem('leaderTemplateFileName', this.templateFileName)
-        } catch (e) {}
 
       } catch (error) {
         console.error('绑定模板失败:', error)
@@ -690,6 +719,58 @@ export default {
     cancelImport() {
       this.importDialogVisible = false
       this.resetImportState()
+    },
+    
+    // 加载已有模板信息
+    async loadExistingTemplate() {
+      this.existingTemplate = null
+      this.templateCheckCompleted = false
+      
+      // 验证必需参数
+      if (!this.currentOrgCode || !this.boardType || !this.selectedYear) {
+        console.log('参数不完整，跳过模板查询:', {
+          currentOrgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          selectedYear: this.selectedYear
+        })
+        this.templateCheckCompleted = true
+        return
+      }
+      
+      try {
+        const response = await getTemplate({
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: this.selectedYear
+        })
+        
+        if (response.code === 200 && response.data) {
+          this.existingTemplate = response.data
+          // 设置模板文件名和URL，用于显示当前模板信息
+          this.templateFileName = response.data.fileName || ''
+          this.templateUrl = response.data.fileUrl || ''
+        }
+      } catch (error) {
+        console.error('查询已有模板失败:', error)
+      } finally {
+        this.templateCheckCompleted = true
+      }
+    },
+    
+    // 格式化文件大小
+    formatFileSize(size) {
+      if (!size) return '未知'
+      
+      const units = ['B', 'KB', 'MB', 'GB']
+      let index = 0
+      let fileSize = parseFloat(size)
+      
+      while (fileSize >= 1024 && index < units.length - 1) {
+        fileSize /= 1024
+        index++
+      }
+      
+      return fileSize.toFixed(2) + ' ' + units[index]
     }
   }
 }

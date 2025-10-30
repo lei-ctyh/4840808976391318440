@@ -81,4 +81,12 @@ public class SmsTemplateServiceImpl implements ISmsTemplateService {
     public boolean exists(String orgCode, String boardType, Integer year) {
         return smsTemplateMapper.selectByUnique(orgCode, boardType, year) != null;
     }
+
+    @Override
+    public SmsTemplate getTemplate(String orgCode, String boardType, Integer year) {
+        if (orgCode == null || boardType == null || year == null) {
+            return null;
+        }
+        return smsTemplateMapper.selectByUnique(orgCode, boardType, year);
+    }
 }

@@ -60,4 +60,24 @@ public class SmsTemplateController extends BaseController {
         boolean ok = smsTemplateService.exists(orgCode, boardType, year);
         return AjaxResult.success(ok);
     }
+
+    /**
+     * 查询模板信息（严格匹配当前机构）
+     * 用于前端模板上传组件回显已有模板信息
+     */
+    @GetMapping("/get")
+    public AjaxResult getTemplate(@RequestParam("orgCode") String orgCode,
+                                  @RequestParam("boardType") String boardType,
+                                  @RequestParam("year") Integer year) {
+        if (orgCode == null || boardType == null || year == null) {
+            return AjaxResult.error("orgCode、boardType、year 参数不能为空");
+        }
+        
+        SmsTemplate template = smsTemplateService.getTemplate(orgCode, boardType, year);
+        if (template == null) {
+            return AjaxResult.success("未找到对应的模板", null);
+        }
+        
+        return AjaxResult.success("查询成功", template);
+    }
 }

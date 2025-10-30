@@ -182,15 +182,6 @@ export default {
   created() {
     this.loadStudentData()
     this.getDeptTreeData()
-    // 读取本地存储的模板信息
-    try {
-      const url = localStorage.getItem('studentTemplateUrl')
-      const name = localStorage.getItem('studentTemplateFileName')
-      if (url) this.templateUrl = url
-      if (name) this.templateFileName = name
-    } catch (e) {
-      console.warn('读取本地存储失败:', e)
-    }
   },
   methods: {
     // 处理模板上传成功
@@ -361,12 +352,6 @@ export default {
         await bindTemplate(templateData)
         this.uploadTemplateDialogVisible = false
         this.$message.success('模板绑定成功')
-
-        // 更新本地存储（保持兼容性）
-        try {
-          localStorage.setItem('studentTemplateUrl', filePath)
-          localStorage.setItem('studentTemplateFileName', this.templateFileName)
-        } catch (e) {}
 
       } catch (error) {
         console.error('绑定模板失败:', error)

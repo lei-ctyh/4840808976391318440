@@ -1,8 +1,47 @@
 <template>
   <div class="teacher-dashboard">
     <!-- 上传模板对话框 -->
-    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="480px">
+    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="600px" @open="loadExistingTemplate">
       <div>
+        <!-- 已有模板信息显示 -->
+        <div v-if="existingTemplate" class="existing-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="当前已有模板"
+            type="info"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p><strong>文件名：</strong>{{ existingTemplate.fileName }}</p>
+              <p><strong>上传时间：</strong>{{ existingTemplate.createTime }}</p>
+              <p><strong>文件大小：</strong>{{ formatFileSize(existingTemplate.fileSize) }}</p>
+              <p style="color: #909399; font-size: 12px;">上传新模板将覆盖当前模板</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <!-- 无模板提示 -->
+        <div v-else-if="templateCheckCompleted" class="no-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="暂无模板"
+            type="warning"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p>当前组织暂无上传的模板，请上传新模板。</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <!-- 加载中提示 -->
+        <div v-else class="loading-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="正在检查已有模板..."
+            type="info"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+        
         <p>请选择模板文件并上传到服务器。</p>
         <file-upload
           v-model="templateUrl"
@@ -112,7 +151,8 @@
 import { getTeacherAssessmentData } from "@/mock/mockData"
 import { deptTreeSelect } from "@/api/system/user"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/system/template"
+import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/template"
+import { listTeacherAssessment, getTeacherAssessmentByUnitAndPeriod, importTemplate, importData, exportTeacherAssessment } from "@/api/system/teacherAssessment"
 
 export default {
   name: "TeacherDashboard",
@@ -141,7 +181,10 @@ export default {
       templateFileName: '',
       baseApi: process.env.VUE_APP_BASE_API,
       // 部门树数据，用于构建单位显示名称
-      deptTreeData: []
+      deptTreeData: [],
+      // 模板信息回显相关
+      existingTemplate: null,
+      templateCheckCompleted: false
     }
   },
   computed: {
@@ -171,15 +214,6 @@ export default {
   created() {
     this.loadTeacherData()
     this.getDeptTreeData()
-    // 读取本地存储的模板信息
-    try {
-      const url = localStorage.getItem('teacherTemplateUrl')
-      const name = localStorage.getItem('teacherTemplateFileName')
-      if (url) this.templateUrl = url
-      if (name) this.templateFileName = name
-    } catch (e) {
-      console.warn('读取本地存储失败:', e)
-    }
   },
   methods: {
     // 处理模板上传成功
@@ -200,115 +234,147 @@ export default {
       this.loadTeacherData()
     },
     handleImportClick() {
-      this.$message.info('导入由后端处理，前端不再解析文件')
+      // 创建文件输入元素
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.xlsx,.xls'
+      input.onchange = (event) => {
+        const file = event.target.files[0]
+        if (file) {
+          this.handleImportFile(file)
+        }
+      }
+      input.click()
     },
-    handleExportClick() {
-      this.$message.info('导出由后端生成文件，前端不再导出')
+    
+    // 处理导入文件
+    async handleImportFile(file) {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('updateSupport', true) // 支持更新已存在数据
+      
+      try {
+        this.$loading({ text: '正在导入数据...' })
+        const response = await importData(formData)
+        
+        if (response.code === 200) {
+          this.$message.success(response.msg || '导入成功')
+          // 重新加载数据
+          this.loadTeacherData()
+        } else {
+          this.$message.error(response.msg || '导入失败')
+          // 如果有错误详情，显示错误信息
+          if (response.errors && response.errors.length > 0) {
+            const errorMsg = response.errors.slice(0, 5).join('\n') // 只显示前5个错误
+            this.$alert(errorMsg, '导入错误详情', {
+              confirmButtonText: '确定',
+              type: 'warning'
+            })
+          }
+        }
+      } catch (error) {
+        console.error('导入失败:', error)
+        this.$message.error('导入失败: ' + (error.message || '未知错误'))
+      } finally {
+        this.$loading().close()
+      }
+    },
+    
+    async handleExportClick() {
+      try {
+        this.$loading({ text: '正在导出数据...' })
+        
+        // 构建查询参数
+        const queryParams = {
+          period: this.selectedYear,
+          unitId: this.currentOrgCode
+        }
+        
+        const response = await exportTeacherAssessment(queryParams)
+        
+        // 创建下载链接
+        const blob = new Blob([response], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `教师考核数据_${this.selectedYear}.xlsx`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        this.$message.success('导出成功')
+      } catch (error) {
+        console.error('导出失败:', error)
+        this.$message.error('导出失败: ' + (error.message || '未知错误'))
+      } finally {
+        this.$loading().close()
+      }
     },
     openUploadTemplateDialog() {
       // 重置上传状态
       this.templateUrl = ''
       this.templateFileName = ''
       this.uploadTemplateDialogVisible = true
+      // 加载已有模板信息
+      this.loadExistingTemplate()
     },
-    downloadTemplateFromServer() {
-      // 使用resolveTemplate查找可用模板
-      this.resolveAndDownloadTemplate()
+    async downloadTemplateFromServer() {
+      try {
+        this.$loading({ text: '正在下载模板...' })
+        
+        const response = await importTemplate()
+        
+        // 创建下载链接
+        const blob = new Blob([response], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = '教师考核导入模板.xlsx'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        this.$message.success('模板下载成功')
+      } catch (error) {
+        console.error('模板下载失败:', error)
+        this.$message.error('模板下载失败: ' + (error.message || '未知错误'))
+      } finally {
+        this.$loading().close()
+      }
     },
-    loadTeacherData() {
-      // 模拟教师考核数据，使用与领导看板相同的数据结构
-      this.teacherTableData = [
-        {
-          personId: 'T001',
-          name: '王教授',
-          unitPath: '计算机学院/软件工程系/教学组',
-          birthdate: '1975-03',
-          age: 49,
-          title: '教授',
-          cycle: '2024年度',
-          baseBasicKnowledge: 85,
-          baseSportsTrack: 80,
-          baseSportsRope: 85,
-          baseSportsLongJump: 78,
-          baseGroupA: 88,
-          baseGroupB: 82,
-          baseTotal: 83.6,
-          commonSubject1: 90,
-          commonSubject2: 88,
-          commonSubject3: 85,
-          commonSubject4: 87,
-          commonSubject5: 89,
-          commonSubject6: 86,
-          commonSubject7: 88,
-          commonSubject8: 90,
-          commonTotal: 87.9,
-          jobBusiness: 92,
-          comprehensivePercent: 88.5,
-          comprehensiveLevel: '良好',
-          remark: '教学认真负责',
-          description: '专业课教学优秀'
-        },
-        {
-          personId: 'T002',
-          name: '李副教授',
-          unitPath: '计算机学院/计算机科学系/教学组',
-          birthdate: '1980-07',
-          age: 44,
-          title: '副教授',
-          cycle: '2024年度',
-          baseBasicKnowledge: 82,
-          baseSportsTrack: 75,
-          baseSportsRope: 80,
-          baseSportsLongJump: 72,
-          baseGroupA: 85,
-          baseGroupB: 78,
-          baseTotal: 78.8,
-          commonSubject1: 85,
-          commonSubject2: 83,
-          commonSubject3: 80,
-          commonSubject4: 82,
-          commonSubject5: 84,
-          commonSubject6: 81,
-          commonSubject7: 83,
-          commonSubject8: 85,
-          commonTotal: 82.9,
-          jobBusiness: 88,
-          comprehensivePercent: 85.2,
-          comprehensiveLevel: '良好',
-          remark: '科研能力强',
-          description: '理论基础扎实'
-        },
-        {
-          personId: 'T003',
-          name: '张讲师',
-          unitPath: '软件学院/软件工程系/教学组',
-          birthdate: '1985-12',
-          age: 39,
-          title: '讲师',
-          cycle: '2024年度',
-          baseBasicKnowledge: 78,
-          baseSportsTrack: 82,
-          baseSportsRope: 85,
-          baseSportsLongJump: 80,
-          baseGroupA: 80,
-          baseGroupB: 75,
-          baseTotal: 80.0,
-          commonSubject1: 82,
-          commonSubject2: 80,
-          commonSubject3: 78,
-          commonSubject4: 79,
-          commonSubject5: 81,
-          commonSubject6: 77,
-          commonSubject7: 80,
-          commonSubject8: 82,
-          commonTotal: 79.9,
-          jobBusiness: 85,
-          comprehensivePercent: 82.1,
-          comprehensiveLevel: '合格',
-          remark: '工作积极主动',
-          description: '实践能力较强'
+    async loadTeacherData() {
+      try {
+        this.$loading({ text: '正在加载数据...' })
+        
+        // 构建查询参数
+        const queryParams = {
+          period: this.selectedYear,
+          unitId: this.currentOrgCode
         }
-      ]
+        
+        // 调用实际API获取数据
+        const response = await getTeacherAssessmentByUnitAndPeriod(this.currentOrgCode, this.selectedYear)
+        
+        if (response.code === 200) {
+          this.teacherTableData = response.data || []
+        } else {
+          console.warn('获取教师考核数据失败:', response.msg)
+          // 如果API调用失败，使用模拟数据作为后备
+          this.teacherTableData = getTeacherAssessmentData()
+        }
+      } catch (error) {
+        console.error('加载教师考核数据失败:', error)
+        // 如果API调用失败，使用模拟数据作为后备
+        this.teacherTableData = getTeacherAssessmentData()
+      } finally {
+        this.$loading().close()
+      }
 
       this.teacherPagination.total = this.teacherTableData.length
       this.teacherPagination.currentPage = 1
@@ -341,12 +407,6 @@ export default {
         await bindTemplate(templateData)
         this.uploadTemplateDialogVisible = false
         this.$message.success('模板绑定成功')
-
-        // 更新本地存储（保持兼容性）
-        try {
-          localStorage.setItem('teacherTemplateUrl', filePath)
-          localStorage.setItem('teacherTemplateFileName', this.templateFileName)
-        } catch (e) {}
 
       } catch (error) {
         console.error('绑定模板失败:', error)
@@ -444,6 +504,58 @@ export default {
       }
 
       return buildPath(unitId)
+    },
+    
+    // 加载已有模板信息
+    async loadExistingTemplate() {
+      this.existingTemplate = null
+      this.templateCheckCompleted = false
+      
+      // 验证必需参数
+      if (!this.currentOrgCode || !this.boardType || !this.selectedYear) {
+        console.log('参数不完整，跳过模板查询:', {
+          currentOrgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          selectedYear: this.selectedYear
+        })
+        this.templateCheckCompleted = true
+        return
+      }
+      
+      try {
+        const response = await getTemplate({
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: this.selectedYear
+        })
+        
+        if (response.code === 200 && response.data) {
+          this.existingTemplate = response.data
+          // 设置模板文件名和URL，用于显示当前模板信息
+          this.templateFileName = response.data.fileName || ''
+          this.templateUrl = response.data.fileUrl || ''
+        }
+      } catch (error) {
+        console.error('查询已有模板失败:', error)
+      } finally {
+        this.templateCheckCompleted = true
+      }
+    },
+    
+    // 格式化文件大小
+    formatFileSize(size) {
+      if (!size) return '未知'
+      
+      const units = ['B', 'KB', 'MB', 'GB']
+      let index = 0
+      let fileSize = parseFloat(size)
+      
+      while (fileSize >= 1024 && index < units.length - 1) {
+        fileSize /= 1024
+        index++
+      }
+      
+      return fileSize.toFixed(2) + ' ' + units[index]
     }
   }
 }

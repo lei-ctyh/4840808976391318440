@@ -29,4 +29,13 @@ public interface ISmsTemplateService {
      * @return 是否存在
      */
     boolean exists(String orgCode, String boardType, Integer year);
+
+    /**
+     * 查询模板信息（严格匹配当前机构）
+     * @param orgCode 机构编码
+     * @param boardType 看板类型
+     * @param year 年度
+     * @return 模板信息，如果不存在返回null
+     */
+    SmsTemplate getTemplate(String orgCode, String boardType, Integer year);
 }

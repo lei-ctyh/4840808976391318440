@@ -34,3 +34,12 @@ export function checkTemplate(orgCode, boardType, year) {
     }
   })
 }
+
+// 查询模板信息（严格匹配当前机构）
+export function getTemplate(params) {
+  return request({
+    url: '/sms/template/get',
+    method: 'get',
+    params: params
+  })
+}
