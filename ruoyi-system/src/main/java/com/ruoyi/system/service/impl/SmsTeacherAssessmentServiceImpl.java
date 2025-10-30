@@ -215,37 +215,33 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      * 将表头名称映射到字段名
      */
     private String mapHeaderToField(String headerName, int columnIndex) {
-        switch (headerName) {
-            case "人员编号":
-                return "personId";
-            case "姓名":
-                return "personName";
-            case "单位":
-            case "单位编号":
-                return "unitId";
-            case "出生年月":
-                return "birthDate";
-            case "年龄":
-                return "age";
-            case "职称":
-                return "title";
-            case "评定周期":
-                return "period";
-            case "总成绩":
-                return "totalScore";
-            case "总评定":
-                return "totalRating";
-            case "备注":
-                return "remark";
-            case "状态":
-                return "status";
-            default:
-                // 处理metric字段
-                if (headerName.matches(".*\\d+.*")) {
-                    return "metric" + String.format("%03d", columnIndex + 1);
-                }
-                return null;
+        Map<String, String> headerMapping = new HashMap<>();
+        headerMapping.put("人员编号", "personId");
+        headerMapping.put("姓名", "personName");
+        headerMapping.put("单位", "unitId");
+        headerMapping.put("出生年月", "birthDate");
+        headerMapping.put("年龄", "age");
+        headerMapping.put("衔级", "title");
+        headerMapping.put("评定周期", "period");
+        headerMapping.put("总成绩", "totalScore");
+        headerMapping.put("综合成绩", "totalScore");
+        headerMapping.put("总评定", "totalRating");
+        headerMapping.put("四级制", "totalRating");
+        headerMapping.put("备注", "remark");
+        headerMapping.put("状态", "status");
+
+        // 检查是否是metric字段 (metric001 到 metric100)
+        String result = headerMapping.get(headerName);
+        if (result == null) {
+            // 如果是数字编号的字段，映射到对应的metric字段
+            if (columnIndex >= 0) {
+                // 格式化为三位数字符串
+                String metricIndex = String.format("%03d", columnIndex+1);
+                result = "metric" + metricIndex;
+            }
         }
+
+        return result;
     }
 
     /**
