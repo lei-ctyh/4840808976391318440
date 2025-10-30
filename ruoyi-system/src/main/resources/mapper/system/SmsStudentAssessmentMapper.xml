@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SmsStudentAssessmentMapper">
+
+    <resultMap type="com.ruoyi.system.domain.SmsStudentAssessment" id="SmsStudentAssessmentResult">
+        <result property="personId" column="person_id"/>
+        <result property="personName" column="person_name"/>
+        <result property="unitId" column="unit_id"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="age" column="age"/>
+        <result property="className" column="class_name"/>
+        <result property="period" column="period"/>
+        <result property="metric001" column="metric_001"/>
+        <result property="metric002" column="metric_002"/>
+        <result property="metric003" column="metric_003"/>
+        <result property="metric004" column="metric_004"/>
+        <result property="metric005" column="metric_005"/>
+        <result property="metric006" column="metric_006"/>
+        <result property="metric007" column="metric_007"/>
+        <result property="metric008" column="metric_008"/>
+        <result property="metric009" column="metric_009"/>
+        <result property="metric010" column="metric_010"/>
+        <result property="metric011" column="metric_011"/>
+        <result property="metric012" column="metric_012"/>
+        <result property="metric013" column="metric_013"/>
+        <result property="metric014" column="metric_014"/>
+        <result property="metric015" column="metric_015"/>
+        <result property="metric016" column="metric_016"/>
+        <result property="metric017" column="metric_017"/>
+        <result property="metric018" column="metric_018"/>
+        <result property="metric019" column="metric_019"/>
+        <result property="metric020" column="metric_020"/>
+        <result property="metric021" column="metric_021"/>
+        <result property="metric022" column="metric_022"/>
+        <result property="metric023" column="metric_023"/>
+        <result property="metric024" column="metric_024"/>
+        <result property="metric025" column="metric_025"/>
+        <result property="metric026" column="metric_026"/>
+        <result property="metric027" column="metric_027"/>
+        <result property="metric028" column="metric_028"/>
+        <result property="metric029" column="metric_029"/>
+        <result property="metric030" column="metric_030"/>
+        <result property="metric031" column="metric_031"/>
+        <result property="metric032" column="metric_032"/>
+        <result property="metric033" column="metric_033"/>
+        <result property="metric034" column="metric_034"/>
+        <result property="metric035" column="metric_035"/>
+        <result property="metric036" column="metric_036"/>
+        <result property="metric037" column="metric_037"/>
+        <result property="metric038" column="metric_038"/>
+        <result property="metric039" column="metric_039"/>
+        <result property="metric040" column="metric_040"/>
+        <result property="metric041" column="metric_041"/>
+        <result property="metric042" column="metric_042"/>
+        <result property="metric043" column="metric_043"/>
+        <result property="metric044" column="metric_044"/>
+        <result property="metric045" column="metric_045"/>
+        <result property="metric046" column="metric_046"/>
+        <result property="metric047" column="metric_047"/>
+        <result property="metric048" column="metric_048"/>
+        <result property="metric049" column="metric_049"/>
+        <result property="metric050" column="metric_050"/>
+        <result property="metric051" column="metric_051"/>
+        <result property="metric052" column="metric_052"/>
+        <result property="metric053" column="metric_053"/>
+        <result property="metric054" column="metric_054"/>
+        <result property="metric055" column="metric_055"/>
+        <result property="metric056" column="metric_056"/>
+        <result property="metric057" column="metric_057"/>
+        <result property="metric058" column="metric_058"/>
+        <result property="metric059" column="metric_059"/>
+        <result property="metric060" column="metric_060"/>
+        <result property="metric061" column="metric_061"/>
+        <result property="metric062" column="metric_062"/>
+        <result property="metric063" column="metric_063"/>
+        <result property="metric064" column="metric_064"/>
+        <result property="metric065" column="metric_065"/>
+        <result property="metric066" column="metric_066"/>
+        <result property="metric067" column="metric_067"/>
+        <result property="metric068" column="metric_068"/>
+        <result property="metric069" column="metric_069"/>
+        <result property="metric070" column="metric_070"/>
+        <result property="metric071" column="metric_071"/>
+        <result property="metric072" column="metric_072"/>
+        <result property="metric073" column="metric_073"/>
+        <result property="metric074" column="metric_074"/>
+        <result property="metric075" column="metric_075"/>
+        <result property="metric076" column="metric_076"/>
+        <result property="metric077" column="metric_077"/>
+        <result property="metric078" column="metric_078"/>
+        <result property="metric079" column="metric_079"/>
+        <result property="metric080" column="metric_080"/>
+        <result property="metric081" column="metric_081"/>
+        <result property="metric082" column="metric_082"/>
+        <result property="metric083" column="metric_083"/>
+        <result property="metric084" column="metric_084"/>
+        <result property="metric085" column="metric_085"/>
+        <result property="metric086" column="metric_086"/>
+        <result property="metric087" column="metric_087"/>
+        <result property="metric088" column="metric_088"/>
+        <result property="metric089" column="metric_089"/>
+        <result property="metric090" column="metric_090"/>
+        <result property="metric091" column="metric_091"/>
+        <result property="metric092" column="metric_092"/>
+        <result property="metric093" column="metric_093"/>
+        <result property="metric094" column="metric_094"/>
+        <result property="metric095" column="metric_095"/>
+        <result property="metric096" column="metric_096"/>
+        <result property="metric097" column="metric_097"/>
+        <result property="metric098" column="metric_098"/>
+        <result property="metric099" column="metric_099"/>
+        <result property="metric100" column="metric_100"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="totalRating" column="total_rating"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        person_id, person_name, unit_id, birth_date, age, class_name, period,
+        metric_001, metric_002, metric_003, metric_004, metric_005, metric_006, metric_007, metric_008, metric_009, metric_010,
+        metric_011, metric_012, metric_013, metric_014, metric_015, metric_016, metric_017, metric_018, metric_019, metric_020,
+        metric_021, metric_022, metric_023, metric_024, metric_025, metric_026, metric_027, metric_028, metric_029, metric_030,
+        metric_031, metric_032, metric_033, metric_034, metric_035, metric_036, metric_037, metric_038, metric_039, metric_040,
+        metric_041, metric_042, metric_043, metric_044, metric_045, metric_046, metric_047, metric_048, metric_049, metric_050,
+        metric_051, metric_052, metric_053, metric_054, metric_055, metric_056, metric_057, metric_058, metric_059, metric_060,
+        metric_061, metric_062, metric_063, metric_064, metric_065, metric_066, metric_067, metric_068, metric_069, metric_070,
+        metric_071, metric_072, metric_073, metric_074, metric_075, metric_076, metric_077, metric_078, metric_079, metric_080,
+        metric_081, metric_082, metric_083, metric_084, metric_085, metric_086, metric_087, metric_088, metric_089, metric_090,
+        metric_091, metric_092, metric_093, metric_094, metric_095, metric_096, metric_097, metric_098, metric_099, metric_100,
+        total_score, total_rating, remark, status, create_by, create_time, update_by, update_time
+    </sql>
+
+    <!-- 查询列表 -->
+    <select id="selectSmsStudentAssessmentList" parameterType="com.ruoyi.system.domain.SmsStudentAssessment" resultMap="SmsStudentAssessmentResult">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sms_student_assessment
+        <where>
+            <if test="personId != null and personId != ''">AND person_id = #{personId}</if>
+            <if test="personName != null and personName != ''">AND person_name LIKE CONCAT('%', #{personName}, '%')</if>
+            <if test="unitId != null and unitId != ''">AND unit_id = #{unitId}</if>
+            <if test="className != null and className != ''">AND class_name LIKE CONCAT('%', #{className}, '%')</if>
+            <if test="period != null and period != ''">AND period = #{period}</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+        ORDER BY person_id ASC
+    </select>
+
+    <!-- 按人员与年度查询 -->
+    <select id="selectByPersonIdAndPeriod" resultMap="SmsStudentAssessmentResult">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sms_student_assessment
+        WHERE person_id = #{personId} AND period = #{period}
+    </select>
+
+    <!-- 按单位与年度查询 -->
+    <select id="selectByUnitIdAndPeriod" resultMap="SmsStudentAssessmentResult">
+        SELECT <include refid="Base_Column_List"/>
+        FROM sms_student_assessment
+        WHERE unit_id = #{unitId} AND period = #{period}
+        ORDER BY person_id ASC
+    </select>
+
+    <!-- 新增记录（全量列） -->
+    <insert id="insertSmsStudentAssessment" parameterType="com.ruoyi.system.domain.SmsStudentAssessment">
+        INSERT INTO sms_student_assessment (
+            <include refid="Base_Column_List"/>
+        ) VALUES (
+            #{personId}, #{personName}, #{unitId}, #{birthDate}, #{age}, #{className}, #{period},
+            #{metric001}, #{metric002}, #{metric003}, #{metric004}, #{metric005}, #{metric006}, #{metric007}, #{metric008}, #{metric009}, #{metric010},
+            #{metric011}, #{metric012}, #{metric013}, #{metric014}, #{metric015}, #{metric016}, #{metric017}, #{metric018}, #{metric019}, #{metric020},
+            #{metric021}, #{metric022}, #{metric023}, #{metric024}, #{metric025}, #{metric026}, #{metric027}, #{metric028}, #{metric029}, #{metric030},
+            #{metric031}, #{metric032}, #{metric033}, #{metric034}, #{metric035}, #{metric036}, #{metric037}, #{metric038}, #{metric039}, #{metric040},
+            #{metric041}, #{metric042}, #{metric043}, #{metric044}, #{metric045}, #{metric046}, #{metric047}, #{metric048}, #{metric049}, #{metric050},
+            #{metric051}, #{metric052}, #{metric053}, #{metric054}, #{metric055}, #{metric056}, #{metric057}, #{metric058}, #{metric059}, #{metric060},
+            #{metric061}, #{metric062}, #{metric063}, #{metric064}, #{metric065}, #{metric066}, #{metric067}, #{metric068}, #{metric069}, #{metric070},
+            #{metric071}, #{metric072}, #{metric073}, #{metric074}, #{metric075}, #{metric076}, #{metric077}, #{metric078}, #{metric079}, #{metric080},
+            #{metric081}, #{metric082}, #{metric083}, #{metric084}, #{metric085}, #{metric086}, #{metric087}, #{metric088}, #{metric089}, #{metric090},
+            #{metric091}, #{metric092}, #{metric093}, #{metric094}, #{metric095}, #{metric096}, #{metric097}, #{metric098}, #{metric099}, #{metric100},
+            #{totalScore}, #{totalRating}, #{remark}, #{status}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}
+        )
+    </insert>
+
+    <!-- 更新记录（按人员与年度） -->
+    <update id="updateSmsStudentAssessment" parameterType="com.ruoyi.system.domain.SmsStudentAssessment">
+        UPDATE sms_student_assessment
+        SET
+            person_name = #{personName}, unit_id = #{unitId}, birth_date = #{birthDate}, age = #{age}, class_name = #{className},
+            metric_001 = #{metric001}, metric_002 = #{metric002}, metric_003 = #{metric003}, metric_004 = #{metric004}, metric_005 = #{metric005},
+            metric_006 = #{metric006}, metric_007 = #{metric007}, metric_008 = #{metric008}, metric_009 = #{metric009}, metric_010 = #{metric010},
+            metric_011 = #{metric011}, metric_012 = #{metric012}, metric_013 = #{metric013}, metric_014 = #{metric014}, metric_015 = #{metric015},
+            metric_016 = #{metric016}, metric_017 = #{metric017}, metric_018 = #{metric018}, metric_019 = #{metric019}, metric_020 = #{metric020},
+            metric_021 = #{metric021}, metric_022 = #{metric022}, metric_023 = #{metric023}, metric_024 = #{metric024}, metric_025 = #{metric025},
+            metric_026 = #{metric026}, metric_027 = #{metric027}, metric_028 = #{metric028}, metric_029 = #{metric029}, metric_030 = #{metric030},
+            metric_031 = #{metric031}, metric_032 = #{metric032}, metric_033 = #{metric033}, metric_034 = #{metric034}, metric_035 = #{metric035},
+            metric_036 = #{metric036}, metric_037 = #{metric037}, metric_038 = #{metric038}, metric_039 = #{metric039}, metric_040 = #{metric040},
+            metric_041 = #{metric041}, metric_042 = #{metric042}, metric_043 = #{metric043}, metric_044 = #{metric044}, metric_045 = #{metric045},
+            metric_046 = #{metric046}, metric_047 = #{metric047}, metric_048 = #{metric048}, metric_049 = #{metric049}, metric_050 = #{metric050},
+            metric_051 = #{metric051}, metric_052 = #{metric052}, metric_053 = #{metric053}, metric_054 = #{metric054}, metric_055 = #{metric055},
+            metric_056 = #{metric056}, metric_057 = #{metric057}, metric_058 = #{metric058}, metric_059 = #{metric059}, metric_060 = #{metric060},
+            metric_061 = #{metric061}, metric_062 = #{metric062}, metric_063 = #{metric063}, metric_064 = #{metric064}, metric_065 = #{metric065},
+            metric_066 = #{metric066}, metric_067 = #{metric067}, metric_068 = #{metric068}, metric_069 = #{metric069}, metric_070 = #{metric070},
+            metric_071 = #{metric071}, metric_072 = #{metric072}, metric_073 = #{metric073}, metric_074 = #{metric074}, metric_075 = #{metric075},
+            metric_076 = #{metric076}, metric_077 = #{metric077}, metric_078 = #{metric078}, metric_079 = #{metric079}, metric_080 = #{metric080},
+            metric_081 = #{metric081}, metric_082 = #{metric082}, metric_083 = #{metric083}, metric_084 = #{metric084}, metric_085 = #{metric085},
+            metric_086 = #{metric086}, metric_087 = #{metric087}, metric_088 = #{metric088}, metric_089 = #{metric089}, metric_090 = #{metric090},
+            metric_091 = #{metric091}, metric_092 = #{metric092}, metric_093 = #{metric093}, metric_094 = #{metric094}, metric_095 = #{metric095},
+            metric_096 = #{metric096}, metric_097 = #{metric097}, metric_098 = #{metric098}, metric_099 = #{metric099}, metric_100 = #{metric100},
+            total_score = #{totalScore}, total_rating = #{totalRating}, remark = #{remark}, status = #{status}, update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE person_id = #{personId} AND period = #{period}
+    </update>
+
+    <!-- 批量插入（全量列） -->
+    <insert id="batchInsertSmsStudentAssessment">
+        INSERT INTO sms_student_assessment (
+            <include refid="Base_Column_List"/>
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.personId}, #{item.personName}, #{item.unitId}, #{item.birthDate}, #{item.age}, #{item.className}, #{item.period},
+                #{item.metric001}, #{item.metric002}, #{item.metric003}, #{item.metric004}, #{item.metric005}, #{item.metric006}, #{item.metric007}, #{item.metric008}, #{item.metric009}, #{item.metric010},
+                #{item.metric011}, #{item.metric012}, #{item.metric013}, #{item.metric014}, #{item.metric015}, #{item.metric016}, #{item.metric017}, #{item.metric018}, #{item.metric019}, #{item.metric020},
+                #{item.metric021}, #{item.metric022}, #{item.metric023}, #{item.metric024}, #{item.metric025}, #{item.metric026}, #{item.metric027}, #{item.metric028}, #{item.metric029}, #{item.metric030},
+                #{item.metric031}, #{item.metric032}, #{item.metric033}, #{item.metric034}, #{item.metric035}, #{item.metric036}, #{item.metric037}, #{item.metric038}, #{item.metric039}, #{item.metric040},
+                #{item.metric041}, #{item.metric042}, #{item.metric043}, #{item.metric044}, #{item.metric045}, #{item.metric046}, #{item.metric047}, #{item.metric048}, #{item.metric049}, #{item.metric050},
+                #{item.metric051}, #{item.metric052}, #{item.metric053}, #{item.metric054}, #{item.metric055}, #{item.metric056}, #{item.metric057}, #{item.metric058}, #{item.metric059}, #{item.metric060},
+                #{item.metric061}, #{item.metric062}, #{item.metric063}, #{item.metric064}, #{item.metric065}, #{item.metric066}, #{item.metric067}, #{item.metric068}, #{item.metric069}, #{item.metric070},
+                #{item.metric071}, #{item.metric072}, #{item.metric073}, #{item.metric074}, #{item.metric075}, #{item.metric076}, #{item.metric077}, #{item.metric078}, #{item.metric079}, #{item.metric080},
+                #{item.metric081}, #{item.metric082}, #{item.metric083}, #{item.metric084}, #{item.metric085}, #{item.metric086}, #{item.metric087}, #{item.metric088}, #{item.metric089}, #{item.metric090},
+                #{item.metric091}, #{item.metric092}, #{item.metric093}, #{item.metric094}, #{item.metric095}, #{item.metric096}, #{item.metric097}, #{item.metric098}, #{item.metric099}, #{item.metric100},
+                #{item.totalScore}, #{item.totalRating}, #{item.remark}, #{item.status}, #{item.createBy}, #{item.createTime}, #{item.updateBy}, #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+</mapper>
