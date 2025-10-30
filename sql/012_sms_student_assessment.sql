@@ -8,7 +8,7 @@ CREATE TABLE sms_student_assessment
     unit_id      varchar(50)      NULL COMMENT '单位编号',
     birth_date   varchar(50)      NULL COMMENT '出生日期',
     age          varchar(50)      NULL COMMENT '年龄',
-    title        varchar(50)      NULL COMMENT '职称',
+    title        varchar(50)      NULL COMMENT '衔级',
     PERIOD VARCHAR (32) NOT NULL COMMENT '评定周期（如：2025Q3、2025-上半年）',
     metric_001   varchar(50)      NULL COMMENT '指标001',
     metric_002   varchar(50)      NULL COMMENT '指标002',

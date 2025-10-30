@@ -1,255 +1,425 @@
 package com.ruoyi.system.service.impl;
 
-import com.ruoyi.common.exception.ServiceException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.SmsStudentAssessment;
 import com.ruoyi.system.mapper.SmsStudentAssessmentMapper;
 import com.ruoyi.system.service.ISmsStudentAssessmentService;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
+/**
+ * 学生成绩考核Service业务层处理
+ *
+ * @author ruoyi
+ * @date 2025-01-10
+ */
 @Service
-public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentService {
+public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentService
+{
+    private static final Logger log = LoggerFactory.getLogger(SmsStudentAssessmentServiceImpl.class);
 
-    @Resource
-    private SmsStudentAssessmentMapper studentMapper;
+    @Autowired
+    private SmsStudentAssessmentMapper smsStudentAssessmentMapper;
 
+    /**
+     * 查询学生成绩考核列表
+     *
+     * @param smsStudentAssessment 学生成绩考核
+     * @return 学生成绩考核
+     */
     @Override
-    public List<SmsStudentAssessment> selectSmsStudentAssessmentList(SmsStudentAssessment query) {
-        return studentMapper.selectSmsStudentAssessmentList(query);
+    public List<SmsStudentAssessment> selectSmsStudentAssessmentList(SmsStudentAssessment smsStudentAssessment)
+    {
+        return smsStudentAssessmentMapper.selectSmsStudentAssessmentList(smsStudentAssessment);
     }
 
+    /**
+     * 根据人员ID和考核周期查询考核记录
+     *
+     * @param personId 人员ID
+     * @param period 考核周期
+     * @return 考核记录
+     */
     @Override
-    public SmsStudentAssessment selectByPersonIdAndPeriod(String personId, String period) {
-        return studentMapper.selectByPersonIdAndPeriod(personId, period);
+    public SmsStudentAssessment selectByPersonIdAndPeriod(String personId, String period)
+    {
+        return smsStudentAssessmentMapper.selectByPersonIdAndPeriod(personId, period);
     }
 
+    /**
+     * 根据单位ID和考核周期查询考核记录列表
+     *
+     * @param unitId 单位ID
+     * @param period 考核周期
+     * @return 考核记录列表
+     */
     @Override
-    public List<SmsStudentAssessment> selectByUnitIdAndPeriod(String unitId, String period) {
-        return studentMapper.selectByUnitIdAndPeriod(unitId, period);
+    public List<SmsStudentAssessment> selectByUnitIdAndPeriod(String unitId, String period)
+    {
+        return smsStudentAssessmentMapper.selectByUnitIdAndPeriod(unitId, period);
     }
 
+    /**
+     * 导入学生成绩考核数据
+     *
+     * @param file Excel文件
+     * @param updateSupport 是否更新已存在数据
+     * @return 导入结果
+     */
     @Override
-    public String importStudentAssessment(MultipartFile file, boolean updateSupport) {
+    public AjaxResult importStudentAssessment(MultipartFile file, boolean updateSupport) throws Exception
+    {
         if (file == null || file.isEmpty()) {
-            throw new ServiceException("上传文件为空");
+            return AjaxResult.error("上传文件不能为空");
         }
-        int insertCount = 0;
+
+        String fileName = file.getOriginalFilename();
+        if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+            return AjaxResult.error("请上传Excel格式文件");
+        }
+
+        List<SmsStudentAssessment> assessmentList = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+        int successCount = 0;
         int updateCount = 0;
+        int skipCount = 0;
+        int errorCount = 0;
 
-        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+        try (InputStream inputStream = file.getInputStream()) {
+            Workbook workbook;
+            if (fileName.endsWith(".xlsx")) {
+                workbook = new XSSFWorkbook(inputStream);
+            } else {
+                workbook = new HSSFWorkbook(inputStream);
+            }
+
             Sheet sheet = workbook.getSheetAt(0);
-            if (sheet == null) {
-                throw new ServiceException("Excel 内容为空");
+            if (sheet.getPhysicalNumberOfRows() <= 1) {
+                return AjaxResult.error("Excel文件中没有数据");
             }
 
-            Map<Integer, String> headerMap = parseHeader(sheet.getRow(0));
-            validateRequiredFields(headerMap);
+            // 解析表头
+            Row headerRow = sheet.getRow(0);
+            Map<String, Integer> fieldMapping = parseHeader(headerRow);
+            validateRequiredFields(fieldMapping);
 
-            List<SmsStudentAssessment> toInsert = new ArrayList<>();
-            List<SmsStudentAssessment> toUpdate = new ArrayList<>();
+            // 解析数据行
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null || isEmptyRow(row)) {
+                    continue;
+                }
 
-            for (int r = 1; r <= sheet.getLastRowNum(); r++) {
-                Row row = sheet.getRow(r);
-                if (row == null || isEmptyRow(row)) { continue; }
-                SmsStudentAssessment data = parseRowData(row, headerMap);
-                validateAssessmentData(data);
+                try {
+                    SmsStudentAssessment assessment = parseRowData(row, fieldMapping);
+                    String validationError = validateAssessmentData(assessment);
+                    if (StringUtils.isNotEmpty(validationError)) {
+                        errorMessages.add("第" + (i + 1) + "行：" + validationError);
+                        errorCount++;
+                        continue;
+                    }
 
-                SmsStudentAssessment existing = studentMapper.selectByPersonIdAndPeriod(data.getPersonId(), data.getPeriod());
-                if (existing == null) {
-                    data.setCreateBy("admin");
-                    data.setCreateTime(DateUtils.getNowDate());
-                    data.setUpdateBy("admin");
-                    data.setUpdateTime(DateUtils.getNowDate());
-                    toInsert.add(data);
-                    insertCount++;
-                } else if (updateSupport) {
-                    data.setUpdateBy("admin");
-                    data.setUpdateTime(DateUtils.getNowDate());
-                    toUpdate.add(data);
-                    updateCount++;
+                    // 检查是否已存在
+                    SmsStudentAssessment existing = smsStudentAssessmentMapper.selectByPersonIdAndPeriod(
+                            assessment.getPersonId(), assessment.getPeriod());
+
+                    if (existing != null) {
+                        if (updateSupport) {
+                            assessment.setUpdateTime(DateUtils.getNowDate());
+                            smsStudentAssessmentMapper.updateSmsStudentAssessment(assessment);
+                            updateCount++;
+                        } else {
+                            skipCount++;
+                        }
+                    } else {
+                        assessment.setCreateTime(DateUtils.getNowDate());
+                        smsStudentAssessmentMapper.insertSmsStudentAssessment(assessment);
+                        successCount++;
+                    }
+                } catch (Exception e) {
+                    log.error("导入第" + (i + 1) + "行数据失败", e);
+                    errorMessages.add("第" + (i + 1) + "行：" + e.getMessage());
+                    errorCount++;
                 }
             }
 
-            if (!toInsert.isEmpty()) {
-                studentMapper.batchInsertSmsStudentAssessment(toInsert);
-            }
-            for (SmsStudentAssessment upd : toUpdate) {
-                studentMapper.updateSmsStudentAssessment(upd);
-            }
-
-        } catch (ServiceException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ServiceException("导入失败：" + e.getMessage(), e);
+            workbook.close();
         }
 
-        return String.format("导入成功：新增 %d 条，更新 %d 条", insertCount, updateCount);
+        // 构建返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", successCount + updateCount + skipCount + errorCount);
+        result.put("success", successCount);
+        result.put("update", updateCount);
+        result.put("skip", skipCount);
+        result.put("error", errorCount);
+        result.put("errorMessages", errorMessages);
+
+        return AjaxResult.success("导入完成", result);
     }
 
-    private Map<Integer, String> parseHeader(Row headerRow) {
-        if (headerRow == null) {
-            throw new ServiceException("表头为空");
-        }
-        Map<Integer, String> map = new HashMap<>();
-        for (int c = 0; c < headerRow.getLastCellNum(); c++) {
-            Cell cell = headerRow.getCell(c);
-            String header = getCellValue(cell);
-            if (StringUtils.isNotEmpty(header)) {
-                map.put(c, mapHeaderToField(header.trim()));
+
+
+    // 以下是辅助方法，保持不变
+    private Map<String, Integer> parseHeader(Row headerRow) {
+        Map<String, Integer> fieldMapping = new HashMap<>();
+        for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+            Cell cell = headerRow.getCell(i);
+            if (cell != null) {
+                String headerName = getCellValue(cell).trim();
+                String fieldName = mapHeaderToField(headerName, i);
+                if (StringUtils.isNotEmpty(fieldName)) {
+                    fieldMapping.put(fieldName, i);
+                }
             }
         }
-        return map;
+        return fieldMapping;
     }
 
-    private String mapHeaderToField(String header) {
-        switch (header) {
-            case "人员编号": return "personId";
-            case "姓名": return "personName";
-            case "单位编号":
-            case "单位": return "unitId";
-            case "出生年月": return "birthDate";
-            case "年龄": return "age";
-            case "班级": return "className";
-            case "评定周期": return "period";
-            case "总成绩": return "totalScore";
-            case "总评定": return "totalRating";
-            case "备注": return "remark";
-            case "状态": return "status";
+    private String mapHeaderToField(String headerName, int columnIndex) {
+        Map<String, String> headerMapping = new HashMap<>();
+        headerMapping.put("人员编号", "personId");
+        headerMapping.put("姓名", "personName");
+        headerMapping.put("单位", "unitId");
+        headerMapping.put("出生年月", "birthDate");
+        headerMapping.put("年龄", "age");
+        headerMapping.put("衔级", "title");
+        headerMapping.put("评定周期", "period");
+        headerMapping.put("总成绩", "totalScore");
+        headerMapping.put("综合成绩", "totalScore");
+        headerMapping.put("总评定", "totalRating");
+        headerMapping.put("四级制", "totalRating");
+        headerMapping.put("备注", "remark");
+        headerMapping.put("状态", "status");
+
+        // 检查是否是metric字段 (metric001 到 metric100)
+        String result = headerMapping.get(headerName);
+        if (result == null) {
+            // 如果是数字编号的字段，映射到对应的metric字段
+            if (columnIndex >= 0) {
+                // 格式化为三位数字符串
+                String metricIndex = String.format("%03d", columnIndex+1);
+                result = "metric" + metricIndex;
+            }
+        }
+
+        return result;
+    }
+
+    private void validateRequiredFields(Map<String, Integer> fieldMapping) throws Exception {
+        String[] requiredFields = {"personId", "personName", "unitId", "period"};
+        List<String> missingFields = new ArrayList<>();
+
+        for (String field : requiredFields) {
+            if (!fieldMapping.containsKey(field)) {
+                missingFields.add(getFieldDescription(field));
+            }
+        }
+
+        if (!missingFields.isEmpty()) {
+            throw new Exception("缺少必要的列：" + String.join("、", missingFields));
+        }
+    }
+
+    private String getFieldDescription(String fieldName) {
+        Map<String, String> descriptions = new HashMap<>();
+        descriptions.put("personId", "人员编号");
+        descriptions.put("personName", "姓名");
+        descriptions.put("unitId", "单位");
+        descriptions.put("period", "评定周期");
+        descriptions.put("totalScore", "总成绩");
+        descriptions.put("totalRating", "总评定");
+        descriptions.put("remark", "备注");
+        descriptions.put("status", "状态");
+        return descriptions.getOrDefault(fieldName, fieldName);
+    }
+
+    private SmsStudentAssessment parseRowData(Row row, Map<String, Integer> fieldMapping) throws Exception {
+        SmsStudentAssessment assessment = new SmsStudentAssessment();
+
+        for (Map.Entry<String, Integer> entry : fieldMapping.entrySet()) {
+            String fieldName = entry.getKey();
+            int columnIndex = entry.getValue();
+            Cell cell = row.getCell(columnIndex);
+            String cellValue = getCellValue(cell);
+
+            if (StringUtils.isNotEmpty(cellValue)) {
+                setFieldValue(assessment, fieldName, cellValue);
+            }
+        }
+
+        return assessment;
+    }
+
+    private void setFieldValue(SmsStudentAssessment assessment, String fieldName, String cellValue) throws Exception {
+        switch (fieldName) {
+            case "personId":
+                assessment.setPersonId(cellValue);
+                break;
+            case "personName":
+            case "name":
+                assessment.setPersonName(cellValue);
+                break;
+            case "unitId":
+                assessment.setUnitId(cellValue);
+                break;
+            case "birthDate":
+                assessment.setBirthDate(cellValue);
+                break;
+            case "age":
+                assessment.setAge(cellValue);
+                break;
+            case "title":
+                assessment.setTitle(cellValue);
+                break;
+            case "period":
+                assessment.setPeriod(cellValue);
+                break;
+            case "totalScore":
+                assessment.setTotalScore(cellValue);
+                break;
+            case "totalRating":
+                assessment.setTotalRating(cellValue);
+                break;
+            case "remark":
+                assessment.setRemark(cellValue);
+                break;
+            case "status":
+                assessment.setStatus(cellValue);
+                break;
+            // 处理metric字段 (metric001 到 metric100)
             default:
-                if (header.startsWith("metric") && header.length() == 9) {
-                    return header; // metric001 - metric100
-                }
-                // 允许 Excel 标题为 "指标001" 映射到 metric001
-                if (header.startsWith("指标") && header.length() == 5) {
-                    String idx = header.substring(2);
-                    return "metric" + idx;
-                }
-                return null;
-        }
-    }
-
-    private void validateRequiredFields(Map<Integer, String> headerMap) {
-        Set<String> required = new HashSet<>(Arrays.asList("personId", "personName", "unitId", "period"));
-        for (String key : required) {
-            if (!headerMap.containsValue(key)) {
-                throw new ServiceException("缺少必要字段：" + getFieldDescription(key));
-            }
-        }
-    }
-
-    private String getFieldDescription(String field) {
-        switch (field) {
-            case "personId": return "人员编号";
-            case "personName": return "姓名";
-            case "unitId": return "单位编号";
-            case "period": return "评定周期";
-            default: return field;
-        }
-    }
-
-    private SmsStudentAssessment parseRowData(Row row, Map<Integer, String> headerMap) {
-        SmsStudentAssessment data = new SmsStudentAssessment();
-        for (Map.Entry<Integer, String> e : headerMap.entrySet()) {
-            String field = e.getValue();
-            if (StringUtils.isEmpty(field)) continue;
-            String value = getCellValue(row.getCell(e.getKey()));
-            setFieldValue(data, field, value);
-        }
-        return data;
-    }
-
-    private void setFieldValue(SmsStudentAssessment d, String field, String value) {
-        if (value != null) value = value.trim();
-        switch (field) {
-            case "personId": d.setPersonId(value); break;
-            case "personName": d.setPersonName(value); break;
-            case "unitId": d.setUnitId(value); break;
-            case "birthDate": d.setBirthDate(parseDateString(value, "yyyy-MM")); break;
-            case "age": d.setAge(value); break;
-            case "className": d.setClassName(value); break;
-            case "period": d.setPeriod(parsePeriod(value)); break;
-            case "totalScore": d.setTotalScore(value); break;
-            case "totalRating": d.setTotalRating(value); break;
-            case "remark": d.setRemark(value); break;
-            case "status": d.setStatus(value); break;
-            default:
-                if (field != null && field.startsWith("metric")) {
+                if (fieldName.startsWith("metric") && fieldName.length() == 9) {
+                    // 使用反射设置metric字段
                     try {
-                        int idx = Integer.parseInt(field.substring(6));
-                        if (idx < 1 || idx > 100) return;
-                        // 通过反射设置 metric001-100
-                        d.getClass().getMethod("set" + field.substring(0, 1).toUpperCase() + field.substring(1), String.class)
-                                .invoke(d, value);
-                    } catch (Exception ignored) {}
+                        String methodName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                        java.lang.reflect.Method method = assessment.getClass().getMethod(methodName, String.class);
+                        method.invoke(assessment, cellValue);
+                    } catch (Exception e) {
+                        log.warn("无法设置字段 {}: {}", fieldName, e.getMessage());
+                    }
                 }
+                break;
         }
     }
 
-    private String parsePeriod(String value) {
-        if (StringUtils.isEmpty(value)) return value;
-        // 规则：年度，必须为4位数字
-        if (!value.matches("\\d{4}")) {
-            throw new ServiceException("评定周期需为年度（YYYY）：" + value);
+    private Date parseDateString(String dateStr) throws Exception {
+        if (StringUtils.isEmpty(dateStr)) {
+            return null;
         }
-        return value;
-    }
 
-    private String parseDateString(String value, String pattern) {
-        if (StringUtils.isEmpty(value)) return null;
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-            sdf.setLenient(false);
-            sdf.parse(value);
-            return value;
-        } catch (ParseException e) {
-            throw new ServiceException("日期格式错误：" + value + "，期望 " + pattern);
+        SimpleDateFormat[] formats = {
+                new SimpleDateFormat("yyyy-MM-dd"),
+                new SimpleDateFormat("yyyy/MM/dd"),
+                new SimpleDateFormat("yyyy-MM"),
+                new SimpleDateFormat("yyyy/MM")
+        };
+
+        for (SimpleDateFormat format : formats) {
+            try {
+                return format.parse(dateStr);
+            } catch (Exception e) {
+                // 继续尝试下一个格式
+            }
         }
+
+        throw new Exception("日期格式不正确：" + dateStr);
     }
 
     private String getCellValue(Cell cell) {
-        if (cell == null) return null;
-        cell.setCellType(CellType.STRING);
-        String v = cell.getStringCellValue();
-        return v != null ? v.trim() : null;
+        if (cell == null) {
+            return "";
+        }
+
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    return sdf.format(cell.getDateCellValue());
+                } else {
+                    double numericValue = cell.getNumericCellValue();
+                    if (numericValue == (long) numericValue) {
+                        return String.valueOf((long) numericValue);
+                    } else {
+                        return String.valueOf(numericValue);
+                    }
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return String.valueOf(cell.getNumericCellValue());
+                } catch (Exception e) {
+                    return cell.getStringCellValue();
+                }
+            default:
+                return "";
+        }
     }
 
     private boolean isEmptyRow(Row row) {
-        if (row == null) return true;
-        for (int c = 0; c < row.getLastCellNum(); c++) {
-            if (StringUtils.isNotEmpty(getCellValue(row.getCell(c)))) return false;
+        if (row == null) {
+            return true;
+        }
+
+        for (int i = 0; i < row.getLastCellNum(); i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && StringUtils.isNotEmpty(getCellValue(cell))) {
+                return false;
+            }
         }
         return true;
     }
 
-    private void validateAssessmentData(SmsStudentAssessment d) {
-        if (StringUtils.isEmpty(d.getPersonId())) {
-            throw new ServiceException("人员编号不能为空");
+    private String validateAssessmentData(SmsStudentAssessment assessment) {
+        if (StringUtils.isEmpty(assessment.getPersonId())) {
+            return "人员编号不能为空";
         }
-        if (StringUtils.isEmpty(d.getPersonName())) {
-            throw new ServiceException("姓名不能为空");
+        if (StringUtils.isEmpty(assessment.getPersonName())) {
+            return "姓名不能为空";
         }
-        if (StringUtils.isEmpty(d.getUnitId())) {
-            throw new ServiceException("单位编号不能为空");
+        if (StringUtils.isEmpty(assessment.getUnitId())) {
+            return "单位不能为空";
         }
-        if (!isValidUnitId(d.getUnitId())) {
-            throw new ServiceException("单位编号不符合编码规则（00/01开头）：" + d.getUnitId());
+        if (StringUtils.isEmpty(assessment.getPeriod())) {
+            return "评定周期不能为空";
         }
-        if (StringUtils.isEmpty(d.getPeriod())) {
-            throw new ServiceException("评定周期（年度）不能为空");
+        if (!isValidUnitId(assessment.getUnitId())) {
+            return "单位编码格式不正确";
         }
+        // 评定周期必须是yyyy格式
+        if (!assessment.getPeriod().matches("\\d{4}")) {
+            return "评定周期格式不正确";
+        }
+        return null;
     }
 
     private boolean isValidUnitId(String unitId) {
-        return unitId != null && unitId.matches("(00|01)\\d+");
+        if (StringUtils.isEmpty(unitId)) {
+            return false;
+        }
+        // 验证单位编码格式
+        Pattern pattern = Pattern.compile("^(00|01)\\d{0,10}$");
+        return pattern.matcher(unitId).matches();
     }
 }

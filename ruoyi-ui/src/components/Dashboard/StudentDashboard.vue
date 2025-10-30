@@ -60,7 +60,7 @@
     </el-dialog>
 
     <!-- 数据导入对话框 -->
-    <el-dialog title="导入学生班子考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
+    <el-dialog title="导入学生成绩考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
       <div>
         <div class="import-tips">
           <el-alert
@@ -129,7 +129,7 @@
     <!-- 学生看板头部 -->
     <div class="student-header">
       <div class="student-left">
-        <span class="student-title">学生班子年度考核</span>
+        <span class="student-title">学生成绩年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
         <el-tag size="small" class="student-dept">{{ organizationPath }}</el-tag>
       </div>
@@ -178,8 +178,8 @@
           :page-size="studentPagination.pageSize"
           :current-page="studentPagination.currentPage"
           :page-sizes="[10, 20, 50]"
-          @size-change="handlestudentSizeChange"
-          @current-change="handlestudentCurrentChange"
+          @size-change="handleStudentSizeChange"
+          @current-change="handleStudentCurrentChange"
         />
       </div>
     </div>
@@ -187,7 +187,7 @@
 </template>
 
 <script>
-import { getstudentAssessmentData } from "@/api/dashboard"
+import { getStudentAssessmentData } from "@/api/dashboard"
 import { deptTreeSelect } from "@/api/system/user"
 import { getToken } from "@/utils/auth"
 import FileUpload from "@/components/FileUpload"
@@ -195,7 +195,7 @@ import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/templat
 import DynamicTable from "@/components/DynamicTable"
 
 export default {
-  name: "studentDashboard",
+  name: "StudentDashboard",
   components: { FileUpload, DynamicTable },
   props: {
     selectedDeptNode: {
@@ -272,15 +272,15 @@ export default {
   },
   watch: {
     selectedYear() {
-      this.loadstudentData()
+      this.loadStudentData()
     },
     currentOrgCode() {
       // 当组织节点切换时，重新加载数据
-      this.loadstudentData()
+      this.loadStudentData()
     }
   },
   created() {
-    this.loadstudentData()
+    this.loadStudentData()
     this.getDeptTreeData()
   },
   methods: {
@@ -319,7 +319,7 @@ export default {
       }
     },
     onYearChange() {
-      this.loadstudentData()
+      this.loadStudentData()
     },
     handleImportClick() {
       this.resetImportState()
@@ -341,10 +341,10 @@ export default {
       // 使用resolveTemplate查找可用模板
       this.resolveAndDownloadTemplate()
     },
-    async loadstudentData() {
+    async loadStudentData() {
       try {
         this.loading = true
-        const response = await getstudentAssessmentData(this.selectedYear, this.currentOrgCode)
+        const response = await getStudentAssessmentData(this.selectedYear, this.currentOrgCode)
 
         if (response.code === 200) {
           // 处理后端返回的数据格式，将metric字段映射为前端表格字段
@@ -477,11 +477,11 @@ export default {
 
       return unitId || ''
     },
-    handlestudentSizeChange(size) {
+    handleStudentSizeChange(size) {
       this.studentPagination.pageSize = size
       this.studentPagination.currentPage = 1
     },
-    handlestudentCurrentChange(page) {
+    handleStudentCurrentChange(page) {
       this.studentPagination.currentPage = page
     },
     // 绑定模板到当前组织
@@ -668,7 +668,7 @@ export default {
         console.log('importResult状态:', this.importResult)
 
         // 刷新数据
-        this.loadstudentData()
+        this.loadStudentData()
       } else {
         this.importResult.show = true
         this.importResult.title = '导入失败'

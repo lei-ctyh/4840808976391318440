@@ -27,7 +27,7 @@ export function getTeacherAssessmentData(year, unitId = null) {
 // 获取学生考核看板数据
 export function getStudentAssessmentData(year, unitId = null) {
   return request({
-    url: '/system/studentAssessment/dashboard',
+    url: '/system/studentAssessment/list',
     method: 'get',
     params: {
       year,

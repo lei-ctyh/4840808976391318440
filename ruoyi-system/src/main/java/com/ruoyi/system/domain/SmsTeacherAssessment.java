@@ -36,8 +36,8 @@ public class SmsTeacherAssessment extends BaseEntity
     @Excel(name = "年龄")
     private String age;
 
-    /** 职称 */
-    @Excel(name = "职称")
+    /** 衔级 */
+    @Excel(name = "衔级")
     private String title;
 
     /** 评定周期 */

@@ -272,7 +272,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
             case "age":
                 return "年龄";
             case "title":
-                return "职称";
+                return "衔级";
             case "period":
                 return "评定周期";
             default:

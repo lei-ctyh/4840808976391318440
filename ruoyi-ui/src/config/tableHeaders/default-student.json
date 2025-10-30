@@ -21,14 +21,19 @@
       "minWidth": "220"
     },
     {
-      "label": "班级",
-      "prop": "className",
-      "width": "140"
-    },
-    {
       "label": "出生年月",
       "prop": "birthDate",
       "width": "120"
+    },
+    {
+      "label": "年龄",
+      "prop": "age",
+      "width": "80"
+    },
+    {
+      "label": "衔级",
+      "prop": "title",
+      "width": "100"
     },
     {
       "label": "评定周期",

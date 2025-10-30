@@ -1,24 +1,52 @@
 package com.ruoyi.system.service;
 
-import com.ruoyi.system.domain.SmsStudentAssessment;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.system.domain.SmsStudentAssessment;
 
 /**
- * 学生成绩考核 Service 接口
+ * 学生成绩考核Service接口
+ *
+ * @author ruoyi
+ * @date 2025-01-10
  */
-public interface ISmsStudentAssessmentService {
+public interface ISmsStudentAssessmentService
+{
+    /**
+     * 查询学生成绩考核列表
+     *
+     * @param smsStudentAssessment 学生成绩考核
+     * @return 学生成绩考核集合
+     */
+    public List<SmsStudentAssessment> selectSmsStudentAssessmentList(SmsStudentAssessment smsStudentAssessment);
 
-    /** 查询学生考核列表 */
-    List<SmsStudentAssessment> selectSmsStudentAssessmentList(SmsStudentAssessment query);
+    /**
+     * 根据人员ID和考核周期查询考核记录
+     *
+     * @param personId 人员ID
+     * @param period 考核周期
+     * @return 考核记录
+     */
+    public SmsStudentAssessment selectByPersonIdAndPeriod(String personId, String period);
 
-    /** 按人员与年度查询 */
-    SmsStudentAssessment selectByPersonIdAndPeriod(String personId, String period);
+    /**
+     * 根据单位ID和考核周期查询考核记录列表
+     *
+     * @param unitId 单位ID
+     * @param period 考核周期
+     * @return 考核记录列表
+     */
+    public List<SmsStudentAssessment> selectByUnitIdAndPeriod(String unitId, String period);
 
-    /** 按单位与年度查询 */
-    List<SmsStudentAssessment> selectByUnitIdAndPeriod(String unitId, String period);
+    /**
+     * 导入学生成绩考核数据
+     *
+     * @param file Excel文件
+     * @param updateSupport 是否更新已存在数据
+     * @return 导入结果
+     */
+    public AjaxResult importStudentAssessment(MultipartFile file, boolean updateSupport) throws Exception;
 
-    /** 导入学生考核数据（Excel），支持更新 */
-    String importStudentAssessment(MultipartFile file, boolean updateSupport);
 }
