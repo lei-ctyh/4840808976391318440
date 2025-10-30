@@ -155,6 +155,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
                         successCount++;
                     }
                 } catch (Exception e) {
+                    log.error("导入第" + (i + 1) + "行数据失败", e);
                     errorMessages.add("第" + (i + 1) + "行：" + e.getMessage());
                     errorCount++;
                 }
@@ -184,7 +185,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
             Cell cell = headerRow.getCell(i);
             if (cell != null) {
                 String headerName = getCellValue(cell).trim();
-                String fieldName = mapHeaderToField(headerName);
+                String fieldName = mapHeaderToField(headerName, i);
                 if (StringUtils.isNotEmpty(fieldName)) {
                     fieldMapping.put(fieldName, i);
                 }
@@ -193,7 +194,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         return fieldMapping;
     }
 
-    private String mapHeaderToField(String headerName) {
+    private String mapHeaderToField(String headerName, int columnIndex) {
         Map<String, String> headerMapping = new HashMap<>();
         headerMapping.put("人员编号", "personId");
         headerMapping.put("姓名", "personName");
@@ -213,8 +214,10 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         String result = headerMapping.get(headerName);
         if (result == null) {
             // 如果是数字编号的字段，映射到对应的metric字段
-            if (headerName.matches("\\d{3}")) {
-                result = "metric" + headerName;
+            if (columnIndex >= 0) {
+                // 格式化为三位数字符串
+                String metricIndex = String.format("%03d", columnIndex+1);
+                result = "metric" + metricIndex;
             }
         }
         
