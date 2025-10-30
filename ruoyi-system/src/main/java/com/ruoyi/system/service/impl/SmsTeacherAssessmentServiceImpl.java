@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -27,13 +28,12 @@ import com.ruoyi.system.service.ISmsTeacherAssessmentService;
 
 /**
  * 教师考核Service业务层处理
- * 
+ *
  * @author ruoyi
  * @date 2025-01-10
  */
 @Service
-public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentService 
-{
+public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentService {
     private static final Logger log = LoggerFactory.getLogger(SmsTeacherAssessmentServiceImpl.class);
 
     @Autowired
@@ -41,52 +41,48 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
 
     /**
      * 查询教师考核列表
-     * 
+     *
      * @param smsTeacherAssessment 教师考核
      * @return 教师考核
      */
     @Override
-    public List<SmsTeacherAssessment> selectSmsTeacherAssessmentList(SmsTeacherAssessment smsTeacherAssessment)
-    {
+    public List<SmsTeacherAssessment> selectSmsTeacherAssessmentList(SmsTeacherAssessment smsTeacherAssessment) {
         return smsTeacherAssessmentMapper.selectSmsTeacherAssessmentList(smsTeacherAssessment);
     }
 
     /**
      * 根据人员ID和考核周期查询考核记录
-     * 
+     *
      * @param personId 人员ID
-     * @param period 考核周期
+     * @param period   考核周期
      * @return 考核记录
      */
     @Override
-    public SmsTeacherAssessment selectByPersonIdAndPeriod(String personId, String period)
-    {
+    public SmsTeacherAssessment selectByPersonIdAndPeriod(String personId, String period) {
         return smsTeacherAssessmentMapper.selectByPersonIdAndPeriod(personId, period);
     }
 
     /**
      * 根据单位ID和考核周期查询考核记录列表
-     * 
+     *
      * @param unitId 单位ID
      * @param period 考核周期
      * @return 考核记录列表
      */
     @Override
-    public List<SmsTeacherAssessment> selectByUnitIdAndPeriod(String unitId, String period)
-    {
+    public List<SmsTeacherAssessment> selectByUnitIdAndPeriod(String unitId, String period) {
         return smsTeacherAssessmentMapper.selectByUnitIdAndPeriod(unitId, period);
     }
 
     /**
      * 导入教师考核数据
-     * 
-     * @param file Excel文件
+     *
+     * @param file          Excel文件
      * @param updateSupport 是否更新已存在数据
      * @return 导入结果
      */
     @Override
-    public AjaxResult importTeacherAssessment(MultipartFile file, boolean updateSupport) throws Exception
-    {
+    public AjaxResult importTeacherAssessment(MultipartFile file, boolean updateSupport) throws Exception {
         if (file == null || file.isEmpty()) {
             return AjaxResult.error("上传文件不能为空");
         }
@@ -119,6 +115,8 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
             List<SmsTeacherAssessment> assessmentList = new ArrayList<>();
             List<String> errorMessages = new ArrayList<>();
             int successCount = 0;
+            int updateCount = 0;
+            int skipCount = 0;
             int errorCount = 0;
 
             // 从第二行开始解析数据
@@ -139,8 +137,8 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
 
                     // 检查是否已存在
                     SmsTeacherAssessment existing = smsTeacherAssessmentMapper.selectByPersonIdAndPeriod(
-                        assessment.getPersonId(), assessment.getPeriod());
-                    
+                            assessment.getPersonId(), assessment.getPeriod());
+
                     if (existing != null) {
                         if (updateSupport) {
                             // 更新现有记录
@@ -149,10 +147,10 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
                             assessment.setUpdateBy("admin"); // 可以从当前用户获取
                             assessment.setUpdateTime(DateUtils.getNowDate());
                             smsTeacherAssessmentMapper.updateSmsTeacherAssessment(assessment);
-                            successCount++;
+                            updateCount++;
                         } else {
-                            errorMessages.add("第" + (i + 1) + "行：人员编号 " + assessment.getPersonId() + 
-                                " 在周期 " + assessment.getPeriod() + " 的记录已存在");
+                            errorMessages.add("第" + (i + 1) + "行：人员编号 " + assessment.getPersonId() +
+                                    " 在周期 " + assessment.getPeriod() + " 的记录已存在");
                             errorCount++;
                         }
                     } else {
@@ -164,6 +162,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
                         assessmentList.add(assessment);
                     }
                 } catch (Exception e) {
+                    log.error("导入第" + (i + 1) + "行数据失败", e);
                     errorMessages.add("第" + (i + 1) + "行：" + e.getMessage());
                     errorCount++;
                 }
@@ -178,17 +177,15 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
             workbook.close();
 
             // 构建返回结果
-            StringBuilder message = new StringBuilder();
-            message.append("导入完成！成功：").append(successCount).append("条");
-            if (errorCount > 0) {
-                message.append("，失败：").append(errorCount).append("条");
-            }
+            Map<String, Object> result = new HashMap<>();
+            result.put("total", successCount + updateCount + skipCount + errorCount);
+            result.put("success", successCount);
+            result.put("update", updateCount);
+            result.put("skip", skipCount);
+            result.put("error", errorCount);
+            result.put("errorMessages", errorMessages);
 
-            AjaxResult result = AjaxResult.success(message.toString());
-            if (!errorMessages.isEmpty()) {
-                result.put("errors", errorMessages);
-            }
-            return result;
+            return AjaxResult.success("导入完成", result);
 
         } catch (Exception e) {
             log.error("导入教师考核数据失败", e);
@@ -219,17 +216,29 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      */
     private String mapHeaderToField(String headerName, int columnIndex) {
         switch (headerName) {
-            case "人员编号": return "personId";
-            case "姓名": return "personName";
-            case "单位": case "单位编号": return "unitId";
-            case "出生年月": return "birthDate";
-            case "年龄": return "age";
-            case "职称": return "title";
-            case "评定周期": return "period";
-            case "总成绩": return "totalScore";
-            case "总评定": return "totalRating";
-            case "备注": return "remark";
-            case "状态": return "status";
+            case "人员编号":
+                return "personId";
+            case "姓名":
+                return "personName";
+            case "单位":
+            case "单位编号":
+                return "unitId";
+            case "出生年月":
+                return "birthDate";
+            case "年龄":
+                return "age";
+            case "职称":
+                return "title";
+            case "评定周期":
+                return "period";
+            case "总成绩":
+                return "totalScore";
+            case "总评定":
+                return "totalRating";
+            case "备注":
+                return "remark";
+            case "状态":
+                return "status";
             default:
                 // 处理metric字段
                 if (headerName.matches(".*\\d+.*")) {
@@ -256,14 +265,22 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      */
     private String getFieldDescription(String fieldName) {
         switch (fieldName) {
-            case "personId": return "人员编号";
-            case "personName": return "姓名";
-            case "unitId": return "单位编号";
-            case "birthDate": return "出生年月";
-            case "age": return "年龄";
-            case "title": return "职称";
-            case "period": return "评定周期";
-            default: return fieldName;
+            case "personId":
+                return "人员编号";
+            case "personName":
+                return "姓名";
+            case "unitId":
+                return "单位编号";
+            case "birthDate":
+                return "出生年月";
+            case "age":
+                return "年龄";
+            case "title":
+                return "职称";
+            case "period":
+                return "评定周期";
+            default:
+                return fieldName;
         }
     }
 
@@ -272,16 +289,16 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      */
     private SmsTeacherAssessment parseRowData(Row row, Map<String, Integer> fieldMapping) throws Exception {
         SmsTeacherAssessment assessment = new SmsTeacherAssessment();
-        
+
         for (Map.Entry<String, Integer> entry : fieldMapping.entrySet()) {
             String fieldName = entry.getKey();
             Integer columnIndex = entry.getValue();
             Cell cell = row.getCell(columnIndex);
             String cellValue = getCellValue(cell);
-            
+
             setFieldValue(assessment, fieldName, cellValue);
         }
-        
+
         return assessment;
     }
 
@@ -349,16 +366,16 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
         if (StringUtils.isEmpty(dateStr)) {
             return null;
         }
-        
+
         SimpleDateFormat[] formats = {
-            new SimpleDateFormat("yyyy-MM"),
-            new SimpleDateFormat("yyyy/MM"),
-            new SimpleDateFormat("yyyy.MM"),
-            new SimpleDateFormat("yyyy-MM-dd"),
-            new SimpleDateFormat("yyyy/MM/dd"),
-            new SimpleDateFormat("yyyy.MM.dd")
+                new SimpleDateFormat("yyyy-MM"),
+                new SimpleDateFormat("yyyy/MM"),
+                new SimpleDateFormat("yyyy.MM"),
+                new SimpleDateFormat("yyyy-MM-dd"),
+                new SimpleDateFormat("yyyy/MM/dd"),
+                new SimpleDateFormat("yyyy.MM.dd")
         };
-        
+
         for (SimpleDateFormat format : formats) {
             try {
                 return format.parse(dateStr);
@@ -366,7 +383,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
                 // 继续尝试下一个格式
             }
         }
-        
+
         throw new Exception("无法解析日期格式：" + dateStr);
     }
 
@@ -377,7 +394,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
         if (cell == null) {
             return "";
         }
-        
+
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue().trim();
