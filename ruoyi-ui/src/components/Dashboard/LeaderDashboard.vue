@@ -62,7 +62,7 @@
         <div v-if="importProgress.show" class="import-progress" style="margin-top: 20px;">
           <el-progress
             :percentage="importProgress.percentage"
-            :status="importProgress.status"
+            :status="importProgress.status || undefined"
             :stroke-width="18">
           </el-progress>
           <p class="progress-text">{{ importProgress.text }}</p>
@@ -222,7 +222,7 @@ export default {
       importProgress: {
         show: false,
         percentage: 0,
-        status: '',
+        status: null, // 使用null而不是空字符串
         text: ''
       },
       importResult: {
@@ -397,7 +397,7 @@ export default {
       this.updateSupport = false
       this.importProgress.show = false
       this.importProgress.percentage = 0
-      this.importProgress.status = ''
+      this.importProgress.status = null // 使用null而不是空字符串
       this.importProgress.text = ''
       this.importResult.show = false
       this.uploadData = {}
