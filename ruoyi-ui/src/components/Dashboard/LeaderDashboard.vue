@@ -305,10 +305,103 @@ export default {
       // 使用resolveTemplate查找可用模板
       this.resolveAndDownloadTemplate()
     },
-    loadLeaderData() {
-      this.leaderTableData = getLeaderAssessmentData(this.selectedYear)
-      this.leaderPagination.total = this.leaderTableData.length
-      this.leaderPagination.currentPage = 1
+    async loadLeaderData() {
+      try {
+        this.loading = true
+        const response = await getLeaderAssessmentData(this.selectedYear, this.currentOrgCode)
+        
+        if (response.code === 200) {
+          // 处理后端返回的数据格式，将metric字段映射为前端表格字段
+          const rawData = response.rows || response.data || []
+          this.leaderTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
+          this.leaderPagination.total = response.total || this.leaderTableData.length
+          this.leaderPagination.currentPage = 1
+        } else {
+          this.$message.error(response.msg || '获取数据失败')
+          this.leaderTableData = []
+          this.leaderPagination.total = 0
+        }
+      } catch (error) {
+        console.error('加载领导考核数据失败:', error)
+        this.$message.error('加载数据失败，请稍后重试')
+        this.leaderTableData = []
+        this.leaderPagination.total = 0
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    // 将后端数据映射为前端表格数据
+    mapBackendDataToFrontend(backendData) {
+      return {
+        personId: backendData.personId,
+        personName: backendData.personName,
+        unitId: backendData.unitId,
+        unitName: this.getUnitDisplayName(backendData.unitId), // 需要根据unitId获取单位名称
+        birthDate: backendData.birthDate,
+        age: backendData.age,
+        title: backendData.title,
+        period: backendData.period,
+        
+        // 基础科目 20% - 映射到metric001-metric006
+        basicKnowledge: backendData.metric001 || '0', // 基本知识 20%
+        sportsTrack: backendData.metric002 || '0',    // 田径
+        sportsRope: backendData.metric003 || '0',     // 跳绳  
+        sportsJump: backendData.metric004 || '0',     // 跳远
+        baseGroupA: backendData.metric005 || '0',     // 共同A 25%
+        baseGroupB: backendData.metric006 || '0',     // 共同B 25%
+        baseTotal: this.calculateBaseTotal(backendData), // 基础科目总成绩
+        
+        // 共同科目 30% - 映射到metric007-metric014
+        commonSubject1: backendData.metric007 || '0',
+        commonSubject2: backendData.metric008 || '0',
+        commonSubject3: backendData.metric009 || '0',
+        commonSubject4: backendData.metric010 || '0',
+        commonSubject5: backendData.metric011 || '0',
+        commonSubject6: backendData.metric012 || '0',
+        commonSubject7: backendData.metric013 || '0',
+        commonSubject8: backendData.metric014 || '0',
+        commonTotal: this.calculateCommonTotal(backendData), // 共同科目总成绩
+        
+        // 岗位业务 50% - 映射到metric015
+        jobBusiness: backendData.metric015 || '0',
+        
+        // 综合成绩
+        comprehensivePercent: backendData.totalScore || '0',
+        comprehensiveLevel: backendData.totalRating || '合格',
+        remark: backendData.remark || '',
+        description: backendData.status || ''
+      }
+    },
+    
+    // 计算基础科目总成绩
+    calculateBaseTotal(data) {
+      const basicKnowledge = parseFloat(data.metric001 || 0) * 0.2  // 基本知识 20%
+      const sports = (parseFloat(data.metric002 || 0) + parseFloat(data.metric003 || 0) + parseFloat(data.metric004 || 0)) / 3 * 0.3 // 体育 30%
+      const groupA = parseFloat(data.metric005 || 0) * 0.25  // 共同A 25%
+      const groupB = parseFloat(data.metric006 || 0) * 0.25  // 共同B 25%
+      return (basicKnowledge + sports + groupA + groupB).toFixed(1)
+    },
+    
+    // 计算共同科目总成绩
+    calculateCommonTotal(data) {
+      let total = 0
+      let count = 0
+      for (let i = 7; i <= 14; i++) {
+        const metricKey = `metric${i.toString().padStart(3, '0')}`
+        if (data[metricKey]) {
+          total += parseFloat(data[metricKey])
+          count++
+        }
+      }
+      return count > 0 ? (total / count).toFixed(1) : '0'
+    },
+    
+    // 获取单位显示名称 (需要根据实际的单位数据结构实现)
+    getUnitDisplayName(unitId) {
+      // 这里需要根据实际的单位数据来实现
+      // 暂时返回unitId，后续可以通过API获取单位信息
+      return unitId || ''
     },
     handleLeaderSizeChange(size) {
       this.leaderPagination.pageSize = size

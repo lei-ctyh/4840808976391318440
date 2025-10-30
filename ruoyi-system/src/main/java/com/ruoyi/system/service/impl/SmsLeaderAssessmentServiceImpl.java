@@ -419,7 +419,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
             return false;
         }
         // 验证单位编码格式
-        Pattern pattern = Pattern.compile("^(00|01)\\d{2,6}$");
+        Pattern pattern = Pattern.compile("^(00|01)\\d{0,10}$");
         return pattern.matcher(unitId).matches();
     }
 }
