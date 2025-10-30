@@ -26,14 +26,10 @@
         <div class="import-tips">
           <el-alert
             title="导入说明"
+            :description="importDescription"
             type="info"
             :closable="false"
             show-icon>
-            <div slot="description">
-              <p>1. 支持.xls和.xlsx格式的Excel文件</p>
-              <p>2. 必填字段：人员编号、姓名、评定周期</p>
-              <p>3. 如果存在相同人员和年度的记录，可选择是否覆盖</p>
-            </div>
           </el-alert>
         </div>
 
@@ -79,8 +75,9 @@
             :type="importResult.type"
             :closable="false"
             show-icon>
-            <div slot="description" v-html="importResult.message"></div>
           </el-alert>
+          <!-- 直接显示消息内容，不使用slot -->
+          <div style="margin-top: 10px; padding: 15px; border: 1px solid #e6f7ff; background: #f6ffed; border-radius: 4px;" v-html="importResult.message"></div>
         </div>
       </div>
 
@@ -249,6 +246,10 @@ export default {
     // 看板类型固定为leader
     boardType() {
       return 'leader'
+    },
+    // 导入说明描述
+    importDescription() {
+      return '1. 支持.xls和.xlsx格式的Excel文件\n2. 必填字段：人员编号、姓名、评定周期\n3. 如果存在相同人员和年度的记录，可选择是否覆盖'
     }
   },
   watch: {
@@ -467,39 +468,43 @@ export default {
     },
 
     handleImportSuccess(response, file, fileList) {
+      console.log('导入响应:', response)
       this.importing = false
       this.importProgress.show = false
 
       if (response.code === 200) {
-        this.importResult.show = true
-        this.importResult.title = '导入成功'
-        this.importResult.type = 'success'
-
         const result = response.data || {}
-        let message = `<p>导入完成！</p>`
-        if (result.success > 0) {
-          message += `<p>成功导入 ${result.success} 条记录</p>`
-        }
-        if (result.update > 0) {
-          message += `<p>更新 ${result.update} 条记录</p>`
-        }
-        if (result.skip > 0) {
-          message += `<p>跳过 ${result.skip} 条记录</p>`
-        }
-        if (result.error > 0) {
-          message += `<p style="color: #f56c6c;">失败 ${result.error} 条记录</p>`
-        }
+        console.log('导入结果数据:', result)
+        
+        let message = `<p><strong>导入完成！</strong>总计处理 ${result.total || 0} 条记录</p>`
+        message += `<div style="margin: 10px 0; padding: 10px; background: #f5f7fa; border-radius: 4px;">`
+        
+        // 显示所有统计信息，包括为0的情况
+        message += `<p style="margin: 5px 0;">✅ 成功导入：${result.success || 0} 条</p>`
+        message += `<p style="margin: 5px 0;">🔄 更新记录：${result.update || 0} 条</p>`
+        message += `<p style="margin: 5px 0;">⏭️ 跳过记录：${result.skip || 0} 条</p>`
+        message += `<p style="margin: 5px 0; color: ${result.error > 0 ? '#f56c6c' : '#67c23a'};">❌ 失败记录：${result.error || 0} 条</p>`
+        message += `</div>`
+        
         if (result.errorMessages && result.errorMessages.length > 0) {
-          message += `<p style="color: #f56c6c;">错误详情：</p>`
+          message += `<p style="color: #f56c6c; margin-top: 10px;"><strong>错误详情：</strong></p>`
           result.errorMessages.slice(0, 5).forEach(error => {
-            message += `<p style="color: #f56c6c; font-size: 12px;">• ${error}</p>`
+            message += `<p style="color: #f56c6c; font-size: 12px; margin-left: 10px;">• ${error}</p>`
           })
           if (result.errorMessages.length > 5) {
-            message += `<p style="color: #f56c6c; font-size: 12px;">... 还有 ${result.errorMessages.length - 5} 个错误</p>`
+            message += `<p style="color: #f56c6c; font-size: 12px; margin-left: 10px;">... 还有 ${result.errorMessages.length - 5} 个错误</p>`
           }
         }
 
+        console.log('构建的消息:', message)
+        
+        // 设置导入结果显示
+        this.importResult.show = true
+        this.importResult.title = '导入完成'
+        this.importResult.type = result.error > 0 ? 'warning' : 'success'
         this.importResult.message = message
+        
+        console.log('importResult状态:', this.importResult)
 
         // 刷新数据
         this.loadLeaderData()
