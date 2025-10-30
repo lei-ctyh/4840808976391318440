@@ -53,7 +53,7 @@
           <el-table-column prop="unitPath" label="单位" min-width="200" />
           <el-table-column prop="birthdate" label="出生年月" width="100" />
           <el-table-column prop="age" label="年龄" width="80" />
-          <el-table-column prop="title" label="职称" width="100" />
+          <el-table-column prop="title" label="军衔" width="100" />
           <el-table-column prop="cycle" label="评定周期" width="100" />
 
           <!-- 基础科目 20% -->
@@ -426,7 +426,7 @@ export default {
       if (!unitId || !this.deptTreeData.length) {
         return unitId || ''
       }
-      
+
       // 递归查找部门节点
       const findDeptNode = (nodes, targetId) => {
         for (const node of nodes) {
@@ -440,15 +440,15 @@ export default {
         }
         return null
       }
-      
+
       // 构建层级路径
       const buildPath = (nodeId) => {
         const node = findDeptNode(this.deptTreeData, nodeId)
         if (!node) return unitId
-        
+
         const path = [node.label]
         let currentNode = node
-        
+
         // 向上查找父节点
         while (currentNode.parentId) {
           const parentNode = findDeptNode(this.deptTreeData, currentNode.parentId)
@@ -459,10 +459,10 @@ export default {
             break
           }
         }
-        
+
         return path.join('/')
       }
-      
+
       return buildPath(unitId)
     }
   }
