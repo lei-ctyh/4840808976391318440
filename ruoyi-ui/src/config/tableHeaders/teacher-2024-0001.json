@@ -1,0 +1,136 @@
+{
+  "boardType": "teacher",
+  "year": "2024",
+  "orgCode": "0001",
+  "description": "2024年机构0001教师看板自定义表头配置",
+  "version": "1.0.0",
+  "columns": [
+    {
+      "label": "人员编号",
+      "prop": "personId",
+      "width": "110",
+      "fixed": true
+    },
+    {
+      "label": "姓名",
+      "prop": "name",
+      "width": "100",
+      "fixed": true
+    },
+    {
+      "label": "单位",
+      "prop": "unitPath",
+      "minWidth": "200"
+    },
+    {
+      "label": "出生年月",
+      "prop": "birthdate",
+      "width": "120"
+    },
+    {
+      "label": "年龄",
+      "prop": "age",
+      "width": "80"
+    },
+    {
+      "label": "职务",
+      "prop": "title",
+      "width": "100"
+    },
+    {
+      "label": "考核周期",
+      "prop": "cycle",
+      "width": "120"
+    },
+    {
+      "label": "理论考核 30%",
+      "children": [
+        {
+          "label": "专业理论",
+          "prop": "theoryProfessional",
+          "width": "120"
+        },
+        {
+          "label": "政治理论",
+          "prop": "theoryPolitical",
+          "width": "120"
+        },
+        {
+          "label": "理论总分",
+          "prop": "theoryTotal",
+          "width": "100"
+        }
+      ]
+    },
+    {
+      "label": "实践考核 40%",
+      "children": [
+        {
+          "label": "教学实践",
+          "prop": "practiceTeaching",
+          "width": "120"
+        },
+        {
+          "label": "科研实践",
+          "prop": "practiceResearch",
+          "width": "120"
+        },
+        {
+          "label": "管理实践",
+          "prop": "practiceManagement",
+          "width": "120"
+        },
+        {
+          "label": "实践总分",
+          "prop": "practiceTotal",
+          "width": "100"
+        }
+      ]
+    },
+    {
+      "label": "综合素质 30%",
+      "children": [
+        {
+          "label": "师德师风",
+          "prop": "qualityEthics",
+          "width": "120"
+        },
+        {
+          "label": "团队协作",
+          "prop": "qualityTeamwork",
+          "width": "120"
+        },
+        {
+          "label": "创新能力",
+          "prop": "qualityInnovation",
+          "width": "120"
+        },
+        {
+          "label": "素质总分",
+          "prop": "qualityTotal",
+          "width": "100"
+        }
+      ]
+    },
+    {
+      "label": "最终成绩",
+      "children": [
+        {
+          "label": "总分",
+          "prop": "finalScore",
+          "width": "100"
+        },
+        {
+          "label": "等级",
+          "prop": "finalGrade",
+          "width": "100"
+        }
+      ]
+    },
+    {
+      "label": "备注",
+      "prop": "remark",
+      "minWidth": "150"
+    }
+  ]
+}

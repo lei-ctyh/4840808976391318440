@@ -1,0 +1,169 @@
+{
+  "boardType": "teacher",
+  "description": "教师看板默认表头配置",
+  "version": "1.0.0",
+  "columns": [
+    {
+      "label": "人员编号",
+      "prop": "personId",
+      "width": "110",
+      "fixed": true
+    },
+    {
+      "label": "姓名",
+      "prop": "name",
+      "width": "100",
+      "fixed": true
+    },
+    {
+      "label": "单位(展示单位名称XX/XX/XX)",
+      "prop": "unitPath",
+      "minWidth": "220"
+    },
+    {
+      "label": "出生年月",
+      "prop": "birthdate",
+      "width": "120"
+    },
+    {
+      "label": "年龄",
+      "prop": "age",
+      "width": "80"
+    },
+    {
+      "label": "衔级",
+      "prop": "title",
+      "width": "100"
+    },
+    {
+      "label": "评定周期",
+      "prop": "cycle",
+      "width": "120"
+    },
+    {
+      "label": "基础科目 20%",
+      "children": [
+        {
+          "label": "基本知识 20%",
+          "prop": "baseBasicKnowledge",
+          "width": "140"
+        },
+        {
+          "label": "体育 30%",
+          "children": [
+            {
+              "label": "田径",
+              "prop": "baseSportsTrack",
+              "width": "100"
+            },
+            {
+              "label": "跳绳",
+              "prop": "baseSportsRope",
+              "width": "100"
+            },
+            {
+              "label": "跳远",
+              "prop": "baseSportsLongJump",
+              "width": "100"
+            }
+          ]
+        },
+        {
+          "label": "共同A 25%",
+          "prop": "baseGroupA",
+          "width": "120"
+        },
+        {
+          "label": "共同B 25%",
+          "prop": "baseGroupB",
+          "width": "120"
+        },
+        {
+          "label": "成绩",
+          "prop": "baseTotal",
+          "width": "100"
+        }
+      ]
+    },
+    {
+      "label": "共同科目30%",
+      "children": [
+        {
+          "label": "课目1",
+          "prop": "commonSubject1",
+          "width": "100"
+        },
+        {
+          "label": "课目2",
+          "prop": "commonSubject2",
+          "width": "100"
+        },
+        {
+          "label": "课目3",
+          "prop": "commonSubject3",
+          "width": "100"
+        },
+        {
+          "label": "课目4",
+          "prop": "commonSubject4",
+          "width": "100"
+        },
+        {
+          "label": "课目5",
+          "prop": "commonSubject5",
+          "width": "100"
+        },
+        {
+          "label": "课目6",
+          "prop": "commonSubject6",
+          "width": "100"
+        },
+        {
+          "label": "课目7",
+          "prop": "commonSubject7",
+          "width": "100"
+        },
+        {
+          "label": "课目8",
+          "prop": "commonSubject8",
+          "width": "100"
+        },
+        {
+          "label": "成绩",
+          "prop": "commonTotal",
+          "width": "100"
+        }
+      ]
+    },
+    {
+      "label": "岗位业务 50%",
+      "prop": "jobBusiness",
+      "width": "130"
+    },
+    {
+      "label": "综合成绩",
+      "children": [
+        {
+          "label": "百分制",
+          "prop": "comprehensivePercent",
+          "width": "120"
+        },
+        {
+          "label": "四级制 不合格，合格，良好，优秀",
+          "prop": "comprehensiveLevel",
+          "width": "180"
+        }
+      ]
+    },
+    {
+      "label": "备注",
+      "prop": "remark",
+      "minWidth": "120"
+    },
+    {
+      "label": "说明",
+      "prop": "description",
+      "minWidth": "120"
+    }
+  ]
+}

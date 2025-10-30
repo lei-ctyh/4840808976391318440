@@ -1,0 +1,24 @@
+{
+  "boardType": "leader",
+  "description": "领导看板默认表头配置",
+  "version": "1.0.0",
+  "columns": [
+    {
+      "label": "人员编号",
+      "prop": "personId",
+      "width": "110",
+      "fixed": true
+    },
+    {
+      "label": "姓名",
+      "prop": "personName",
+      "width": "100",
+      "fixed": true
+    },
+    {
+      "label": "单位(展示单位名称XX/XX/XX)",
+      "prop": "unitPath",
+      "minWidth": "220"
+    }
+  ]
+}

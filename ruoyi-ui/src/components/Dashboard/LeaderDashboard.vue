@@ -153,49 +153,21 @@
 
     <!-- 领导看板表格 -->
     <div class="tab-body">
-      <el-table :data="leaderTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
-        <el-table-column prop="personId" label="人员编号" width="110" />
-        <el-table-column prop="personName" label="姓名" width="100" />
-        <el-table-column prop="unitPath" label="单位(展示单位名称XX/XX/XX)" min-width="220" />
-        <el-table-column prop="birthDate" label="出生年月" width="120" />
-        <el-table-column prop="age" label="年龄" width="80" />
-        <el-table-column prop="title" label="衔级" width="100" />
-        <el-table-column prop="cycle" label="评定周期" width="120" />
-
-        <el-table-column label="基础科目 20%">
-          <el-table-column prop="baseBasicKnowledge" label="基本知识 20%" width="140" />
-          <el-table-column label="体育 30%">
-            <el-table-column prop="baseSportsTrack" label="田径" width="100" />
-            <el-table-column prop="baseSportsRope" label="跳绳" width="100" />
-            <el-table-column prop="baseSportsLongJump" label="跳远" width="100" />
-          </el-table-column>
-          <el-table-column prop="baseGroupA" label="共同A 25%" width="120" />
-          <el-table-column prop="baseGroupB" label="共同B 25%" width="120" />
-          <el-table-column prop="baseTotal" label="成绩" width="100" />
-        </el-table-column>
-
-        <el-table-column label="共同科目30%">
-          <el-table-column prop="commonSubject1" label="课目1" width="100" />
-          <el-table-column prop="commonSubject2" label="课目2" width="100" />
-          <el-table-column prop="commonSubject3" label="课目3" width="100" />
-          <el-table-column prop="commonSubject4" label="课目4" width="100" />
-          <el-table-column prop="commonSubject5" label="课目5" width="100" />
-          <el-table-column prop="commonSubject6" label="课目6" width="100" />
-          <el-table-column prop="commonSubject7" label="课目7" width="100" />
-          <el-table-column prop="commonSubject8" label="课目8" width="100" />
-          <el-table-column prop="commonTotal" label="成绩" width="100" />
-        </el-table-column>
-
-        <el-table-column prop="jobBusiness" label="岗位业务 50%" width="130" />
-
-        <el-table-column label="综合成绩">
-          <el-table-column prop="comprehensivePercent" label="百分制" width="120" />
-          <el-table-column prop="comprehensiveLevel" label="四级制 不合格，合格，良好，优秀" width="180" />
-        </el-table-column>
-
-        <el-table-column prop="remark" label="备注" min-width="120" />
-        <el-table-column prop="description" label="说明" min-width="120" />
-      </el-table>
+      <dynamic-table
+        :data="leaderTablePageData"
+        board-type="leader"
+        :year="selectedYear"
+        :org-code="currentOrgCode"
+        :table-props="{
+          border: true,
+          size: 'small',
+          style: 'width: 100%',
+          'header-cell-style': { textAlign: 'center' }
+        }"
+        @config-loaded="onTableConfigLoaded"
+        @config-error="onTableConfigError"
+        ref="leaderTable"
+      />
 
       <!-- 分页 -->
       <div class="table-pagination">
@@ -220,10 +192,11 @@ import { deptTreeSelect } from "@/api/system/user"
 import { getToken } from "@/utils/auth"
 import FileUpload from "@/components/FileUpload"
 import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/template"
+import DynamicTable from "@/components/DynamicTable"
 
 export default {
   name: "LeaderDashboard",
-  components: { FileUpload },
+  components: { FileUpload, DynamicTable },
   props: {
     selectedDeptNode: {
       type: Object,
@@ -311,6 +284,17 @@ export default {
     this.getDeptTreeData()
   },
   methods: {
+    // 动态表格配置加载成功回调
+    onTableConfigLoaded(config) {
+      console.log('领导看板表格配置加载成功:', config)
+    },
+    
+    // 动态表格配置加载失败回调
+    onTableConfigError(error) {
+      console.error('领导看板表格配置加载失败:', error)
+      this.$message.warning('表格配置加载失败，已使用默认配置')
+    },
+    
     // 获取部门树数据
     getDeptTreeData() {
       deptTreeSelect().then(response => {
