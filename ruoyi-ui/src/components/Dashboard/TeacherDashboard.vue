@@ -357,7 +357,8 @@ export default {
         Authorization: "Bearer " + this.$store.getters.token
       }
       this.uploadData = {
-        updateSupport: this.updateSupport
+        updateSupport: this.updateSupport,
+        year: this.selectedYear
       }
     },
     
@@ -472,8 +473,12 @@ export default {
         this.$message.warning('请先选择要导入的文件')
         return
       }
-      
-      this.setupUploadHeaders()
+
+      this.importing = true
+      this.importResult.show = false
+      this.uploadData.updateSupport = this.updateSupport
+      this.uploadData.year = this.selectedYear
+
       this.$refs.importUpload.submit()
     },
     
