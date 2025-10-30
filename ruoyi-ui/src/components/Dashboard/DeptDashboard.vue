@@ -187,6 +187,10 @@ export default {
     selectedYear() {
       this.loadDeptData()
     },
+    currentOrgCode() {
+      // 当组织节点切换时，重新加载数据
+      this.loadDeptData()
+    },
     templateUrl(newVal) {
       if (newVal) {
         // 文件上传完成后自动绑定模板

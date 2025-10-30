@@ -170,6 +170,10 @@ export default {
   watch: {
     selectedYear() {
       this.loadStudentData()
+    },
+    currentOrgCode() {
+      // 当组织节点切换时，重新加载数据
+      this.loadStudentData()
     }
   },
   created() {

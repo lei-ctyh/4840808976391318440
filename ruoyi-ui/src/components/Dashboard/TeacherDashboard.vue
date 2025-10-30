@@ -159,6 +159,10 @@ export default {
   watch: {
     selectedYear() {
       this.loadTeacherData()
+    },
+    currentOrgCode() {
+      // 当组织节点切换时，重新加载数据
+      this.loadTeacherData()
     }
   },
   created() {
