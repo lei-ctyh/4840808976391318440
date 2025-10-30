@@ -177,6 +177,7 @@
 
 <script>
 import { getLeaderAssessmentData } from "@/api/dashboard"
+import { deptTreeSelect } from "@/api/system/user"
 import { getToken } from "@/utils/auth"
 import FileUpload from "@/components/FileUpload"
 import { bindTemplate, resolveTemplate } from "@/api/system/template"
@@ -230,7 +231,9 @@ export default {
         title: '',
         type: '',
         message: ''
-      }
+      },
+      // 部门树数据，用于构建单位显示名称
+      deptTreeData: []
     }
   },
   computed: {
@@ -263,6 +266,7 @@ export default {
   },
   created() {
     this.loadLeaderData()
+    this.getDeptTreeData()
     // 读取本地存储的模板信息
     try {
       const url = localStorage.getItem('leaderTemplateUrl')
@@ -274,6 +278,15 @@ export default {
     }
   },
   methods: {
+    // 获取部门树数据
+    getDeptTreeData() {
+      deptTreeSelect().then(response => {
+        this.deptTreeData = response.data || []
+      }).catch(error => {
+        console.warn('获取部门树数据失败:', error)
+        this.deptTreeData = []
+      })
+    },
     // 处理模板上传成功
     handleTemplateUpload(fileUrl) {
       if (fileUrl) {
@@ -401,10 +414,48 @@ export default {
       return count > 0 ? (total / count).toFixed(1) : '0'
     },
 
-    // 获取单位显示名称 (需要根据实际的单位数据结构实现)
+    // 获取单位显示名称 - 通过deptTreeSelect数据构建层级路径
     getUnitDisplayName(unitId) {
-      // 这里需要根据实际的单位数据来实现
-      // 暂时返回unitId，后续可以通过API获取单位信息
+      if (!unitId || !this.deptTreeData) {
+        return unitId || ''
+      }
+      
+      // 递归查找部门节点
+      const findDeptNode = (nodes, targetId) => {
+        for (const node of nodes) {
+          if (node.id === targetId || node.orgCode === unitId) {
+            return node
+          }
+          if (node.children && node.children.length > 0) {
+            const found = findDeptNode(node.children, targetId)
+            if (found) return found
+          }
+        }
+        return null
+      }
+      
+      // 构建层级路径
+      const buildDeptPath = (node, allNodes) => {
+        const path = []
+        let current = node
+        
+        // 向上查找父级节点
+        while (current) {
+          path.unshift(current.label)
+          if (!current.parentId) break
+          
+          // 查找父节点
+          current = findDeptNode(allNodes, current.parentId)
+        }
+        
+        return path.join('/')
+      }
+      
+      const deptNode = findDeptNode(this.deptTreeData, unitId)
+      if (deptNode) {
+        return buildDeptPath(deptNode, this.deptTreeData)
+      }
+      
       return unitId || ''
     },
     handleLeaderSizeChange(size) {

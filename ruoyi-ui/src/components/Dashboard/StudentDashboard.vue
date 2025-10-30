@@ -121,6 +121,7 @@
 
 <script>
 import { getStudentAssessmentData } from "@/mock/mockData"
+import { deptTreeSelect } from "@/api/system/user"
 import FileUpload from "@/components/FileUpload"
 import { bindTemplate, resolveTemplate } from "@/api/system/template"
 
@@ -149,7 +150,9 @@ export default {
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
-      baseApi: process.env.VUE_APP_BASE_API
+      baseApi: process.env.VUE_APP_BASE_API,
+      // 部门树数据，用于构建单位显示名称
+      deptTreeData: []
     }
   },
   computed: {
@@ -178,6 +181,7 @@ export default {
   },
   created() {
     this.loadStudentData()
+    this.getDeptTreeData()
     // 读取本地存储的模板信息
     try {
       const url = localStorage.getItem('studentTemplateUrl')
@@ -407,6 +411,59 @@ export default {
         console.error('解析模板失败:', error)
         this.$message.error('查找模板失败: ' + (error.msg || '未知错误'))
       }
+    },
+    // 获取部门树数据
+    async getDeptTreeData() {
+      try {
+        const response = await deptTreeSelect()
+        this.deptTreeData = response.data || []
+      } catch (error) {
+        console.error('获取部门树数据失败:', error)
+      }
+    },
+    // 根据单位ID获取单位显示名称
+    getUnitDisplayName(unitId) {
+      if (!unitId || !this.deptTreeData.length) {
+        return unitId || ''
+      }
+      
+      // 递归查找部门节点
+      const findDeptNode = (nodes, targetId) => {
+        for (const node of nodes) {
+          if (node.id === targetId || node.orgCode === targetId) {
+            return node
+          }
+          if (node.children && node.children.length > 0) {
+            const found = findDeptNode(node.children, targetId)
+            if (found) return found
+          }
+        }
+        return null
+      }
+      
+      // 构建层级路径
+      const buildPath = (nodeId) => {
+        const node = findDeptNode(this.deptTreeData, nodeId)
+        if (!node) return unitId
+        
+        const path = [node.label]
+        let currentNode = node
+        
+        // 向上查找父节点
+        while (currentNode.parentId) {
+          const parentNode = findDeptNode(this.deptTreeData, currentNode.parentId)
+          if (parentNode) {
+            path.unshift(parentNode.label)
+            currentNode = parentNode
+          } else {
+            break
+          }
+        }
+        
+        return path.join('/')
+      }
+      
+      return buildPath(unitId)
     }
   }
 }
