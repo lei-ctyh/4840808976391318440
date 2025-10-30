@@ -11,18 +11,18 @@
     },
     {
       "label": "姓名",
-      "prop": "name",
+      "prop": "personName",
       "width": "100",
       "fixed": true
     },
     {
-      "label": "单位(展示单位名称XX/XX/XX)",
+      "label": "单位",
       "prop": "unitPath",
       "minWidth": "220"
     },
     {
       "label": "出生年月",
-      "prop": "birthdate",
+      "prop": "birthDate",
       "width": "120"
     },
     {
@@ -37,7 +37,7 @@
     },
     {
       "label": "评定周期",
-      "prop": "cycle",
+      "prop": "period",
       "width": "120"
     },
     {

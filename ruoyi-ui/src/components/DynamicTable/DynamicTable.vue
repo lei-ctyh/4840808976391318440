@@ -24,13 +24,12 @@
       v-on="tableListeners"
       ref="dynamicTable"
     >
-      <!-- 递归渲染表格列 -->
-      <template v-for="column in tableColumns">
-        <dynamic-table-column
-          :key="column.key || column.prop || column.label"
-          :column="column"
-        />
-      </template>
+      <!-- 渲染表格列（避免使用 <template v-for> 包裹） -->
+      <dynamic-table-column
+        v-for="column in tableColumns"
+        :key="column.key || column.prop || column.label"
+        :column="column"
+      />
     </el-table>
   </div>
 </template>
