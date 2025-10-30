@@ -1,8 +1,47 @@
 <template>
   <div class="student-dashboard">
     <!-- 上传模板对话框 -->
-    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="480px">
+    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="600px" @open="loadExistingTemplate">
       <div>
+        <!-- 已有模板信息显示 -->
+        <div v-if="existingTemplate" class="existing-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="当前已有模板"
+            type="info"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p><strong>文件名：</strong>{{ existingTemplate.fileName }}</p>
+              <p><strong>上传时间：</strong>{{ existingTemplate.createTime }}</p>
+              <p><strong>文件大小：</strong>{{ formatFileSize(existingTemplate.fileSize) }}</p>
+              <p style="color: #909399; font-size: 12px;">上传新模板将覆盖当前模板</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <!-- 无模板提示 -->
+        <div v-else-if="templateCheckCompleted" class="no-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="暂无模板"
+            type="warning"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p>当前组织暂无上传的模板，请上传新模板。</p>
+            </div>
+          </el-alert>
+        </div>
+        
+        <!-- 加载中提示 -->
+        <div v-else class="loading-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="正在检查已有模板..."
+            type="info"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+        
         <p>请选择模板文件并上传到服务器。</p>
         <file-upload
           v-model="templateUrl"
@@ -123,7 +162,7 @@
 import { getStudentAssessmentData } from "@/mock/mockData"
 import { deptTreeSelect } from "@/api/system/user"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/system/template"
+import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/template"
 
 export default {
   name: "StudentDashboard",
@@ -150,6 +189,8 @@ export default {
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
+      existingTemplate: null,
+      templateCheckCompleted: false,
       baseApi: process.env.VUE_APP_BASE_API,
       // 部门树数据，用于构建单位显示名称
       deptTreeData: []
@@ -211,11 +252,54 @@ export default {
       // 重置上传状态
       this.templateUrl = ''
       this.templateFileName = ''
+      this.existingTemplate = null
+      this.templateCheckCompleted = false
       this.uploadTemplateDialogVisible = true
     },
     downloadTemplateFromServer() {
       // 使用resolveTemplate查找可用模板
       this.resolveAndDownloadTemplate()
+    },
+    // 加载已有模板信息
+    async loadExistingTemplate() {
+      if (!this.currentOrgCode) {
+        this.templateCheckCompleted = true
+        return
+      }
+
+      try {
+        const response = await getTemplate({
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: this.selectedYear
+        })
+        console.log('getTemplate response:', response)
+
+        if (response.code === 200 && response.data) {
+          this.existingTemplate = response.data
+          this.templateUrl = response.data.filePath
+          this.templateFileName = response.data.fileName
+        } else {
+          this.existingTemplate = null
+          this.templateUrl = ''
+          this.templateFileName = ''
+        }
+      } catch (error) {
+        console.error('加载已有模板失败:', error)
+        this.existingTemplate = null
+        this.templateUrl = ''
+        this.templateFileName = ''
+      } finally {
+        this.templateCheckCompleted = true
+      }
+    },
+    // 格式化文件大小
+    formatFileSize(bytes) {
+      if (!bytes) return '0 B'
+      const k = 1024
+      const sizes = ['B', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     },
     loadStudentData() {
       // 模拟学生考核数据，使用与领导看板相同的数据结构
