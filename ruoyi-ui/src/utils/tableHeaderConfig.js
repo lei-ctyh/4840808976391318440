@@ -6,6 +6,8 @@
 // 导入默认配置
 import defaultTeacherConfig from '@/config/tableHeaders/default-teacher.json'
 import defaultLeaderConfig from '@/config/tableHeaders/default-leader.json'
+import defaultStudentConfig from '@/config/tableHeaders/default-student.json'
+import defaultUnitConfig from '@/config/tableHeaders/default-unit.json'
 
 /**
  * 表头配置管理器
@@ -15,7 +17,9 @@ class TableHeaderConfigManager {
     this.configCache = new Map()
     this.defaultConfigs = {
       teacher: defaultTeacherConfig,
-      leader: defaultLeaderConfig
+      leader: defaultLeaderConfig,
+      student: defaultStudentConfig,
+      unit: defaultUnitConfig
     }
   }
 
@@ -172,7 +176,10 @@ class TableHeaderConfigManager {
   getAvailableConfigs() {
     // 这里可以扩展为从服务器获取配置文件列表
     return [
-      { boardType: 'teacher', year: '2024', orgCode: '0001', description: '2024年机构0001教师看板配置' }
+      { boardType: 'teacher', year: '2024', orgCode: '0001', description: '2024年机构0001教师看板配置' },
+      { boardType: 'leader', year: '2024', orgCode: '0001', description: '2024年机构0001领导看板配置' },
+      { boardType: 'student', year: '2024', orgCode: '0001', description: '2024年机构0001学生看板配置' },
+      { boardType: 'unit', year: '2024', orgCode: '0001', description: '2024年机构0001单位看板配置' }
       // 可以添加更多配置
     ]
   }

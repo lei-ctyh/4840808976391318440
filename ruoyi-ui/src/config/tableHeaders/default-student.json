@@ -1,0 +1,39 @@
+{
+  "boardType": "student",
+  "description": "学生看板默认表头配置",
+  "version": "1.0.0",
+  "columns": [
+    {
+      "label": "人员编号",
+      "prop": "personId",
+      "width": "110",
+      "fixed": true
+    },
+    {
+      "label": "姓名",
+      "prop": "personName",
+      "width": "100",
+      "fixed": true
+    },
+    {
+      "label": "单位",
+      "prop": "unitPath",
+      "minWidth": "220"
+    },
+    {
+      "label": "班级",
+      "prop": "className",
+      "width": "140"
+    },
+    {
+      "label": "出生年月",
+      "prop": "birthDate",
+      "width": "120"
+    },
+    {
+      "label": "评定周期",
+      "prop": "period",
+      "width": "120"
+    }
+  ]
+}

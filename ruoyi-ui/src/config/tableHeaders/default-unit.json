@@ -1,0 +1,34 @@
+{
+  "boardType": "unit",
+  "description": "单位看板默认表头配置",
+  "version": "1.0.0",
+  "columns": [
+    {
+      "label": "单位编码",
+      "prop": "orgCode",
+      "width": "120",
+      "fixed": true
+    },
+    {
+      "label": "单位名称",
+      "prop": "unitName",
+      "minWidth": "200",
+      "fixed": true
+    },
+    {
+      "label": "单位路径",
+      "prop": "unitPath",
+      "minWidth": "260"
+    },
+    {
+      "label": "上级单位",
+      "prop": "parentUnitName",
+      "width": "180"
+    },
+    {
+      "label": "评定周期",
+      "prop": "period",
+      "width": "120"
+    }
+  ]
+}

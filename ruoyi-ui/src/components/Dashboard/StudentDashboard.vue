@@ -60,7 +60,7 @@
     </el-dialog>
 
     <!-- 数据导入对话框 -->
-    <el-dialog title="导入领导班子考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
+    <el-dialog title="导入学生班子考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
       <div>
         <div class="import-tips">
           <el-alert
@@ -126,10 +126,10 @@
       </span>
     </el-dialog>
 
-    <!-- 领导看板头部 -->
+    <!-- 学生看板头部 -->
     <div class="student-header">
       <div class="student-left">
-        <span class="student-title">领导班子年度考核</span>
+        <span class="student-title">学生班子年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
         <el-tag size="small" class="student-dept">{{ organizationPath }}</el-tag>
       </div>
@@ -151,7 +151,7 @@
       </div>
     </div>
 
-    <!-- 领导看板表格 -->
+    <!-- 学生看板表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="studentTablePageData"
@@ -286,12 +286,12 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('领导看板表格配置加载成功:', config)
+      console.log('学生看板表格配置加载成功:', config)
     },
 
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('领导看板表格配置加载失败:', error)
+      console.error('学生看板表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
 
@@ -308,7 +308,7 @@ export default {
     handleTemplateUpload(fileUrl) {
       if (fileUrl) {
         // 设置文件名
-        this.templateFileName = String(fileUrl).split(',')[0].split('/').pop() || '领导考核模板.xlsx'
+        this.templateFileName = String(fileUrl).split(',')[0].split('/').pop() || '学生考核模板.xlsx'
 
         // 直接执行模板绑定
         if (this.currentOrgCode) {
@@ -358,7 +358,7 @@ export default {
           this.studentPagination.total = 0
         }
       } catch (error) {
-        console.error('加载领导考核数据失败:', error)
+        console.error('加载学生考核数据失败:', error)
         this.$message.error('加载数据失败，请稍后重试')
         this.studentTableData = []
         this.studentPagination.total = 0

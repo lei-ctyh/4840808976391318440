@@ -53,7 +53,7 @@ export default {
     boardType: {
       type: String,
       required: true,
-      validator: value => ['teacher', 'leader'].includes(value)
+      validator: value => ['teacher', 'leader', 'student', 'unit'].includes(value)
     },
     // 年份
     year: {
