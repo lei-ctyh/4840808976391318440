@@ -116,9 +116,9 @@
     <div class="tab-body">
       <el-table :data="leaderTablePageData" border size="small" style="width: 100%" :header-cell-style="{ textAlign: 'center' }">
         <el-table-column prop="personId" label="人员编号" width="110" />
-        <el-table-column prop="name" label="姓名" width="100" />
+        <el-table-column prop="personName" label="姓名" width="100" />
         <el-table-column prop="unitPath" label="单位(展示单位名称XX/XX/XX)" min-width="220" />
-        <el-table-column prop="birthdate" label="出生年月" width="120" />
+        <el-table-column prop="birthDate" label="出生年月" width="120" />
         <el-table-column prop="age" label="年龄" width="80" />
         <el-table-column prop="title" label="职称" width="100" />
         <el-table-column prop="cycle" label="评定周期" width="120" />
@@ -313,7 +313,7 @@ export default {
       try {
         this.loading = true
         const response = await getLeaderAssessmentData(this.selectedYear, this.currentOrgCode)
-        
+
         if (response.code === 200) {
           // 处理后端返回的数据格式，将metric字段映射为前端表格字段
           const rawData = response.rows || response.data || []
@@ -334,7 +334,7 @@ export default {
         this.loading = false
       }
     },
-    
+
     // 将后端数据映射为前端表格数据
     mapBackendDataToFrontend(backendData) {
       return {
@@ -346,16 +346,16 @@ export default {
         age: backendData.age,
         title: backendData.title,
         period: backendData.period,
-        
+
         // 基础科目 20% - 映射到metric001-metric006
         basicKnowledge: backendData.metric001 || '0', // 基本知识 20%
         sportsTrack: backendData.metric002 || '0',    // 田径
-        sportsRope: backendData.metric003 || '0',     // 跳绳  
+        sportsRope: backendData.metric003 || '0',     // 跳绳
         sportsJump: backendData.metric004 || '0',     // 跳远
         baseGroupA: backendData.metric005 || '0',     // 共同A 25%
         baseGroupB: backendData.metric006 || '0',     // 共同B 25%
         baseTotal: this.calculateBaseTotal(backendData), // 基础科目总成绩
-        
+
         // 共同科目 30% - 映射到metric007-metric014
         commonSubject1: backendData.metric007 || '0',
         commonSubject2: backendData.metric008 || '0',
@@ -366,10 +366,10 @@ export default {
         commonSubject7: backendData.metric013 || '0',
         commonSubject8: backendData.metric014 || '0',
         commonTotal: this.calculateCommonTotal(backendData), // 共同科目总成绩
-        
+
         // 岗位业务 50% - 映射到metric015
         jobBusiness: backendData.metric015 || '0',
-        
+
         // 综合成绩
         comprehensivePercent: backendData.totalScore || '0',
         comprehensiveLevel: backendData.totalRating || '合格',
@@ -377,7 +377,7 @@ export default {
         description: backendData.status || ''
       }
     },
-    
+
     // 计算基础科目总成绩
     calculateBaseTotal(data) {
       const basicKnowledge = parseFloat(data.metric001 || 0) * 0.2  // 基本知识 20%
@@ -386,7 +386,7 @@ export default {
       const groupB = parseFloat(data.metric006 || 0) * 0.25  // 共同B 25%
       return (basicKnowledge + sports + groupA + groupB).toFixed(1)
     },
-    
+
     // 计算共同科目总成绩
     calculateCommonTotal(data) {
       let total = 0
@@ -400,7 +400,7 @@ export default {
       }
       return count > 0 ? (total / count).toFixed(1) : '0'
     },
-    
+
     // 获取单位显示名称 (需要根据实际的单位数据结构实现)
     getUnitDisplayName(unitId) {
       // 这里需要根据实际的单位数据来实现
@@ -572,17 +572,17 @@ export default {
       if (response.code === 200) {
         const result = response.data || {}
         console.log('导入结果数据:', result)
-        
+
         let message = `<p><strong>导入完成！</strong>总计处理 ${result.total || 0} 条记录</p>`
         message += `<div style="margin: 10px 0; padding: 10px; background: #f5f7fa; border-radius: 4px;">`
-        
+
         // 显示所有统计信息，包括为0的情况
         message += `<p style="margin: 5px 0;">✅ 成功导入：${result.success || 0} 条</p>`
         message += `<p style="margin: 5px 0;">🔄 更新记录：${result.update || 0} 条</p>`
         message += `<p style="margin: 5px 0;">⏭️ 跳过记录：${result.skip || 0} 条</p>`
         message += `<p style="margin: 5px 0; color: ${result.error > 0 ? '#f56c6c' : '#67c23a'};">❌ 失败记录：${result.error || 0} 条</p>`
         message += `</div>`
-        
+
         if (result.errorMessages && result.errorMessages.length > 0) {
           message += `<p style="color: #f56c6c; margin-top: 10px;"><strong>错误详情：</strong></p>`
           result.errorMessages.slice(0, 5).forEach(error => {
@@ -594,13 +594,13 @@ export default {
         }
 
         console.log('构建的消息:', message)
-        
+
         // 设置导入结果显示
         this.importResult.show = true
         this.importResult.title = '导入完成'
         this.importResult.type = result.error > 0 ? 'warning' : 'success'
         this.importResult.message = message
-        
+
         console.log('importResult状态:', this.importResult)
 
         // 刷新数据
