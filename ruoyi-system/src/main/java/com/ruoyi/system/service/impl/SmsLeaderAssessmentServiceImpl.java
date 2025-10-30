@@ -407,6 +407,10 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         if (!isValidUnitId(assessment.getUnitId())) {
             return "单位编码格式不正确";
         }
+        // 评定周期必须是yyyy格式
+        if (!assessment.getPeriod().matches("\\d{4}")) {
+            return "评定周期格式不正确";
+        }
         return null;
     }
 

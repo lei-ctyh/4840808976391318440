@@ -1,6 +1,7 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 import com.ruoyi.system.domain.SmsLeaderAssessment;
 
 /**
@@ -34,7 +35,7 @@ public interface SmsLeaderAssessmentMapper
      * @param period 评定周期
      * @return 考核记录
      */
-    public SmsLeaderAssessment selectByPersonIdAndPeriod(String personId, String period);
+    public SmsLeaderAssessment selectByPersonIdAndPeriod(@Param("personId") String personId, @Param("period") String period);
 
     /**
      * 根据单位ID和年度查询考核记录列表
@@ -43,7 +44,7 @@ public interface SmsLeaderAssessmentMapper
      * @param period 评定周期
      * @return 考核记录列表
      */
-    public List<SmsLeaderAssessment> selectByUnitIdAndPeriod(String unitId, String period);
+    public List<SmsLeaderAssessment> selectByUnitIdAndPeriod(@Param("unitId") String unitId, @Param("period") String period);
 
     /**
      * 新增领导班子考核
