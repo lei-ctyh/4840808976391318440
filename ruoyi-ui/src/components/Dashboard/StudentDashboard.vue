@@ -53,7 +53,7 @@
           <el-table-column prop="unitPath" label="单位" min-width="200" />
           <el-table-column prop="birthdate" label="出生年月" width="100" />
           <el-table-column prop="age" label="年龄" width="80" />
-          <el-table-column prop="title" label="军衔" width="100" />
+          <el-table-column prop="title" label="衔级" width="100" />
           <el-table-column prop="cycle" label="评定周期" width="100" />
 
           <!-- 基础科目 20% -->

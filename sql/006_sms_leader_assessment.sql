@@ -6,7 +6,7 @@ CREATE TABLE `sms_leader_assessment` (
   `unit_id` BIGINT DEFAULT NULL COMMENT '单位编号',
   `birth_date` DATE DEFAULT NULL COMMENT '出生年月',
   `age` INT DEFAULT NULL COMMENT '年龄',
-  `title` VARCHAR(50) DEFAULT NULL COMMENT '军衔',
+  `title` VARCHAR(50) DEFAULT NULL COMMENT '衔级',
   `period` VARCHAR(32) NOT NULL COMMENT '评定周期（如：2025Q3、2025-上半年）',
   -- 100个评分类指标（按需调整为整数或字符串）
   `metric_001` DECIMAL(10,2) DEFAULT NULL COMMENT '指标001',

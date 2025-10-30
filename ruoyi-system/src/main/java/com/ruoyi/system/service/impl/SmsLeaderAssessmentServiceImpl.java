@@ -201,7 +201,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         headerMapping.put("单位", "unitId");
         headerMapping.put("出生年月", "birthDate");
         headerMapping.put("年龄", "age");
-        headerMapping.put("军衔", "title");
+        headerMapping.put("衔级", "title");
         headerMapping.put("评定周期", "period");
         headerMapping.put("总成绩", "totalScore");
         headerMapping.put("综合成绩", "totalScore");
