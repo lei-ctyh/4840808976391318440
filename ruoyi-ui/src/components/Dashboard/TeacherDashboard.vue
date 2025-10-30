@@ -70,7 +70,7 @@
         <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
         <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
-        <el-button icon="el-icon-document" size="small" @click="downloadTemplateFromServer">下载模板</el-button>
+        <el-button icon="el-icon-document" size="small" @click="resolveAndDownloadTemplate">下载模板</el-button>
         <span class="label">年度</span>
         <el-date-picker
           v-model="selectedYear"
@@ -321,32 +321,9 @@ export default {
       // 加载已有模板信息
       this.loadExistingTemplate()
     },
-    async downloadTemplateFromServer() {
-      try {
-        this.$loading({ text: '正在下载模板...' })
-        
-        const response = await importTemplate()
-        
-        // 创建下载链接
-        const blob = new Blob([response], { 
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-        })
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = '教师考核导入模板.xlsx'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-        
-        this.$message.success('模板下载成功')
-      } catch (error) {
-        console.error('模板下载失败:', error)
-        this.$message.error('模板下载失败: ' + (error.message || '未知错误'))
-      } finally {
-        this.$loading().close()
-      }
+    downloadTemplateFromServer() {
+      // 使用resolveTemplate查找可用模板
+      this.resolveAndDownloadTemplate()
     },
     async loadTeacherData() {
       try {
