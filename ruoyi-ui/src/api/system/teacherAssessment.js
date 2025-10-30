@@ -47,6 +47,9 @@ export function importData(data) {
   return request({
     url: '/system/teacher-assessment/importData',
     method: 'post',
-    data: data
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }

@@ -67,7 +67,7 @@
         <el-tag size="small" class="teacher-dept">{{ organizationPath }}</el-tag>
       </div>
       <div class="teacher-right">
-        <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
+        <el-button type="primary" icon="el-icon-upload" size="small" @click="importDialogVisible = true">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
         <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
         <el-button icon="el-icon-document" size="small" @click="resolveAndDownloadTemplate">下载模板</el-button>
@@ -144,6 +144,51 @@
         />
       </div>
     </div>
+
+    <!-- 导入对话框 -->
+    <el-dialog title="导入教师考核数据" :visible.sync="importDialogVisible" width="400px" append-to-body>
+      <el-form ref="importForm" label-width="80px">
+        <el-form-item label="是否更新">
+          <el-radio-group v-model="updateSupport">
+            <el-radio :label="true">是</el-radio>
+            <el-radio :label="false">否</el-radio>
+          </el-radio-group>
+          <div class="el-upload__tip">
+            <el-checkbox v-model="updateSupport" />
+            是否更新已经存在的用户数据
+          </div>
+        </el-form-item>
+        <el-form-item label="文件上传">
+          <el-upload
+             ref="upload"
+             :limit="1"
+             accept=".xlsx, .xls"
+             :headers="uploadHeaders"
+             :action="uploadImportUrl"
+             :disabled="importing"
+             :on-progress="handleFileUploadProgress"
+             :on-success="handleFileSuccess"
+             :on-error="handleFileError"
+             :data="uploadData"
+             :auto-upload="false"
+             drag
+           >
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip text-center" slot="tip">
+              <div class="el-upload__tip">
+                <el-link type="primary" @click="importTemplate">下载模板</el-link>
+              </div>
+              <span>仅允许导入xls、xlsx格式文件。</span>
+            </div>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" :loading="importing" @click="submitFileForm">确 定</el-button>
+        <el-button @click="importDialogVisible = false">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -184,7 +229,17 @@ export default {
       deptTreeData: [],
       // 模板信息回显相关
       existingTemplate: null,
-      templateCheckCompleted: false
+      templateCheckCompleted: false,
+      // 导入相关
+      importDialogVisible: false,
+      importing: false,
+      updateSupport: true,
+      hasImportFile: false,
+      uploadHeaders: { Authorization: "Bearer " + this.$store.getters.token },
+      uploadData: {},
+      importProgress: 0,
+      importResult: null,
+      uploadImportUrl: process.env.VUE_APP_BASE_API + '/system/teacher-assessment/importData'
     }
   },
   computed: {
@@ -233,51 +288,45 @@ export default {
     onYearChange() {
       this.loadTeacherData()
     },
-    handleImportClick() {
-      // 创建文件输入元素
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = '.xlsx,.xls'
-      input.onchange = (event) => {
-        const file = event.target.files[0]
-        if (file) {
-          this.handleImportFile(file)
-        }
-      }
-      input.click()
+    
+    // 导入相关方法
+    /** 下载模板操作 */
+    importTemplate() {
+      importTemplate().then(response => {
+        this.$download.excel(response, '教师考核数据导入模板.xlsx');
+      });
     },
     
-    // 处理导入文件
-    async handleImportFile(file) {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('updateSupport', true) // 支持更新已存在数据
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.importing = true;
+      this.importProgress = Math.round(event.percent);
+    },
+    
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.importing = false;
+      this.importDialogVisible = false;
+      this.$refs.upload.clearFiles();
       
-      try {
-        this.$loading({ text: '正在导入数据...' })
-        const response = await importData(formData)
-        
-        if (response.code === 200) {
-          this.$message.success(response.msg || '导入成功')
-          // 重新加载数据
-          this.loadTeacherData()
-        } else {
-          this.$message.error(response.msg || '导入失败')
-          // 如果有错误详情，显示错误信息
-          if (response.errors && response.errors.length > 0) {
-            const errorMsg = response.errors.slice(0, 5).join('\n') // 只显示前5个错误
-            this.$alert(errorMsg, '导入错误详情', {
-              confirmButtonText: '确定',
-              type: 'warning'
-            })
-          }
-        }
-      } catch (error) {
-        console.error('导入失败:', error)
-        this.$message.error('导入失败: ' + (error.message || '未知错误'))
-      } finally {
-        this.$loading().close()
+      if (response.code === 200) {
+        this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
+        this.loadTeacherData();
+      } else {
+        this.$message.error(response.msg || '导入失败');
       }
+    },
+    
+    // 文件上传失败处理
+    handleFileError(err, file, fileList) {
+      this.importing = false;
+      this.$message.error('上传失败，请重试');
+    },
+    
+    // 提交上传文件
+    submitFileForm() {
+      this.uploadData = { updateSupport: this.updateSupport };
+      this.$refs.upload.submit();
     },
     
     async handleExportClick() {
