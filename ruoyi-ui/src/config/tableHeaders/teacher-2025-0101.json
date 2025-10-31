@@ -6,13 +6,13 @@
   "version": "1.0.0",
   "columns": [
     {
-      "label": "人员编号",
+      "label": "人员",
       "prop": "personId",
       "width": "110",
       "fixed": true
     },
     {
-      "label": "姓名",
+      "label": "哈哈哈",
       "prop": "name",
       "width": "100",
       "fixed": true
@@ -39,7 +39,7 @@
     },
     {
       "label": "考核周期",
-      "prop": "cycle",
+      "prop": "period",
       "width": "120"
     },
     {
