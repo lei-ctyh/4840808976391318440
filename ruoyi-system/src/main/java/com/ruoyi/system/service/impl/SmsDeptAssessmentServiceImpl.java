@@ -1,54 +1,49 @@
 package com.ruoyi.system.service.impl;
 
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletResponse;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.system.domain.SmsDeptAssessment;
+import com.ruoyi.system.mapper.SmsDeptAssessmentMapper;
+import com.ruoyi.system.service.ISmsDeptAssessmentService;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.system.domain.SmsLeaderAssessment;
-import com.ruoyi.system.mapper.SmsLeaderAssessmentMapper;
-import com.ruoyi.system.service.ISmsLeaderAssessmentService;
+
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
- * 领导班子考核Service业务层处理
+ * 单位成绩考核Service业务层处理
  * 
  * @author ruoyi
  * @date 2025-01-10
  */
 @Service
-public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentService 
+public class SmsDeptAssessmentServiceImpl implements ISmsDeptAssessmentService 
 {
-    private static final Logger log = LoggerFactory.getLogger(SmsLeaderAssessmentServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(SmsDeptAssessmentServiceImpl.class);
 
     @Autowired
-    private SmsLeaderAssessmentMapper smsLeaderAssessmentMapper;
+    private SmsDeptAssessmentMapper smsDeptAssessmentMapper;
 
     /**
-     * 查询领导班子考核列表
+     * 查询单位成绩考核列表
      * 
-     * @param smsLeaderAssessment 领导班子考核
-     * @return 领导班子考核
+     * @param smsDeptAssessment 单位成绩考核
+     * @return 单位成绩考核
      */
     @Override
-    public List<SmsLeaderAssessment> selectSmsLeaderAssessmentList(SmsLeaderAssessment smsLeaderAssessment)
+    public List<SmsDeptAssessment> selectSmsDeptAssessmentList(SmsDeptAssessment smsDeptAssessment)
     {
-        return smsLeaderAssessmentMapper.selectSmsLeaderAssessmentList(smsLeaderAssessment);
+        return smsDeptAssessmentMapper.selectSmsDeptAssessmentList(smsDeptAssessment);
     }
 
     /**
@@ -59,9 +54,9 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
      * @return 考核记录
      */
     @Override
-    public SmsLeaderAssessment selectByPersonIdAndPeriod(String personId, String period)
+    public SmsDeptAssessment selectByPersonIdAndPeriod(String personId, String period)
     {
-        return smsLeaderAssessmentMapper.selectByPersonIdAndPeriod(personId, period);
+        return smsDeptAssessmentMapper.selectByPersonIdAndPeriod(personId, period);
     }
 
     /**
@@ -72,20 +67,20 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
      * @return 考核记录列表
      */
     @Override
-    public List<SmsLeaderAssessment> selectByUnitIdAndPeriod(String unitId, String period)
+    public List<SmsDeptAssessment> selectByUnitIdAndPeriod(String unitId, String period)
     {
-        return smsLeaderAssessmentMapper.selectByUnitIdAndPeriod(unitId, period);
+        return smsDeptAssessmentMapper.selectByUnitIdAndPeriod(unitId, period);
     }
 
     /**
-     * 导入领导班子考核数据
+     * 导入单位成绩考核数据
      * 
      * @param file Excel文件
      * @param updateSupport 是否更新已存在数据
      * @return 导入结果
      */
     @Override
-    public AjaxResult importLeaderAssessment(MultipartFile file, boolean updateSupport) throws Exception
+    public AjaxResult importDeptAssessment(MultipartFile file, boolean updateSupport) throws Exception
     {
         if (file == null || file.isEmpty()) {
             return AjaxResult.error("上传文件不能为空");
@@ -96,7 +91,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
             return AjaxResult.error("请上传Excel格式文件");
         }
 
-        List<SmsLeaderAssessment> assessmentList = new ArrayList<>();
+        List<SmsDeptAssessment> assessmentList = new ArrayList<>();
         List<String> errorMessages = new ArrayList<>();
         int successCount = 0;
         int updateCount = 0;
@@ -129,7 +124,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
                 }
 
                 try {
-                    SmsLeaderAssessment assessment = parseRowData(row, fieldMapping);
+                    SmsDeptAssessment assessment = parseRowData(row, fieldMapping);
                     String validationError = validateAssessmentData(assessment);
                     if (StringUtils.isNotEmpty(validationError)) {
                         errorMessages.add("第" + (i + 1) + "行：" + validationError);
@@ -138,20 +133,20 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
                     }
 
                     // 检查是否已存在
-                    SmsLeaderAssessment existing = smsLeaderAssessmentMapper.selectByPersonIdAndPeriod(
+                    SmsDeptAssessment existing = smsDeptAssessmentMapper.selectByPersonIdAndPeriod(
                         assessment.getPersonId(), assessment.getPeriod());
                     
                     if (existing != null) {
                         if (updateSupport) {
                             assessment.setUpdateTime(DateUtils.getNowDate());
-                            smsLeaderAssessmentMapper.updateSmsLeaderAssessment(assessment);
+                            smsDeptAssessmentMapper.updateSmsDeptAssessment(assessment);
                             updateCount++;
                         } else {
                             skipCount++;
                         }
                     } else {
                         assessment.setCreateTime(DateUtils.getNowDate());
-                        smsLeaderAssessmentMapper.insertSmsLeaderAssessment(assessment);
+                        smsDeptAssessmentMapper.insertSmsDeptAssessment(assessment);
                         successCount++;
                     }
                 } catch (Exception e) {
@@ -252,8 +247,8 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         return descriptions.getOrDefault(fieldName, fieldName);
     }
 
-    private SmsLeaderAssessment parseRowData(Row row, Map<String, Integer> fieldMapping) throws Exception {
-        SmsLeaderAssessment assessment = new SmsLeaderAssessment();
+    private SmsDeptAssessment parseRowData(Row row, Map<String, Integer> fieldMapping) throws Exception {
+        SmsDeptAssessment assessment = new SmsDeptAssessment();
         
         for (Map.Entry<String, Integer> entry : fieldMapping.entrySet()) {
             String fieldName = entry.getKey();
@@ -269,26 +264,13 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         return assessment;
     }
 
-    private void setFieldValue(SmsLeaderAssessment assessment, String fieldName, String cellValue) throws Exception {
+    private void setFieldValue(SmsDeptAssessment assessment, String fieldName, String cellValue) throws Exception {
         switch (fieldName) {
             case "personId":
                 assessment.setPersonId(cellValue);
                 break;
-            case "personName":
-            case "name":
-                assessment.setPersonName(cellValue);
-                break;
             case "unitId":
                 assessment.setUnitId(cellValue);
-                break;
-            case "birthDate":
-                assessment.setBirthDate(cellValue);
-                break;
-            case "age":
-                assessment.setAge(cellValue);
-                break;
-            case "title":
-                assessment.setTitle(cellValue);
                 break;
             case "period":
                 assessment.setPeriod(cellValue);
@@ -391,15 +373,13 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
         return true;
     }
 
-    private String validateAssessmentData(SmsLeaderAssessment assessment) {
+    private String validateAssessmentData(SmsDeptAssessment assessment) {
         if (StringUtils.isEmpty(assessment.getPersonId())) {
-            return "人员编号不能为空";
+            return "考核单位编号不能为空";
         }
-        if (StringUtils.isEmpty(assessment.getPersonName())) {
-            return "姓名不能为空";
-        }
+
         if (StringUtils.isEmpty(assessment.getUnitId())) {
-            return "单位不能为空";
+            return "所属单位不能为空";
         }
         if (StringUtils.isEmpty(assessment.getPeriod())) {
             return "评定周期不能为空";

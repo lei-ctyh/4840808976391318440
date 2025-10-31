@@ -2,15 +2,11 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ruoyi.system.mapper.SmsLeaderAssessmentMapper">
+<mapper namespace="com.ruoyi.system.mapper.SmsDeptAssessmentMapper">
     
-    <resultMap type="SmsLeaderAssessment" id="SmsLeaderAssessmentResult">
+    <resultMap type="SmsDeptAssessment" id="SmsDeptAssessmentResult">
         <result property="personId"    column="person_id"    />
-        <result property="personName"    column="person_name"    />
         <result property="unitId"    column="unit_id"    />
-        <result property="birthDate"    column="birth_date"    />
-        <result property="age"    column="age"    />
-        <result property="title"    column="title"    />
         <result property="period"    column="period"    />
         <result property="metric001"    column="metric_001"    />
         <result property="metric002"    column="metric_002"    />
@@ -41,23 +37,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
     </resultMap>
 
-    <sql id="selectSmsLeaderAssessmentVo">
-        select person_id, person_name, unit_id, birth_date, age, title, period, 
+    <sql id="selectSmsDeptAssessmentVo">
+        select person_id, unit_id,  period,
                metric_001, metric_002, metric_003, metric_004, metric_005, 
                metric_006, metric_007, metric_008, metric_009, metric_010,
                metric_011, metric_012, metric_013, metric_014, metric_015,
                metric_016, metric_017, metric_018, metric_019, metric_020,
                total_score, total_rating, remark, create_by, create_time, update_by, update_time 
-        from sms_leader_assessment
+        from sms_dept_assessment
     </sql>
 
-    <select id="selectSmsLeaderAssessmentList" parameterType="SmsLeaderAssessment" resultMap="SmsLeaderAssessmentResult">
-        <include refid="selectSmsLeaderAssessmentVo"/>
+    <select id="selectSmsDeptAssessmentList" parameterType="SmsDeptAssessment" resultMap="SmsDeptAssessmentResult">
+        <include refid="selectSmsDeptAssessmentVo"/>
         <where>  
-            <if test="personName != null  and personName != ''"> and person_name like concat('%', #{personName}, '%')</if>
             <if test="unitId != null "> and unit_id = #{unitId}</if>
-            <if test="age != null "> and age = #{age}</if>
-            <if test="title != null  and title != ''"> and title = #{title}</if>
             <if test="period != null  and period != ''"> and period = #{period}</if>
             <if test="totalScore != null "> and total_score = #{totalScore}</if>
             <if test="totalRating != null  and totalRating != ''"> and total_rating = #{totalRating}</if>
@@ -65,20 +58,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         order by person_id desc
     </select>
     
-    <select id="selectByPersonIdAndPeriod" resultMap="SmsLeaderAssessmentResult">
-        <include refid="selectSmsLeaderAssessmentVo"/>
+    <select id="selectByPersonIdAndPeriod" resultMap="SmsDeptAssessmentResult">
+        <include refid="selectSmsDeptAssessmentVo"/>
         where person_id = #{personId} and period = #{period}
     </select>
 
-    <select id="selectByUnitIdAndPeriod" resultMap="SmsLeaderAssessmentResult">
-        <include refid="selectSmsLeaderAssessmentVo"/>
+    <select id="selectByUnitIdAndPeriod" resultMap="SmsDeptAssessmentResult">
+        <include refid="selectSmsDeptAssessmentVo"/>
         where unit_id = #{unitId} and period = #{period}
         order by person_id
     </select>
 
-    <insert id="batchInsertSmsLeaderAssessment" parameterType="java.util.List">
-        insert into sms_leader_assessment (
-            person_id, person_name, unit_id, birth_date, age, title, period,
+    <insert id="batchInsertSmsDeptAssessment" parameterType="java.util.List">
+        insert into sms_dept_assessment (
+            person_id,  unit_id, period,
             metric_001, metric_002, metric_003, metric_004, metric_005,
             metric_006, metric_007, metric_008, metric_009, metric_010,
             metric_011, metric_012, metric_013, metric_014, metric_015,
@@ -87,8 +80,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ) values
         <foreach collection="list" item="item" separator=",">
             (
-                #{item.personId}, #{item.personName}, #{item.unitId}, #{item.birthDate}, 
-                #{item.age}, #{item.title}, #{item.period},
+                #{item.personId},  #{item.unitId},
+                #{item.period},
                 #{item.metric001}, #{item.metric002}, #{item.metric003}, #{item.metric004}, #{item.metric005},
                 #{item.metric006}, #{item.metric007}, #{item.metric008}, #{item.metric009}, #{item.metric010},
                 #{item.metric011}, #{item.metric012}, #{item.metric013}, #{item.metric014}, #{item.metric015},
@@ -98,14 +91,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </insert>
 
-    <update id="updateSmsLeaderAssessment" parameterType="SmsLeaderAssessment">
-        update sms_leader_assessment
+    <update id="updateSmsDeptAssessment" parameterType="SmsDeptAssessment">
+        update sms_dept_assessment
         <trim prefix="SET" suffixOverrides=",">
-            <if test="personName != null and personName != ''">person_name = #{personName},</if>
             <if test="unitId != null">unit_id = #{unitId},</if>
-            <if test="birthDate != null">birth_date = #{birthDate},</if>
-            <if test="age != null">age = #{age},</if>
-            <if test="title != null">title = #{title},</if>
             <if test="metric001 != null">metric_001 = #{metric001},</if>
             <if test="metric002 != null">metric_002 = #{metric002},</if>
             <if test="metric003 != null">metric_003 = #{metric003},</if>
@@ -215,15 +204,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where person_id = #{personId} and period = #{period}
     </update>
 
-    <insert id="insertSmsLeaderAssessment" parameterType="SmsLeaderAssessment">
-        insert into sms_leader_assessment
+    <insert id="insertSmsDeptAssessment" parameterType="SmsDeptAssessment">
+        insert into sms_dept_assessment
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="personId != null">person_id,</if>
-            <if test="personName != null and personName != ''">person_name,</if>
             <if test="unitId != null">unit_id,</if>
-            <if test="birthDate != null">birth_date,</if>
-            <if test="age != null">age,</if>
-            <if test="title != null">title,</if>
             <if test="period != null">period,</if>
             <if test="metric001 != null">metric_001,</if>
             <if test="metric002 != null">metric_002,</if>
@@ -334,11 +319,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="personId != null">#{personId},</if>
-            <if test="personName != null and personName != ''">#{personName},</if>
             <if test="unitId != null">#{unitId},</if>
-            <if test="birthDate != null">#{birthDate},</if>
-            <if test="age != null">#{age},</if>
-            <if test="title != null">#{title},</if>
             <if test="period != null">#{period},</if>
             <if test="metric001 != null">#{metric001},</if>
             <if test="metric002 != null">#{metric002},</if>

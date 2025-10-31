@@ -33,28 +33,30 @@
               <chart-dashboard />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="教师看板" name="teacher">
-              <teacher-dashboard 
-                :selectedDeptNode="selectedDeptNode" 
+              <teacher-dashboard
+                :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('student')" label="学生看板" name="student">
-              <student-dashboard 
-                :selectedDeptNode="selectedDeptNode" 
+              <student-dashboard
+                :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="领导看板" name="leader">
-              <leader-dashboard 
-                :selectedDeptNode="selectedDeptNode" 
+              <leader-dashboard
+                :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('org')" label="单位看板" name="org">
-              <dept-dashboard :selected-dept="selectedDeptNode" />
+            <el-tab-pane v-if="visibleTabKeys.includes('dept')" label="单位看板" name="dept">
+              <dept-dashboard   :selectedDeptNode="selectedDeptNode"
+                                :orgTypeText="orgTypeText"
+                                :organizationPath="organizationPath" />
             </el-tab-pane>
           </el-tabs>
           <div v-else class="empty-state">
@@ -81,9 +83,9 @@ import DeptDashboard from "@/components/Dashboard/DeptDashboard.vue"
 
 export default {
   name: "Index",
-  components: { 
-    Splitpanes, 
-    Pane, 
+  components: {
+    Splitpanes,
+    Pane,
     LeaderDashboard,
     ChartDashboard,
     StudentDashboard,
@@ -100,7 +102,7 @@ export default {
       defaultExpandedKeys: [],
       selectedDeptNode: null,
       selectedElNode: null,
-      visibleTabKeys: ["charts", "teacher", "student", "leader", "org"]
+      visibleTabKeys: ["charts", "teacher", "student", "leader", "dept"]
     }
   },
   computed: {
@@ -114,12 +116,12 @@ export default {
       if (!this.selectedElNode || !this.selectedDeptNode) {
         return '未选择组织'
       }
-      
+
       // 构建完整的组织路径
       const buildPath = (node) => {
         const path = []
         let current = node
-        
+
         while (current) {
           if (current.data && current.data.label) {
             path.unshift(current.data.label)
@@ -128,10 +130,10 @@ export default {
           }
           current = current.parent
         }
-        
+
         return path.length > 0 ? path.join(' / ') : '未知组织'
       }
-      
+
       return buildPath(this.selectedElNode)
     }
   },
@@ -204,7 +206,7 @@ export default {
         return
       }
       if (type === 'teaching') {
-        this.visibleTabKeys = ["charts", "teacher", "student", "org"]
+        this.visibleTabKeys = ["charts", "teacher", "student", "dept"]
         if (!this.visibleTabKeys.includes(this.activeTab)) this.activeTab = "charts"
         return
       }

@@ -1,10 +1,9 @@
 package com.ruoyi.system.domain;
 
-import java.util.Date;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * 领导成绩考核对象 sms_leader_assessment
@@ -12,33 +11,20 @@ import com.ruoyi.common.core.domain.BaseEntity;
  * @author ruoyi
  * @date 2025-10-28
  */
-public class SmsLeaderAssessment extends BaseEntity
+public class SmsDeptAssessment extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
-    /** 人员编号 */
-    @Excel(name = "人员编号")
-    private String personId;
-
-    /** 姓名 */
-    @Excel(name = "姓名")
-    private String personName;
-
     /** 单位编号 */
     @Excel(name = "单位编号")
+    private String personId;
+
+
+    /** 单位编号 */
+    @Excel(name = "所属单位编号")
     private String unitId;
 
-    /** 出生年月 */
-    @Excel(name = "出生年月", dateFormat = "yyyy-MM")
-    private String birthDate;
 
-    /** 年龄 */
-    @Excel(name = "年龄")
-    private String age;
-
-    /** 衔级 */
-    @Excel(name = "衔级")
-    private String title;
 
     /** 评定周期 */
     @Excel(name = "评定周期")
@@ -171,13 +157,9 @@ public class SmsLeaderAssessment extends BaseEntity
         this.personId = personId;
     }
 
-    public String getPersonName() {
-        return personName;
-    }
 
-    public void setPersonName(String personName) {
-        this.personName = personName;
-    }
+
+
 
     public String getUnitId() {
         return unitId;
@@ -187,29 +169,16 @@ public class SmsLeaderAssessment extends BaseEntity
         this.unitId = unitId;
     }
 
-    public String getBirthDate() {
-        return birthDate;
-    }
 
-    public void setBirthDate(String birthDate) {
-        this.birthDate = birthDate;
-    }
 
-    public String getAge() {
-        return age;
-    }
 
-    public void setAge(String age) {
-        this.age = age;
-    }
 
-    public String getTitle() {
-        return title;
-    }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+
+
+
+
+
 
     public String getPeriod() {
         return period;
@@ -556,11 +525,7 @@ public class SmsLeaderAssessment extends BaseEntity
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
             .append("personId", getPersonId())
-            .append("personName", getPersonName())
             .append("unitId", getUnitId())
-            .append("birthDate", getBirthDate())
-            .append("age", getAge())
-            .append("title", getTitle())
             .append("period", getPeriod())
             .append("totalScore", getTotalScore())
             .append("totalRating", getTotalRating())

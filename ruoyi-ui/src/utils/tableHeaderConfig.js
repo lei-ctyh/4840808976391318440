@@ -7,7 +7,7 @@
 import defaultTeacherConfig from '@/config/tableHeaders/default-teacher.json'
 import defaultLeaderConfig from '@/config/tableHeaders/default-leader.json'
 import defaultStudentConfig from '@/config/tableHeaders/default-student.json'
-import defaultUnitConfig from '@/config/tableHeaders/default-unit.json'
+import defaultDeptConfig from '@/config/tableHeaders/default-dept.json'
 
 /**
  * 表头配置管理器
@@ -19,7 +19,7 @@ class TableHeaderConfigManager {
       teacher: defaultTeacherConfig,
       leader: defaultLeaderConfig,
       student: defaultStudentConfig,
-      unit: defaultUnitConfig
+      dept: defaultDeptConfig
     }
   }
 
@@ -34,7 +34,7 @@ class TableHeaderConfigManager {
     try {
       // 生成配置键
       const configKey = this.generateConfigKey(boardType, year, orgCode)
-      
+
       // 检查缓存
       if (this.configCache.has(configKey)) {
         return this.configCache.get(configKey)
@@ -42,7 +42,7 @@ class TableHeaderConfigManager {
 
       // 尝试加载自定义配置
       const customConfig = await this.loadCustomConfig(boardType, year, orgCode)
-      
+
       if (customConfig) {
         // 验证配置格式
         const validatedConfig = this.validateConfig(customConfig)
@@ -74,14 +74,14 @@ class TableHeaderConfigManager {
       if (!orgCode) {
         return null
       }
-      
+
       // 构建配置文件名
       const configFileName = `${boardType}-${year}-${orgCode}.json`
-      
+
       // 动态导入配置文件
       const configModule = await import(`@/config/tableHeaders/${configFileName}`)
       return configModule.default || configModule
-      
+
     } catch (error) {
       // 配置文件不存在或加载失败
       console.log(`自定义配置文件不存在: ${boardType}-${year}-${orgCode}.json`)
@@ -179,7 +179,7 @@ class TableHeaderConfigManager {
       { boardType: 'teacher', year: '2024', orgCode: '0001', description: '2024年机构0001教师看板配置' },
       { boardType: 'leader', year: '2024', orgCode: '0001', description: '2024年机构0001领导看板配置' },
       { boardType: 'student', year: '2024', orgCode: '0001', description: '2024年机构0001学生看板配置' },
-      { boardType: 'unit', year: '2024', orgCode: '0001', description: '2024年机构0001单位看板配置' }
+      { boardType: 'dept', year: '2024', orgCode: '0001', description: '2024年机构0001单位看板配置' }
       // 可以添加更多配置
     ]
   }

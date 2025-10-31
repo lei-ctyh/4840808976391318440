@@ -1,14 +1,10 @@
 -- 学生成绩考核表定义
-DROP TABLE IF EXISTS `sms_student_assessment`;
+DROP TABLE IF EXISTS `sms_dept_assessment`;
 -- auto-generated definition
-CREATE TABLE sms_student_assessment
+CREATE TABLE sms_dept_assessment
 (
-    person_id    varchar(50)      NOT NULL COMMENT '人员编号',
-    person_name  varchar(50)      NOT NULL COMMENT '姓名',
-    unit_id      varchar(50)      NULL COMMENT '单位编号',
-    birth_date   varchar(50)      NULL COMMENT '出生日期',
-    age          varchar(50)      NULL COMMENT '年龄',
-    title        varchar(50)      NULL COMMENT '衔级',
+    person_id    varchar(50)      NOT NULL COMMENT '考核单位编号',
+    unit_id      varchar(50)      NULL COMMENT '上级单位编号',
     PERIOD VARCHAR (32) NOT NULL COMMENT '评定周期（如：2025Q3、2025-上半年）',
     metric_001   varchar(50)      NULL COMMENT '指标001',
     metric_002   varchar(50)      NULL COMMENT '指标002',
@@ -123,5 +119,5 @@ CREATE TABLE sms_student_assessment
     COMMENT '学生成绩考核表';
 
 CREATE INDEX idx_unit
-    ON sms_student_assessment (unit_id);
+    ON sms_dept_assessment (unit_id);
 

@@ -22,7 +22,7 @@
     },
     {
       "label": "上级单位",
-      "prop": "parentUnitName",
+      "prop": "unit",
       "width": "180"
     },
     {

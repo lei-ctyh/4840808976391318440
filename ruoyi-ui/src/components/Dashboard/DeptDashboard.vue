@@ -1,8 +1,47 @@
 <template>
   <div class="dept-dashboard">
     <!-- 上传模板对话框 -->
-    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="480px">
+    <el-dialog title="上传模板 (Excel)" :visible.sync="uploadTemplateDialogVisible" width="600px" @open="loadExistingTemplate">
       <div>
+        <!-- 已有模板信息显示 -->
+        <div v-if="existingTemplate" class="existing-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="当前已有模板"
+            type="info"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p><strong>文件名：</strong>{{ existingTemplate.fileName }}</p>
+              <p><strong>上传时间：</strong>{{ existingTemplate.createTime }}</p>
+              <p><strong>文件大小：</strong>{{ formatFileSize(existingTemplate.fileSize) }}</p>
+              <p style="color: #909399; font-size: 12px;">上传新模板将覆盖当前模板</p>
+            </div>
+          </el-alert>
+        </div>
+
+        <!-- 无模板提示 -->
+        <div v-else-if="templateCheckCompleted" class="no-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="暂无模板"
+            type="warning"
+            :closable="false"
+            show-icon>
+            <div slot="default">
+              <p>当前组织暂无上传的模板，请上传新模板。</p>
+            </div>
+          </el-alert>
+        </div>
+
+        <!-- 加载中提示 -->
+        <div v-else class="loading-template-info" style="margin-bottom: 20px;">
+          <el-alert
+            title="正在检查已有模板..."
+            type="info"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+
         <p>请选择模板文件并上传到服务器。</p>
         <file-upload
           v-model="templateUrl"
@@ -11,6 +50,7 @@
           :file-size="50"
           :is-show-tip="true"
           :action="'/common/upload'"
+          @input="handleTemplateUpload"
         />
         <p class="tip">上传后，"下载模板"将直接从服务器取回该文件。</p>
       </div>
@@ -19,18 +59,85 @@
       </span>
     </el-dialog>
 
-    <div class="dashboard-header">
-      <div class="header-left">
-        <h3>单位看板</h3>
-        <el-tag size="small" class="dept-tag">{{ selectedDeptNode && selectedDeptNode.label ? selectedDeptNode.label : '未选择组织' }}</el-tag>
+    <!-- 数据导入对话框 -->
+    <el-dialog title="导入单位成绩考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
+      <div>
+        <div class="import-tips">
+          <el-alert
+            title="导入说明"
+            :description="importDescription"
+            type="info"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </div>
+
+        <div class="import-actions" style="margin: 20px 0;">
+          <el-checkbox v-model="updateSupport">覆盖已存在的数据</el-checkbox>
+        </div>
+
+        <div class="import-upload">
+          <el-upload
+            ref="importUpload"
+            :limit="1"
+            accept=".xlsx,.xls"
+            :headers="uploadHeaders"
+            :action="uploadImportUrl"
+            :data="uploadData"
+            :on-change="handleFileChange"
+            :on-progress="handleImportProgress"
+            :on-success="handleImportSuccess"
+            :on-error="handleImportError"
+            :before-upload="beforeImportUpload"
+            :auto-upload="false"
+            drag>
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传xlsx/xls文件，且不超过10MB</div>
+          </el-upload>
+        </div>
+
+        <!-- 导入进度 -->
+        <div v-if="importProgress.show" class="import-progress" style="margin-top: 20px;">
+          <el-progress
+            :percentage="importProgress.percentage"
+            :status="importProgress.status || undefined"
+            :stroke-width="18">
+          </el-progress>
+          <p class="progress-text">{{ importProgress.text }}</p>
+        </div>
+
+        <!-- 导入结果 -->
+        <div v-if="importResult.show" class="import-result" style="margin-top: 20px;">
+          <el-alert
+            :title="importResult.title"
+            :type="importResult.type"
+            :closable="false"
+            show-icon>
+          </el-alert>
+          <!-- 直接显示消息内容，不使用slot -->
+          <div style="margin-top: 10px; padding: 15px; border: 1px solid #e6f7ff; background: #f6ffed; border-radius: 4px;" v-html="importResult.message"></div>
+        </div>
       </div>
-      <div class="header-right">
-        <el-button type="primary" icon="el-icon-search" size="small" @click="handleSearch">查询</el-button>
-        <el-button icon="el-icon-refresh" size="small" @click="handleRefresh">刷新</el-button>
-        <el-button icon="el-icon-upload2" size="small" @click="handleImport">导入</el-button>
-        <el-button icon="el-icon-download" size="small" @click="handleExport">导出</el-button>
-        <el-button icon="el-icon-upload" size="small" @click="handleUploadTemplate">上传模板</el-button>
-        <el-button icon="el-icon-document" size="small" @click="handleDownloadTemplate">下载模板</el-button>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancelImport">取消</el-button>
+        <el-button type="primary" @click="submitImport" :loading="importing" :disabled="!hasImportFile">开始导入</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 单位看板头部 -->
+    <div class="dept-header">
+      <div class="dept-left">
+        <span class="dept-title">单位成绩年度考核</span>
+        <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
+        <el-tag size="small" class="dept-dept">{{ organizationPath }}</el-tag>
+      </div>
+      <div class="dept-right">
+        <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
+        <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
+        <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
+        <el-button icon="el-icon-document" size="small" @click="downloadTemplateFromServer">下载模板</el-button>
         <span class="label">年度</span>
         <el-date-picker
           v-model="selectedYear"
@@ -44,133 +151,104 @@
       </div>
     </div>
 
-    <div class="dashboard-content">
-      <!-- 统计卡片 -->
-      <div class="stats-cards">
-        <div class="stat-card">
-          <div class="stat-icon dept-icon">
-            <i class="el-icon-office-building"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ deptStats.total }}</div>
-            <div class="stat-label">下级单位</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon staff-icon">
-            <i class="el-icon-user-solid"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ deptStats.staff }}</div>
-            <div class="stat-label">总人数</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon performance-icon">
-            <i class="el-icon-trophy"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ deptStats.avgScore }}</div>
-            <div class="stat-label">平均绩效</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon budget-icon">
-            <i class="el-icon-money"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-number">{{ deptStats.budget }}万</div>
-            <div class="stat-label">年度预算</div>
-          </div>
-        </div>
-      </div>
+    <!-- 单位看板表格 -->
+    <div class="tab-body">
+      <dynamic-table
+        :data="deptTablePageData"
+        board-type="dept"
+        :year="selectedYear"
+        :org-code="currentOrgCode"
+        :table-props="{
+          border: true,
+          size: 'small',
+          style: 'width: 100%',
+          'header-cell-style': { textAlign: 'center' }
+        }"
+        @config-loaded="onTableConfigLoaded"
+        @config-error="onTableConfigError"
+        ref="deptTable"
+      />
 
-      <!-- 单位列表 -->
-      <div class="dept-table">
-        <el-table :data="deptTablePageData" border size="small" style="width: 100%" row-key="id" :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-          <el-table-column prop="deptName" label="单位名称" min-width="200" />
-          <el-table-column prop="deptCode" label="单位编码" width="120" />
-          <el-table-column prop="leader" label="负责人" width="100" />
-          <el-table-column prop="staffCount" label="人员数量" width="100" />
-          <el-table-column prop="performance" label="绩效评分" width="100">
-            <template slot-scope="scope">
-              <el-progress
-                :percentage="scope.row.performance"
-                :color="getPerformanceColor(scope.row.performance)"
-                :show-text="true"
-                :format="format => `${format}分`"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column prop="budget" label="预算(万元)" width="120" />
-          <el-table-column prop="status" label="状态" width="100">
-            <template slot-scope="scope">
-              <el-tag :type="getStatusType(scope.row.status)" size="mini">
-                {{ scope.row.status }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="createTime" label="成立时间" width="120" />
-          <el-table-column label="操作" width="180">
-            <template slot-scope="scope">
-              <el-button type="text" size="mini" @click="viewDept(scope.row)">查看</el-button>
-              <el-button type="text" size="mini" @click="editDept(scope.row)">编辑</el-button>
-              <el-button type="text" size="mini" @click="viewStaff(scope.row)">人员</el-button>
-              <el-button type="text" size="mini" @click="viewReport(scope.row)">报告</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <!-- 分页 -->
-        <div class="table-pagination">
-          <el-pagination
-            background
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="deptPagination.total"
-            :page-size="deptPagination.pageSize"
-            :current-page="deptPagination.currentPage"
-            :page-sizes="[10, 20, 50]"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
+      <!-- 分页 -->
+      <div class="table-pagination">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="deptPagination.total"
+          :page-size="deptPagination.pageSize"
+          :current-page="deptPagination.currentPage"
+          :page-sizes="[10, 20, 50]"
+          @size-change="handleDeptSizeChange"
+          @current-change="handleDeptCurrentChange"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { getDeptAssessmentData } from "@/api/dashboard"
 import { deptTreeSelect } from "@/api/system/user"
+import { getToken } from "@/utils/auth"
 import FileUpload from "@/components/FileUpload"
-import { bindTemplate, resolveTemplate } from "@/api/system/template"
+import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/template"
+import DynamicTable from "@/components/DynamicTable"
 
 export default {
   name: "DeptDashboard",
-  components: { FileUpload },
+  components: { FileUpload, DynamicTable },
   props: {
     selectedDeptNode: {
       type: Object,
       default: () => null
+    },
+    orgTypeText: {
+      type: String,
+      default: '其他组织'
+    },
+    organizationPath: {
+      type: String,
+      default: '未选择组织'
     }
   },
   data() {
     return {
-      selectedYear: String(new Date().getFullYear()),
-      deptStats: {
-        total: 0,
-        staff: 0,
-        avgScore: 0,
-        budget: 0
-      },
+      selectedYear: new Date().getFullYear().toString(),
       deptTableData: [],
-      deptPagination: { currentPage: 1, pageSize: 10, total: 0 },
-      // 模板相关数据
+      deptPagination: {
+        currentPage: 1,
+        pageSize: 10,
+        total: 0
+      },
       uploadTemplateDialogVisible: false,
       templateUrl: '',
       templateFileName: '',
       baseApi: process.env.VUE_APP_BASE_API,
+      // 数据导入相关
+      importDialogVisible: false,
+      importing: false,
+      updateSupport: false,
+      hasImportFile: false,
+      uploadHeaders: {},
+      uploadImportUrl: process.env.VUE_APP_BASE_API + '/system/deptAssessment/importData',
+      uploadData: {},
+      importProgress: {
+        show: false,
+        percentage: 0,
+        status: null, // 使用null而不是空字符串
+        text: ''
+      },
+      importResult: {
+        show: false,
+        title: '',
+        type: '',
+        message: ''
+      },
       // 部门树数据，用于构建单位显示名称
-      deptTreeData: []
+      deptTreeData: [],
+      // 模板信息回显相关
+      existingTemplate: null,
+      templateCheckCompleted: false
     }
   },
   computed: {
@@ -179,11 +257,17 @@ export default {
       const end = start + this.deptPagination.pageSize
       return this.deptTableData.slice(start, end)
     },
+    // 获取当前选中组织的orgCode
     currentOrgCode() {
-      return this.selectedDeptNode?.orgCode || ''
+      return this.selectedDeptNode && this.selectedDeptNode.orgCode ? this.selectedDeptNode.orgCode : null
     },
+    // 看板类型固定为dept
     boardType() {
       return 'dept'
+    },
+    // 导入说明描述
+    importDescription() {
+      return '1. 支持.xls和.xlsx格式的Excel文件\n2. 必填字段：人员编号、姓名、评定周期\n3. 如果存在相同人员和年度的记录，可选择是否覆盖'
     }
   },
   watch: {
@@ -193,13 +277,6 @@ export default {
     currentOrgCode() {
       // 当组织节点切换时，重新加载数据
       this.loadDeptData()
-    },
-    templateUrl(newVal) {
-      if (newVal) {
-        // 文件上传完成后自动绑定模板
-        this.templateFileName = newVal.split('/').pop()
-        this.bindTemplateToOrg()
-      }
     }
   },
   created() {
@@ -207,225 +284,165 @@ export default {
     this.getDeptTreeData()
   },
   methods: {
+    // 动态表格配置加载成功回调
+    onTableConfigLoaded(config) {
+      console.log('单位看板表格配置加载成功:', config)
+    },
+
+    // 动态表格配置加载失败回调
+    onTableConfigError(error) {
+      console.error('单位看板表格配置加载失败:', error)
+      this.$message.warning('表格配置加载失败，已使用默认配置')
+    },
+
+    // 获取部门树数据
+    getDeptTreeData() {
+      deptTreeSelect().then(response => {
+        this.deptTreeData = response.data || []
+      }).catch(error => {
+        console.warn('获取部门树数据失败:', error)
+        this.deptTreeData = []
+      })
+    },
+    // 处理模板上传成功
+    handleTemplateUpload(fileUrl) {
+      if (fileUrl) {
+        // 设置文件名
+        this.templateFileName = String(fileUrl).split(',')[0].split('/').pop() || '单位考核模板.xlsx'
+
+        // 直接执行模板绑定
+        if (this.currentOrgCode) {
+          this.bindTemplateToOrg(fileUrl)
+        } else {
+          this.$message.warning('请先选择组织后再上传模板')
+        }
+      }
+    },
     onYearChange() {
       this.loadDeptData()
     },
-    handleSearch() {
-      this.loadDeptData()
+    handleImportClick() {
+      this.resetImportState()
+      this.importDialogVisible = true
+      this.setupUploadHeaders()
     },
-    handleRefresh() {
-      this.loadDeptData()
+    handleExportClick() {
+      this.$message.info('导出由后端生成文件，前端不再导出')
     },
-    handleExport() {
-      this.$message.info('导出单位数据')
-    },
-    loadDeptData() {
-      // 模拟单位统计数据
-      this.deptStats = {
-        total: 12,
-        staff: 856,
-        avgScore: 85.6,
-        budget: 2580
-      }
-
-      // 模拟单位表格数据（树形结构）
-      this.deptTableData = [
-        {
-          id: 1,
-          deptName: '计算机学院',
-          deptCode: 'CS001',
-          leader: '张院长',
-          staffCount: 156,
-          performance: 88,
-          budget: 580,
-          status: '正常',
-          createTime: '2010-09',
-          children: [
-            {
-              id: 11,
-              deptName: '软件工程系',
-              deptCode: 'CS001-01',
-              leader: '李主任',
-              staffCount: 45,
-              performance: 90,
-              budget: 180,
-              status: '正常',
-              createTime: '2012-03'
-            },
-            {
-              id: 12,
-              deptName: '计算机科学系',
-              deptCode: 'CS001-02',
-              leader: '王主任',
-              staffCount: 52,
-              performance: 86,
-              budget: 200,
-              status: '正常',
-              createTime: '2011-09'
-            }
-          ]
-        },
-        {
-          id: 2,
-          deptName: '数学学院',
-          deptCode: 'MATH001',
-          leader: '赵院长',
-          staffCount: 89,
-          performance: 82,
-          budget: 320,
-          status: '正常',
-          createTime: '2008-09',
-          children: [
-            {
-              id: 21,
-              deptName: '应用数学系',
-              deptCode: 'MATH001-01',
-              leader: '陈主任',
-              staffCount: 35,
-              performance: 85,
-              budget: 150,
-              status: '正常',
-              createTime: '2010-03'
-            }
-          ]
-        },
-        {
-          id: 3,
-          deptName: '物理学院',
-          deptCode: 'PHY001',
-          leader: '刘院长',
-          staffCount: 76,
-          performance: 79,
-          budget: 280,
-          status: '正常',
-          createTime: '2009-09'
-        }
-      ]
-
-      this.deptPagination.total = this.deptTableData.length
-      this.deptPagination.currentPage = 1
-    },
-    getPerformanceColor(performance) {
-      if (performance >= 90) return '#67c23a'
-      if (performance >= 80) return '#e6a23c'
-      if (performance >= 70) return '#f56c6c'
-      return '#909399'
-    },
-    getStatusType(status) {
-      const typeMap = {
-        '正常': 'success',
-        '整改': 'warning',
-        '停办': 'danger'
-      }
-      return typeMap[status] || 'info'
-    },
-    viewDept(row) {
-      this.$message.info(`查看单位：${row.deptName}`)
-    },
-    editDept(row) {
-      this.$message.info(`编辑单位：${row.deptName}`)
-    },
-    viewStaff(row) {
-      this.$message.info(`查看${row.deptName}的人员`)
-    },
-    viewReport(row) {
-      this.$message.info(`查看${row.deptName}的报告`)
-    },
-    handleSizeChange(size) {
-      this.deptPagination.pageSize = size
-      this.deptPagination.currentPage = 1
-    },
-    handleCurrentChange(page) {
-      this.deptPagination.currentPage = page
-    },
-    // 模板相关方法
-    handleImport() {
-      this.$message.info('导入功能待实现')
-    },
-    handleUploadTemplate() {
+    openUploadTemplateDialog() {
       // 重置上传状态
       this.templateUrl = ''
       this.templateFileName = ''
       this.uploadTemplateDialogVisible = true
+      // 加载已有模板信息
+      this.loadExistingTemplate()
     },
-    async handleDownloadTemplate() {
-      if (!this.currentOrgCode) {
-        this.$message.warning('请先选择部门')
-        return
-      }
-
-      try {
-        const response = await resolveTemplate(
-          this.currentOrgCode,
-          this.boardType,
-          this.selectedYear
-        )
-
-        if (response.code === 200 && response.data) {
-          // 使用返回的filePath下载文件
-          const downloadUrl = this.baseApi + response.data.filePath
-          const link = document.createElement('a')
-          link.href = downloadUrl
-          link.download = response.data.fileName || '模板.xlsx'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          this.$message.success('模板下载成功')
-        } else {
-          this.$message.warning('未在组织链找到可用模板')
-        }
-      } catch (error) {
-        console.error('下载模板失败:', error)
-        this.$message.error('下载模板失败')
-      }
+    downloadTemplateFromServer() {
+      // 使用resolveTemplate查找可用模板
+      this.resolveAndDownloadTemplate()
     },
-    async bindTemplateToOrg() {
-      if (!this.templateUrl || !this.currentOrgCode) {
-        this.$message.warning('请确保已上传文件并选择了部门')
-        return
-      }
-
+    async loadDeptData() {
       try {
-        const response = await bindTemplate({
-          orgCode: this.currentOrgCode,
-          boardType: this.boardType,
-          year: this.selectedYear,
-          filePath: this.templateUrl,
-          fileName: this.templateFileName
-        })
+        this.loading = true
+        const response = await getDeptAssessmentData(this.selectedYear, this.currentOrgCode)
 
         if (response.code === 200) {
-          this.$message.success('模板绑定成功')
-          this.uploadTemplateDialogVisible = false
-          this.templateUrl = ''
-          this.templateFileName = ''
+          // 处理后端返回的数据格式，将metric字段映射为前端表格字段
+          const rawData = response.rows || response.data || []
+          this.deptTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
+          this.deptPagination.total = response.total || this.deptTableData.length
+          this.deptPagination.currentPage = 1
         } else {
-          this.$message.error(response.msg || '模板绑定失败')
+          this.$message.error(response.msg || '获取数据失败')
+          this.deptTableData = []
+          this.deptPagination.total = 0
         }
       } catch (error) {
-        console.error('绑定模板失败:', error)
-        this.$message.error('绑定模板失败')
+        console.error('加载单位考核数据失败:', error)
+        this.$message.error('加载数据失败，请稍后重试')
+        this.deptTableData = []
+        this.deptPagination.total = 0
+      } finally {
+        this.loading = false
       }
     },
-    // 获取部门树数据
-    async getDeptTreeData() {
-      try {
-        const response = await deptTreeSelect()
-        this.deptTreeData = response.data || []
-      } catch (error) {
-        console.error('获取部门树数据失败:', error)
+
+    // 将后端数据映射为前端表格数据
+    mapBackendDataToFrontend(backendData) {
+      return {
+        personId: backendData.personId,
+        personName: backendData.personName,
+        unitId: backendData.unitId,
+        unitName: this.getUnitDisplayName(backendData.unitId), // 需要根据unitId获取单位名称
+        birthDate: backendData.birthDate,
+        age: backendData.age,
+        title: backendData.title,
+        period: backendData.period,
+
+        // 基础科目 20% - 映射到metric001-metric006
+        basicKnowledge: backendData.metric001 || '0', // 基本知识 20%
+        sportsTrack: backendData.metric002 || '0',    // 田径
+        sportsRope: backendData.metric003 || '0',     // 跳绳
+        sportsJump: backendData.metric004 || '0',     // 跳远
+        baseGroupA: backendData.metric005 || '0',     // 共同A 25%
+        baseGroupB: backendData.metric006 || '0',     // 共同B 25%
+        baseTotal: this.calculateBaseTotal(backendData), // 基础科目总成绩
+
+        // 共同科目 30% - 映射到metric007-metric014
+        commonSubject1: backendData.metric007 || '0',
+        commonSubject2: backendData.metric008 || '0',
+        commonSubject3: backendData.metric009 || '0',
+        commonSubject4: backendData.metric010 || '0',
+        commonSubject5: backendData.metric011 || '0',
+        commonSubject6: backendData.metric012 || '0',
+        commonSubject7: backendData.metric013 || '0',
+        commonSubject8: backendData.metric014 || '0',
+        commonTotal: this.calculateCommonTotal(backendData), // 共同科目总成绩
+
+        // 岗位业务 50% - 映射到metric015
+        jobBusiness: backendData.metric015 || '0',
+
+        // 综合成绩
+        comprehensivePercent: backendData.totalScore || '0',
+        comprehensiveLevel: backendData.totalRating || '合格',
+        remark: backendData.remark || '',
+        description: backendData.status || ''
       }
     },
-    // 根据单位ID获取单位显示名称
+
+    // 计算基础科目总成绩
+    calculateBaseTotal(data) {
+      const basicKnowledge = parseFloat(data.metric001 || 0) * 0.2  // 基本知识 20%
+      const sports = (parseFloat(data.metric002 || 0) + parseFloat(data.metric003 || 0) + parseFloat(data.metric004 || 0)) / 3 * 0.3 // 体育 30%
+      const groupA = parseFloat(data.metric005 || 0) * 0.25  // 共同A 25%
+      const groupB = parseFloat(data.metric006 || 0) * 0.25  // 共同B 25%
+      return (basicKnowledge + sports + groupA + groupB).toFixed(1)
+    },
+
+    // 计算共同科目总成绩
+    calculateCommonTotal(data) {
+      let total = 0
+      let count = 0
+      for (let i = 7; i <= 14; i++) {
+        const metricKey = `metric${i.toString().padStart(3, '0')}`
+        if (data[metricKey]) {
+          total += parseFloat(data[metricKey])
+          count++
+        }
+      }
+      return count > 0 ? (total / count).toFixed(1) : '0'
+    },
+
+    // 获取单位显示名称 - 通过deptTreeSelect数据构建层级路径
     getUnitDisplayName(unitId) {
-      if (!unitId || !this.deptTreeData.length) {
+      if (!unitId || !this.deptTreeData) {
         return unitId || ''
       }
-      
+
       // 递归查找部门节点
       const findDeptNode = (nodes, targetId) => {
         for (const node of nodes) {
-          if (node.id === targetId || node.orgCode === targetId) {
+          if (node.id === targetId || node.orgCode === unitId) {
             return node
           }
           if (node.children && node.children.length > 0) {
@@ -435,30 +452,309 @@ export default {
         }
         return null
       }
-      
+
       // 构建层级路径
-      const buildPath = (nodeId) => {
-        const node = findDeptNode(this.deptTreeData, nodeId)
-        if (!node) return unitId
-        
-        const path = [node.label]
-        let currentNode = node
-        
-        // 向上查找父节点
-        while (currentNode.parentId) {
-          const parentNode = findDeptNode(this.deptTreeData, currentNode.parentId)
-          if (parentNode) {
-            path.unshift(parentNode.label)
-            currentNode = parentNode
-          } else {
-            break
-          }
+      const buildDeptPath = (node, allNodes) => {
+        const path = []
+        let current = node
+
+        // 向上查找父级节点
+        while (current) {
+          path.unshift(current.label)
+          if (!current.parentId) break
+
+          // 查找父节点
+          current = findDeptNode(allNodes, current.parentId)
         }
-        
+
         return path.join('/')
       }
-      
-      return buildPath(unitId)
+
+      const deptNode = findDeptNode(this.deptTreeData, unitId)
+      if (deptNode) {
+        return buildDeptPath(deptNode, this.deptTreeData)
+      }
+
+      return unitId || ''
+    },
+    handleDeptSizeChange(size) {
+      this.deptPagination.pageSize = size
+      this.deptPagination.currentPage = 1
+    },
+    handleDeptCurrentChange(page) {
+      this.deptPagination.currentPage = page
+    },
+    // 绑定模板到当前组织
+    async bindTemplateToOrg(filePath) {
+      if (!this.currentOrgCode) {
+        this.$message.error('无法获取当前组织编码，请重新选择组织')
+        return
+      }
+
+      try {
+        const templateData = {
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: parseInt(this.selectedYear),
+          filePath: filePath,
+          fileName: this.templateFileName,
+          fileExt: this.templateFileName.split('.').pop() || 'xlsx',
+          status: '1'
+        }
+
+        await bindTemplate(templateData)
+        this.uploadTemplateDialogVisible = false
+        this.$message.success('模板绑定成功')
+
+      } catch (error) {
+        console.error('绑定模板失败:', error)
+        this.$message.error('模板绑定失败: ' + (error.msg || '未知错误'))
+      }
+    },
+    // 解析并下载模板
+    async resolveAndDownloadTemplate() {
+      if (!this.currentOrgCode) {
+        this.$message.error('无法获取当前组织编码，请重新选择组织')
+        return
+      }
+
+      try {
+        const response = await resolveTemplate(
+          this.currentOrgCode,
+          this.boardType,
+          parseInt(this.selectedYear)
+        )
+        console.log('resolveTemplate response:', response)
+
+        if (response.code === 200 && response.data) {
+          // 找到模板，开始下载
+          const template = response.data
+          const isAbsolute = /^(https?:)?\/\//.test(template.filePath)
+          const href = isAbsolute ? template.filePath : (this.baseApi + template.filePath)
+
+          const a = document.createElement('a')
+          a.href = href
+          a.download = template.fileName
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+
+          this.$message.success('模板下载开始')
+        } else {
+          // 未找到模板
+          this.$message.warning('未在组织链找到可用模板，请先上传模板或联系上级组织')
+        }
+
+      } catch (error) {
+        console.error('解析模板失败:', error)
+        this.$message.error('查找模板失败: ' + (error.msg || '未知错误'))
+      }
+    },
+
+    // 数据导入相关方法
+    resetImportState() {
+      this.importing = false
+      this.hasImportFile = false
+      this.updateSupport = false
+      this.importProgress.show = false
+      this.importProgress.percentage = 0
+      this.importProgress.status = null // 使用null而不是空字符串
+      this.importProgress.text = ''
+      this.importResult.show = false
+      this.uploadData = {}
+      if (this.$refs.importUpload) {
+        this.$refs.importUpload.clearFiles()
+      }
+    },
+
+    setupUploadHeaders() {
+      this.uploadHeaders = {
+        Authorization: 'Bearer ' + getToken()
+      }
+      this.uploadData = {
+        updateSupport: this.updateSupport,
+        year: this.selectedYear
+      }
+    },
+
+    handleFileChange(file, fileList) {
+      // 文件选择后立即检查并更新状态
+      if (fileList.length > 0) {
+        const selectedFile = fileList[0].raw
+        const isExcel = selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+          selectedFile.type === 'application/vnd.ms-excel'
+        const isLt10M = selectedFile.size / 1024 / 1024 < 10
+
+        if (isExcel && isLt10M) {
+          this.hasImportFile = true
+        } else {
+          this.hasImportFile = false
+          if (!isExcel) {
+            this.$message.error('只能上传Excel文件!')
+          }
+          if (!isLt10M) {
+            this.$message.error('上传文件大小不能超过10MB!')
+          }
+        }
+      } else {
+        this.hasImportFile = false
+      }
+    },
+
+    beforeImportUpload(file) {
+      const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        file.type === 'application/vnd.ms-excel'
+      const isLt10M = file.size / 1024 / 1024 < 10
+
+      if (!isExcel) {
+        this.$message.error('只能上传Excel文件!')
+        return false
+      }
+      if (!isLt10M) {
+        this.$message.error('上传文件大小不能超过10MB!')
+        return false
+      }
+
+      this.hasImportFile = true
+      this.uploadData.updateSupport = this.updateSupport
+      this.uploadData.year = this.selectedYear
+      return true
+    },
+
+    handleImportProgress(event, file, fileList) {
+      this.importProgress.show = true
+      this.importProgress.percentage = Math.round(event.percent)
+      this.importProgress.status = 'active'
+      this.importProgress.text = '正在上传文件...'
+    },
+
+    handleImportSuccess(response, file, fileList) {
+      console.log('导入响应:', response)
+      this.importing = false
+      this.importProgress.show = false
+
+      if (response.code === 200) {
+        const result = response.data || {}
+        console.log('导入结果数据:', result)
+
+        let message = `<p><strong>导入完成！</strong>总计处理 ${result.total || 0} 条记录</p>`
+        message += `<div style="margin: 10px 0; padding: 10px; background: #f5f7fa; border-radius: 4px;">`
+
+        // 显示所有统计信息，包括为0的情况
+        message += `<p style="margin: 5px 0;">✅ 成功导入：${result.success || 0} 条</p>`
+        message += `<p style="margin: 5px 0;">🔄 更新记录：${result.update || 0} 条</p>`
+        message += `<p style="margin: 5px 0;">⏭️ 跳过记录：${result.skip || 0} 条</p>`
+        message += `<p style="margin: 5px 0; color: ${result.error > 0 ? '#f56c6c' : '#67c23a'};">❌ 失败记录：${result.error || 0} 条</p>`
+        message += `</div>`
+
+        if (result.errorMessages && result.errorMessages.length > 0) {
+          message += `<p style="color: #f56c6c; margin-top: 10px;"><strong>错误详情：</strong></p>`
+          result.errorMessages.slice(0, 5).forEach(error => {
+            message += `<p style="color: #f56c6c; font-size: 12px; margin-left: 10px;">• ${error}</p>`
+          })
+          if (result.errorMessages.length > 5) {
+            message += `<p style="color: #f56c6c; font-size: 12px; margin-left: 10px;">... 还有 ${result.errorMessages.length - 5} 个错误</p>`
+          }
+        }
+
+        console.log('构建的消息:', message)
+
+        // 设置导入结果显示
+        this.importResult.show = true
+        this.importResult.title = '导入完成'
+        this.importResult.type = result.error > 0 ? 'warning' : 'success'
+        this.importResult.message = message
+
+        console.log('importResult状态:', this.importResult)
+
+        // 刷新数据
+        this.loadDeptData()
+      } else {
+        this.importResult.show = true
+        this.importResult.title = '导入失败'
+        this.importResult.type = 'error'
+        this.importResult.message = `<p>${response.msg || '导入过程中发生错误'}</p>`
+      }
+    },
+
+    handleImportError(error, file, fileList) {
+      this.importing = false
+      this.importProgress.show = false
+      this.importResult.show = true
+      this.importResult.title = '导入失败'
+      this.importResult.type = 'error'
+      this.importResult.message = `<p>文件上传失败: ${error.message || '未知错误'}</p>`
+    },
+
+    submitImport() {
+      if (!this.hasImportFile) {
+        this.$message.warning('请先选择要导入的文件')
+        return
+      }
+
+      this.importing = true
+      this.importResult.show = false
+      this.uploadData.updateSupport = this.updateSupport
+      this.uploadData.year = this.selectedYear
+
+      this.$refs.importUpload.submit()
+    },
+
+    cancelImport() {
+      this.importDialogVisible = false
+      this.resetImportState()
+    },
+
+    // 加载已有模板信息
+    async loadExistingTemplate() {
+      this.existingTemplate = null
+      this.templateCheckCompleted = false
+
+      // 验证必需参数
+      if (!this.currentOrgCode || !this.boardType || !this.selectedYear) {
+        console.log('参数不完整，跳过模板查询:', {
+          currentOrgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          selectedYear: this.selectedYear
+        })
+        this.templateCheckCompleted = true
+        return
+      }
+
+      try {
+        const response = await getTemplate({
+          orgCode: this.currentOrgCode,
+          boardType: this.boardType,
+          year: this.selectedYear
+        })
+
+        if (response.code === 200 && response.data) {
+          this.existingTemplate = response.data
+          // 设置模板文件名和URL，用于显示当前模板信息
+          this.templateFileName = response.data.fileName || ''
+          this.templateUrl = response.data.fileUrl || ''
+        }
+      } catch (error) {
+        console.error('查询已有模板失败:', error)
+      } finally {
+        this.templateCheckCompleted = true
+      }
+    },
+
+    // 格式化文件大小
+    formatFileSize(size) {
+      if (!size) return '未知'
+
+      const units = ['B', 'KB', 'MB', 'GB']
+      let index = 0
+      let fileSize = parseFloat(size)
+
+      while (fileSize >= 1024 && index < units.length - 1) {
+        fileSize /= 1024
+        index++
+      }
+
+      return fileSize.toFixed(2) + ' ' + units[index]
     }
   }
 }
@@ -469,7 +765,11 @@ export default {
   width: 100%;
 }
 
-.dashboard-header {
+.tab-body {
+  min-height: 400px;
+}
+
+.dept-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -477,107 +777,80 @@ export default {
   background: #f5f7fa;
   border: 1px solid #ebeef5;
   border-radius: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.header-left {
+.dept-left {
   display: flex;
   align-items: center;
 }
 
-.header-left h3 {
-  margin: 0 12px 0 0;
-  color: #303133;
-  font-size: 16px;
+.dept-title {
+  font-weight: 600;
+  margin-right: 10px;
 }
 
-.dept-tag {
+.dept-dept {
   margin-left: 8px;
 }
 
-.header-right .label {
+.dept-right .label {
   margin-right: 8px;
   color: #606266;
 }
 
-.header-right .el-button {
+.dept-right .el-button {
   margin-right: 8px;
 }
 
-.dashboard-content {
-  min-height: 400px;
+.table-pagination {
+  margin-top: 12px;
+  text-align: right;
 }
 
-.stats-cards {
-  display: flex;
-  gap: 16px;
+.tip {
+  color: #909399;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* 导入对话框样式 */
+.import-tips {
   margin-bottom: 20px;
 }
 
-.stat-card {
-  flex: 1;
+.import-actions {
   display: flex;
   align-items: center;
-  padding: 20px;
-  background: #fff;
-  border: 1px solid #ebeef5;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-top: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.import-upload {
+  margin: 20px 0;
+}
+
+.import-progress {
+  padding: 15px;
+  background: #f5f7fa;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-  font-size: 24px;
-  color: #fff;
-}
-
-.dept-icon {
-  background: #409eff;
-}
-
-.staff-icon {
-  background: #67c23a;
-}
-
-.performance-icon {
-  background: #e6a23c;
-}
-
-.budget-icon {
-  background: #f56c6c;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 4px;
-}
-
-.stat-label {
+.progress-text {
+  text-align: center;
+  margin-top: 10px;
+  color: #606266;
   font-size: 14px;
-  color: #909399;
 }
 
-.dept-table {
-  background: #fff;
-  border: 1px solid #ebeef5;
+.import-result {
+  padding: 15px;
   border-radius: 4px;
-  padding: 16px;
 }
 
-.table-pagination {
-  margin-top: 16px;
-  text-align: right;
+.import-result .el-alert__description p {
+  margin: 5px 0;
 }
 </style>

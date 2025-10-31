@@ -37,13 +37,13 @@ export function getStudentAssessmentData(year, unitId = null) {
 }
 
 // 获取组织考核统计数据
-export function getOrgAssessmentStats(year, unitId = null) {
+export function getDeptAssessmentData(year, unitId = null) {
   return request({
-    url: '/system/assessment/orgStats',
+    url: '/system/deptAssessment/list',
     method: 'get',
     params: {
-      year,
-      unitId
+      period: year,
+      unitId: unitId
     }
   })
 }
