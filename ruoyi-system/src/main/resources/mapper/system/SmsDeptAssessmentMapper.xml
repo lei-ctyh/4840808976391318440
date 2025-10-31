@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SmsLeaderAssessmentMapper">
+    
+    <resultMap type="SmsLeaderAssessment" id="SmsLeaderAssessmentResult">
+        <result property="personId"    column="person_id"    />
+        <result property="personName"    column="person_name"    />
+        <result property="unitId"    column="unit_id"    />
+        <result property="birthDate"    column="birth_date"    />
+        <result property="age"    column="age"    />
+        <result property="title"    column="title"    />
+        <result property="period"    column="period"    />
+        <result property="metric001"    column="metric_001"    />
+        <result property="metric002"    column="metric_002"    />
+        <result property="metric003"    column="metric_003"    />
+        <result property="metric004"    column="metric_004"    />
+        <result property="metric005"    column="metric_005"    />
+        <result property="metric006"    column="metric_006"    />
+        <result property="metric007"    column="metric_007"    />
+        <result property="metric008"    column="metric_008"    />
+        <result property="metric009"    column="metric_009"    />
+        <result property="metric010"    column="metric_010"    />
+        <result property="metric011"    column="metric_011"    />
+        <result property="metric012"    column="metric_012"    />
+        <result property="metric013"    column="metric_013"    />
+        <result property="metric014"    column="metric_014"    />
+        <result property="metric015"    column="metric_015"    />
+        <result property="metric016"    column="metric_016"    />
+        <result property="metric017"    column="metric_017"    />
+        <result property="metric018"    column="metric_018"    />
+        <result property="metric019"    column="metric_019"    />
+        <result property="metric020"    column="metric_020"    />
+        <result property="totalScore"    column="total_score"    />
+        <result property="totalRating"    column="total_rating"    />
+        <result property="remark"    column="remark"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectSmsLeaderAssessmentVo">
+        select person_id, person_name, unit_id, birth_date, age, title, period, 
+               metric_001, metric_002, metric_003, metric_004, metric_005, 
+               metric_006, metric_007, metric_008, metric_009, metric_010,
+               metric_011, metric_012, metric_013, metric_014, metric_015,
+               metric_016, metric_017, metric_018, metric_019, metric_020,
+               total_score, total_rating, remark, create_by, create_time, update_by, update_time 
+        from sms_leader_assessment
+    </sql>
+
+    <select id="selectSmsLeaderAssessmentList" parameterType="SmsLeaderAssessment" resultMap="SmsLeaderAssessmentResult">
+        <include refid="selectSmsLeaderAssessmentVo"/>
+        <where>  
+            <if test="personName != null  and personName != ''"> and person_name like concat('%', #{personName}, '%')</if>
+            <if test="unitId != null "> and unit_id = #{unitId}</if>
+            <if test="age != null "> and age = #{age}</if>
+            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="period != null  and period != ''"> and period = #{period}</if>
+            <if test="totalScore != null "> and total_score = #{totalScore}</if>
+            <if test="totalRating != null  and totalRating != ''"> and total_rating = #{totalRating}</if>
+        </where>
+        order by person_id desc
+    </select>
+    
+    <select id="selectByPersonIdAndPeriod" resultMap="SmsLeaderAssessmentResult">
+        <include refid="selectSmsLeaderAssessmentVo"/>
+        where person_id = #{personId} and period = #{period}
+    </select>
+
+    <select id="selectByUnitIdAndPeriod" resultMap="SmsLeaderAssessmentResult">
+        <include refid="selectSmsLeaderAssessmentVo"/>
+        where unit_id = #{unitId} and period = #{period}
+        order by person_id
+    </select>
+
+    <insert id="batchInsertSmsLeaderAssessment" parameterType="java.util.List">
+        insert into sms_leader_assessment (
+            person_id, person_name, unit_id, birth_date, age, title, period,
+            metric_001, metric_002, metric_003, metric_004, metric_005,
+            metric_006, metric_007, metric_008, metric_009, metric_010,
+            metric_011, metric_012, metric_013, metric_014, metric_015,
+            metric_016, metric_017, metric_018, metric_019, metric_020,
+            total_score, total_rating, remark, create_by, create_time
+        ) values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.personId}, #{item.personName}, #{item.unitId}, #{item.birthDate}, 
+                #{item.age}, #{item.title}, #{item.period},
+                #{item.metric001}, #{item.metric002}, #{item.metric003}, #{item.metric004}, #{item.metric005},
+                #{item.metric006}, #{item.metric007}, #{item.metric008}, #{item.metric009}, #{item.metric010},
+                #{item.metric011}, #{item.metric012}, #{item.metric013}, #{item.metric014}, #{item.metric015},
+                #{item.metric016}, #{item.metric017}, #{item.metric018}, #{item.metric019}, #{item.metric020},
+                #{item.totalScore}, #{item.totalRating}, #{item.remark}, #{item.createBy}, #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateSmsLeaderAssessment" parameterType="SmsLeaderAssessment">
+        update sms_leader_assessment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="personName != null and personName != ''">person_name = #{personName},</if>
+            <if test="unitId != null">unit_id = #{unitId},</if>
+            <if test="birthDate != null">birth_date = #{birthDate},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="metric001 != null">metric_001 = #{metric001},</if>
+            <if test="metric002 != null">metric_002 = #{metric002},</if>
+            <if test="metric003 != null">metric_003 = #{metric003},</if>
+            <if test="metric004 != null">metric_004 = #{metric004},</if>
+            <if test="metric005 != null">metric_005 = #{metric005},</if>
+            <if test="metric006 != null">metric_006 = #{metric006},</if>
+            <if test="metric007 != null">metric_007 = #{metric007},</if>
+            <if test="metric008 != null">metric_008 = #{metric008},</if>
+            <if test="metric009 != null">metric_009 = #{metric009},</if>
+            <if test="metric010 != null">metric_010 = #{metric010},</if>
+            <if test="metric011 != null">metric_011 = #{metric011},</if>
+            <if test="metric012 != null">metric_012 = #{metric012},</if>
+            <if test="metric013 != null">metric_013 = #{metric013},</if>
+            <if test="metric014 != null">metric_014 = #{metric014},</if>
+            <if test="metric015 != null">metric_015 = #{metric015},</if>
+            <if test="metric016 != null">metric_016 = #{metric016},</if>
+            <if test="metric017 != null">metric_017 = #{metric017},</if>
+            <if test="metric018 != null">metric_018 = #{metric018},</if>
+            <if test="metric019 != null">metric_019 = #{metric019},</if>
+            <if test="metric020 != null">metric_020 = #{metric020},</if>
+            <if test="metric021 != null">metric_021 = #{metric021},</if>
+            <if test="metric022 != null">metric_022 = #{metric022},</if>
+            <if test="metric023 != null">metric_023 = #{metric023},</if>
+            <if test="metric024 != null">metric_024 = #{metric024},</if>
+            <if test="metric025 != null">metric_025 = #{metric025},</if>
+            <if test="metric026 != null">metric_026 = #{metric026},</if>
+            <if test="metric027 != null">metric_027 = #{metric027},</if>
+            <if test="metric028 != null">metric_028 = #{metric028},</if>
+            <if test="metric029 != null">metric_029 = #{metric029},</if>
+            <if test="metric030 != null">metric_030 = #{metric030},</if>
+            <if test="metric031 != null">metric_031 = #{metric031},</if>
+            <if test="metric032 != null">metric_032 = #{metric032},</if>
+            <if test="metric033 != null">metric_033 = #{metric033},</if>
+            <if test="metric034 != null">metric_034 = #{metric034},</if>
+            <if test="metric035 != null">metric_035 = #{metric035},</if>
+            <if test="metric036 != null">metric_036 = #{metric036},</if>
+            <if test="metric037 != null">metric_037 = #{metric037},</if>
+            <if test="metric038 != null">metric_038 = #{metric038},</if>
+            <if test="metric039 != null">metric_039 = #{metric039},</if>
+            <if test="metric040 != null">metric_040 = #{metric040},</if>
+            <if test="metric041 != null">metric_041 = #{metric041},</if>
+            <if test="metric042 != null">metric_042 = #{metric042},</if>
+            <if test="metric043 != null">metric_043 = #{metric043},</if>
+            <if test="metric044 != null">metric_044 = #{metric044},</if>
+            <if test="metric045 != null">metric_045 = #{metric045},</if>
+            <if test="metric046 != null">metric_046 = #{metric046},</if>
+            <if test="metric047 != null">metric_047 = #{metric047},</if>
+            <if test="metric048 != null">metric_048 = #{metric048},</if>
+            <if test="metric049 != null">metric_049 = #{metric049},</if>
+            <if test="metric050 != null">metric_050 = #{metric050},</if>
+            <if test="metric051 != null">metric_051 = #{metric051},</if>
+            <if test="metric052 != null">metric_052 = #{metric052},</if>
+            <if test="metric053 != null">metric_053 = #{metric053},</if>
+            <if test="metric054 != null">metric_054 = #{metric054},</if>
+            <if test="metric055 != null">metric_055 = #{metric055},</if>
+            <if test="metric056 != null">metric_056 = #{metric056},</if>
+            <if test="metric057 != null">metric_057 = #{metric057},</if>
+            <if test="metric058 != null">metric_058 = #{metric058},</if>
+            <if test="metric059 != null">metric_059 = #{metric059},</if>
+            <if test="metric060 != null">metric_060 = #{metric060},</if>
+            <if test="metric061 != null">metric_061 = #{metric061},</if>
+            <if test="metric062 != null">metric_062 = #{metric062},</if>
+            <if test="metric063 != null">metric_063 = #{metric063},</if>
+            <if test="metric064 != null">metric_064 = #{metric064},</if>
+            <if test="metric065 != null">metric_065 = #{metric065},</if>
+            <if test="metric066 != null">metric_066 = #{metric066},</if>
+            <if test="metric067 != null">metric_067 = #{metric067},</if>
+            <if test="metric068 != null">metric_068 = #{metric068},</if>
+            <if test="metric069 != null">metric_069 = #{metric069},</if>
+            <if test="metric070 != null">metric_070 = #{metric070},</if>
+            <if test="metric071 != null">metric_071 = #{metric071},</if>
+            <if test="metric072 != null">metric_072 = #{metric072},</if>
+            <if test="metric073 != null">metric_073 = #{metric073},</if>
+            <if test="metric074 != null">metric_074 = #{metric074},</if>
+            <if test="metric075 != null">metric_075 = #{metric075},</if>
+            <if test="metric076 != null">metric_076 = #{metric076},</if>
+            <if test="metric077 != null">metric_077 = #{metric077},</if>
+            <if test="metric078 != null">metric_078 = #{metric078},</if>
+            <if test="metric079 != null">metric_079 = #{metric079},</if>
+            <if test="metric080 != null">metric_080 = #{metric080},</if>
+            <if test="metric081 != null">metric_081 = #{metric081},</if>
+            <if test="metric082 != null">metric_082 = #{metric082},</if>
+            <if test="metric083 != null">metric_083 = #{metric083},</if>
+            <if test="metric084 != null">metric_084 = #{metric084},</if>
+            <if test="metric085 != null">metric_085 = #{metric085},</if>
+            <if test="metric086 != null">metric_086 = #{metric086},</if>
+            <if test="metric087 != null">metric_087 = #{metric087},</if>
+            <if test="metric088 != null">metric_088 = #{metric088},</if>
+            <if test="metric089 != null">metric_089 = #{metric089},</if>
+            <if test="metric090 != null">metric_090 = #{metric090},</if>
+            <if test="metric091 != null">metric_091 = #{metric091},</if>
+            <if test="metric092 != null">metric_092 = #{metric092},</if>
+            <if test="metric093 != null">metric_093 = #{metric093},</if>
+            <if test="metric094 != null">metric_094 = #{metric094},</if>
+            <if test="metric095 != null">metric_095 = #{metric095},</if>
+            <if test="metric096 != null">metric_096 = #{metric096},</if>
+            <if test="metric097 != null">metric_097 = #{metric097},</if>
+            <if test="metric098 != null">metric_098 = #{metric098},</if>
+            <if test="metric099 != null">metric_099 = #{metric099},</if>
+            <if test="metric100 != null">metric_100 = #{metric100},</if>
+            <if test="totalScore != null">total_score = #{totalScore},</if>
+            <if test="totalRating != null">total_rating = #{totalRating},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where person_id = #{personId} and period = #{period}
+    </update>
+
+    <insert id="insertSmsLeaderAssessment" parameterType="SmsLeaderAssessment">
+        insert into sms_leader_assessment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="personId != null">person_id,</if>
+            <if test="personName != null and personName != ''">person_name,</if>
+            <if test="unitId != null">unit_id,</if>
+            <if test="birthDate != null">birth_date,</if>
+            <if test="age != null">age,</if>
+            <if test="title != null">title,</if>
+            <if test="period != null">period,</if>
+            <if test="metric001 != null">metric_001,</if>
+            <if test="metric002 != null">metric_002,</if>
+            <if test="metric003 != null">metric_003,</if>
+            <if test="metric004 != null">metric_004,</if>
+            <if test="metric005 != null">metric_005,</if>
+            <if test="metric006 != null">metric_006,</if>
+            <if test="metric007 != null">metric_007,</if>
+            <if test="metric008 != null">metric_008,</if>
+            <if test="metric009 != null">metric_009,</if>
+            <if test="metric010 != null">metric_010,</if>
+            <if test="metric011 != null">metric_011,</if>
+            <if test="metric012 != null">metric_012,</if>
+            <if test="metric013 != null">metric_013,</if>
+            <if test="metric014 != null">metric_014,</if>
+            <if test="metric015 != null">metric_015,</if>
+            <if test="metric016 != null">metric_016,</if>
+            <if test="metric017 != null">metric_017,</if>
+            <if test="metric018 != null">metric_018,</if>
+            <if test="metric019 != null">metric_019,</if>
+            <if test="metric020 != null">metric_020,</if>
+            <if test="metric021 != null">metric_021,</if>
+            <if test="metric022 != null">metric_022,</if>
+            <if test="metric023 != null">metric_023,</if>
+            <if test="metric024 != null">metric_024,</if>
+            <if test="metric025 != null">metric_025,</if>
+            <if test="metric026 != null">metric_026,</if>
+            <if test="metric027 != null">metric_027,</if>
+            <if test="metric028 != null">metric_028,</if>
+            <if test="metric029 != null">metric_029,</if>
+            <if test="metric030 != null">metric_030,</if>
+            <if test="metric031 != null">metric_031,</if>
+            <if test="metric032 != null">metric_032,</if>
+            <if test="metric033 != null">metric_033,</if>
+            <if test="metric034 != null">metric_034,</if>
+            <if test="metric035 != null">metric_035,</if>
+            <if test="metric036 != null">metric_036,</if>
+            <if test="metric037 != null">metric_037,</if>
+            <if test="metric038 != null">metric_038,</if>
+            <if test="metric039 != null">metric_039,</if>
+            <if test="metric040 != null">metric_040,</if>
+            <if test="metric041 != null">metric_041,</if>
+            <if test="metric042 != null">metric_042,</if>
+            <if test="metric043 != null">metric_043,</if>
+            <if test="metric044 != null">metric_044,</if>
+            <if test="metric045 != null">metric_045,</if>
+            <if test="metric046 != null">metric_046,</if>
+            <if test="metric047 != null">metric_047,</if>
+            <if test="metric048 != null">metric_048,</if>
+            <if test="metric049 != null">metric_049,</if>
+            <if test="metric050 != null">metric_050,</if>
+            <if test="metric051 != null">metric_051,</if>
+            <if test="metric052 != null">metric_052,</if>
+            <if test="metric053 != null">metric_053,</if>
+            <if test="metric054 != null">metric_054,</if>
+            <if test="metric055 != null">metric_055,</if>
+            <if test="metric056 != null">metric_056,</if>
+            <if test="metric057 != null">metric_057,</if>
+            <if test="metric058 != null">metric_058,</if>
+            <if test="metric059 != null">metric_059,</if>
+            <if test="metric060 != null">metric_060,</if>
+            <if test="metric061 != null">metric_061,</if>
+            <if test="metric062 != null">metric_062,</if>
+            <if test="metric063 != null">metric_063,</if>
+            <if test="metric064 != null">metric_064,</if>
+            <if test="metric065 != null">metric_065,</if>
+            <if test="metric066 != null">metric_066,</if>
+            <if test="metric067 != null">metric_067,</if>
+            <if test="metric068 != null">metric_068,</if>
+            <if test="metric069 != null">metric_069,</if>
+            <if test="metric070 != null">metric_070,</if>
+            <if test="metric071 != null">metric_071,</if>
+            <if test="metric072 != null">metric_072,</if>
+            <if test="metric073 != null">metric_073,</if>
+            <if test="metric074 != null">metric_074,</if>
+            <if test="metric075 != null">metric_075,</if>
+            <if test="metric076 != null">metric_076,</if>
+            <if test="metric077 != null">metric_077,</if>
+            <if test="metric078 != null">metric_078,</if>
+            <if test="metric079 != null">metric_079,</if>
+            <if test="metric080 != null">metric_080,</if>
+            <if test="metric081 != null">metric_081,</if>
+            <if test="metric082 != null">metric_082,</if>
+            <if test="metric083 != null">metric_083,</if>
+            <if test="metric084 != null">metric_084,</if>
+            <if test="metric085 != null">metric_085,</if>
+            <if test="metric086 != null">metric_086,</if>
+            <if test="metric087 != null">metric_087,</if>
+            <if test="metric088 != null">metric_088,</if>
+            <if test="metric089 != null">metric_089,</if>
+            <if test="metric090 != null">metric_090,</if>
+            <if test="metric091 != null">metric_091,</if>
+            <if test="metric092 != null">metric_092,</if>
+            <if test="metric093 != null">metric_093,</if>
+            <if test="metric094 != null">metric_094,</if>
+            <if test="metric095 != null">metric_095,</if>
+            <if test="metric096 != null">metric_096,</if>
+            <if test="metric097 != null">metric_097,</if>
+            <if test="metric098 != null">metric_098,</if>
+            <if test="metric099 != null">metric_099,</if>
+            <if test="metric100 != null">metric_100,</if>
+            <if test="totalScore != null">total_score,</if>
+            <if test="totalRating != null">total_rating,</if>
+            <if test="remark != null">remark,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="personId != null">#{personId},</if>
+            <if test="personName != null and personName != ''">#{personName},</if>
+            <if test="unitId != null">#{unitId},</if>
+            <if test="birthDate != null">#{birthDate},</if>
+            <if test="age != null">#{age},</if>
+            <if test="title != null">#{title},</if>
+            <if test="period != null">#{period},</if>
+            <if test="metric001 != null">#{metric001},</if>
+            <if test="metric002 != null">#{metric002},</if>
+            <if test="metric003 != null">#{metric003},</if>
+            <if test="metric004 != null">#{metric004},</if>
+            <if test="metric005 != null">#{metric005},</if>
+            <if test="metric006 != null">#{metric006},</if>
+            <if test="metric007 != null">#{metric007},</if>
+            <if test="metric008 != null">#{metric008},</if>
+            <if test="metric009 != null">#{metric009},</if>
+            <if test="metric010 != null">#{metric010},</if>
+            <if test="metric011 != null">#{metric011},</if>
+            <if test="metric012 != null">#{metric012},</if>
+            <if test="metric013 != null">#{metric013},</if>
+            <if test="metric014 != null">#{metric014},</if>
+            <if test="metric015 != null">#{metric015},</if>
+            <if test="metric016 != null">#{metric016},</if>
+            <if test="metric017 != null">#{metric017},</if>
+            <if test="metric018 != null">#{metric018},</if>
+            <if test="metric019 != null">#{metric019},</if>
+            <if test="metric020 != null">#{metric020},</if>
+            <if test="metric021 != null">#{metric021},</if>
+            <if test="metric022 != null">#{metric022},</if>
+            <if test="metric023 != null">#{metric023},</if>
+            <if test="metric024 != null">#{metric024},</if>
+            <if test="metric025 != null">#{metric025},</if>
+            <if test="metric026 != null">#{metric026},</if>
+            <if test="metric027 != null">#{metric027},</if>
+            <if test="metric028 != null">#{metric028},</if>
+            <if test="metric029 != null">#{metric029},</if>
+            <if test="metric030 != null">#{metric030},</if>
+            <if test="metric031 != null">#{metric031},</if>
+            <if test="metric032 != null">#{metric032},</if>
+            <if test="metric033 != null">#{metric033},</if>
+            <if test="metric034 != null">#{metric034},</if>
+            <if test="metric035 != null">#{metric035},</if>
+            <if test="metric036 != null">#{metric036},</if>
+            <if test="metric037 != null">#{metric037},</if>
+            <if test="metric038 != null">#{metric038},</if>
+            <if test="metric039 != null">#{metric039},</if>
+            <if test="metric040 != null">#{metric040},</if>
+            <if test="metric041 != null">#{metric041},</if>
+            <if test="metric042 != null">#{metric042},</if>
+            <if test="metric043 != null">#{metric043},</if>
+            <if test="metric044 != null">#{metric044},</if>
+            <if test="metric045 != null">#{metric045},</if>
+            <if test="metric046 != null">#{metric046},</if>
+            <if test="metric047 != null">#{metric047},</if>
+            <if test="metric048 != null">#{metric048},</if>
+            <if test="metric049 != null">#{metric049},</if>
+            <if test="metric050 != null">#{metric050},</if>
+            <if test="metric051 != null">#{metric051},</if>
+            <if test="metric052 != null">#{metric052},</if>
+            <if test="metric053 != null">#{metric053},</if>
+            <if test="metric054 != null">#{metric054},</if>
+            <if test="metric055 != null">#{metric055},</if>
+            <if test="metric056 != null">#{metric056},</if>
+            <if test="metric057 != null">#{metric057},</if>
+            <if test="metric058 != null">#{metric058},</if>
+            <if test="metric059 != null">#{metric059},</if>
+            <if test="metric060 != null">#{metric060},</if>
+            <if test="metric061 != null">#{metric061},</if>
+            <if test="metric062 != null">#{metric062},</if>
+            <if test="metric063 != null">#{metric063},</if>
+            <if test="metric064 != null">#{metric064},</if>
+            <if test="metric065 != null">#{metric065},</if>
+            <if test="metric066 != null">#{metric066},</if>
+            <if test="metric067 != null">#{metric067},</if>
+            <if test="metric068 != null">#{metric068},</if>
+            <if test="metric069 != null">#{metric069},</if>
+            <if test="metric070 != null">#{metric070},</if>
+            <if test="metric071 != null">#{metric071},</if>
+            <if test="metric072 != null">#{metric072},</if>
+            <if test="metric073 != null">#{metric073},</if>
+            <if test="metric074 != null">#{metric074},</if>
+            <if test="metric075 != null">#{metric075},</if>
+            <if test="metric076 != null">#{metric076},</if>
+            <if test="metric077 != null">#{metric077},</if>
+            <if test="metric078 != null">#{metric078},</if>
+            <if test="metric079 != null">#{metric079},</if>
+            <if test="metric080 != null">#{metric080},</if>
+            <if test="metric081 != null">#{metric081},</if>
+            <if test="metric082 != null">#{metric082},</if>
+            <if test="metric083 != null">#{metric083},</if>
+            <if test="metric084 != null">#{metric084},</if>
+            <if test="metric085 != null">#{metric085},</if>
+            <if test="metric086 != null">#{metric086},</if>
+            <if test="metric087 != null">#{metric087},</if>
+            <if test="metric088 != null">#{metric088},</if>
+            <if test="metric089 != null">#{metric089},</if>
+            <if test="metric090 != null">#{metric090},</if>
+            <if test="metric091 != null">#{metric091},</if>
+            <if test="metric092 != null">#{metric092},</if>
+            <if test="metric093 != null">#{metric093},</if>
+            <if test="metric094 != null">#{metric094},</if>
+            <if test="metric095 != null">#{metric095},</if>
+            <if test="metric096 != null">#{metric096},</if>
+            <if test="metric097 != null">#{metric097},</if>
+            <if test="metric098 != null">#{metric098},</if>
+            <if test="metric099 != null">#{metric099},</if>
+            <if test="metric100 != null">#{metric100},</if>
+            <if test="totalScore != null">#{totalScore},</if>
+            <if test="totalRating != null">#{totalRating},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+</mapper>
