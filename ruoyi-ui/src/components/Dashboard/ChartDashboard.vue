@@ -25,15 +25,15 @@
         <el-col :xs="24" :sm="8">
           <el-card shadow="never" class="metric-card">
             <div class="metric">
-              <div class="metric-label">当前单位</div>
-              <div class="metric-value current-name">{{ currentOrgName || '未选择单位' }}</div>
+              <div class="metric-label">综合评定</div>
+              <div class="metric-value" :class="gradeLevelClass">{{ gradeLevel }}</div>
             </div>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="8">
           <el-card shadow="never" class="metric-card">
             <div class="metric">
-              <div class="metric-label">成绩（均分）</div>
+              <div class="metric-label">综合成绩</div>
               <div class="metric-value">{{ metrics.avgScore.toFixed(1) }}</div>
             </div>
           </el-card>
@@ -130,6 +130,22 @@ export default {
     },
     hasChildren() {
       return this.childrenComparisons && this.childrenComparisons.length > 0
+    },
+    // 根据综合成绩计算评级
+    gradeLevel() {
+      const score = this.metrics.avgScore
+      if (score >= 90) return '优秀'
+      if (score >= 80) return '良好'
+      if (score >= 60) return '及格'
+      return '不及格'
+    },
+    // 根据评级返回对应的CSS class
+    gradeLevelClass() {
+      const score = this.metrics.avgScore
+      if (score >= 90) return 'excellent'
+      if (score >= 80) return 'good'
+      if (score >= 60) return 'pass'
+      return 'fail'
     }
   },
   watch: {

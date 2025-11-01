@@ -8,38 +8,48 @@
       <p class="subtitle">欢迎使用考核管理系统</p>
     </div>
 
-    <div class="announcement-list">
-      <el-card
-        v-for="item in announcements"
-        :key="item.id"
-        class="announcement-card"
-        shadow="hover"
-      >
-        <div class="card-header">
-          <div class="title-row">
-            <el-tag v-if="item.important" type="danger" size="mini" effect="dark">
-              重要
-            </el-tag>
-            <el-tag v-else-if="item.isNew" type="warning" size="mini">
-              最新
-            </el-tag>
-            <h3 class="announcement-title">{{ item.title }}</h3>
+    <div class="announcement-list" v-loading="loading">
+      <template v-if="!loading && announcements.length > 0">
+        <el-card
+          v-for="item in announcements"
+          :key="item.id"
+          class="announcement-card"
+          shadow="hover"
+        >
+          <div class="card-header">
+            <div class="title-row">
+              <el-tag v-if="item.important" type="danger" size="mini" effect="dark">
+                重要
+              </el-tag>
+              <el-tag v-else-if="item.isNew" type="warning" size="mini">
+                最新
+              </el-tag>
+              <h3 class="announcement-title">{{ item.title }}</h3>
+            </div>
+            <span class="announcement-time">{{ item.time }}</span>
           </div>
-          <span class="announcement-time">{{ item.time }}</span>
-        </div>
-        <div class="announcement-content">
-          {{ item.content }}
-        </div>
-        <div class="announcement-footer">
-          <span class="author">
-            <i class="el-icon-user"></i>
-            {{ item.author }}
-          </span>
-          <el-button type="text" size="small" @click="viewDetail(item)">
-            查看详情 <i class="el-icon-arrow-right"></i>
-          </el-button>
-        </div>
-      </el-card>
+          <div class="announcement-content">
+            {{ item.content }}
+          </div>
+          <div class="announcement-footer">
+            <span class="author">
+              <i class="el-icon-user"></i>
+              {{ item.author }}
+            </span>
+            <el-button type="text" size="small" @click="viewDetail(item)">
+              查看详情 <i class="el-icon-arrow-right"></i>
+            </el-button>
+          </div>
+        </el-card>
+      </template>
+
+      <!-- 空数据提示 -->
+      <el-empty
+        v-if="!loading && announcements.length === 0"
+        description="暂无公告信息"
+        :image-size="120"
+      >
+      </el-empty>
     </div>
 
     <!-- 公告详情对话框 -->
@@ -61,9 +71,7 @@
           </span>
         </div>
       </div>
-      <div class="detail-content">
-        {{ currentAnnouncement.fullContent }}
-      </div>
+      <div class="detail-content" v-html="currentAnnouncement.fullContent"></div>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
       </span>
@@ -72,57 +80,83 @@
 </template>
 
 <script>
+import { listNotice } from '@/api/system/notice'
+import { parseTime } from '@/utils/ruoyi'
+
 export default {
   name: 'AnnouncementBoard',
   data() {
     return {
       dialogVisible: false,
       currentAnnouncement: {},
-      announcements: [
-        {
-          id: 1,
-          title: '关于开展2025年度考核工作的通知',
-          content: '各单位：为做好2025年度考核工作，现将有关事项通知如下。请各单位高度重视，认真组织实施...',
-          fullContent: '各单位：\n\n为做好2025年度考核工作，现将有关事项通知如下：\n\n一、考核时间安排\n1. 自评阶段：2025年1月1日-1月15日\n2. 互评阶段：2025年1月16日-1月31日\n3. 总结阶段：2025年2月1日-2月15日\n\n二、考核要求\n1. 各单位要高度重视，认真组织实施\n2. 确保考核数据真实准确\n3. 按时完成各阶段工作\n\n请各单位认真落实，如有问题请及时联系考核办公室。',
-          time: '2025-01-05 10:30',
-          author: '系统管理员',
-          important: true,
-          isNew: true
-        },
-        {
-          id: 2,
-          title: '考核系统操作指南已更新',
-          content: '为帮助各位用户更好地使用考核系统，我们更新了操作指南。新增了图表看板使用说明、数据导出功能介绍等内容...',
-          fullContent: '为帮助各位用户更好地使用考核系统，我们更新了操作指南。\n\n本次更新内容包括：\n1. 图表看板使用说明\n2. 数据导出功能介绍\n3. 常见问题解答\n4. 快捷操作指引\n\n请各位用户查阅操作指南，提高工作效率。如遇到问题可联系技术支持。',
-          time: '2025-01-03 14:20',
-          author: '技术支持',
-          important: false,
-          isNew: true
-        },
-        {
-          id: 3,
-          title: '系统维护通知',
-          content: '为提升系统性能和用户体验，计划于1月10日22:00-24:00进行系统维护升级，届时系统将暂停服务...',
-          fullContent: '各位用户：\n\n为提升系统性能和用户体验，计划进行系统维护升级。\n\n维护时间：2025年1月10日 22:00 - 24:00\n\n维护内容：\n1. 数据库性能优化\n2. 界面交互体验提升\n3. 新功能上线准备\n\n维护期间系统将暂停服务，请各位用户提前做好工作安排。给您带来的不便敬请谅解！',
-          time: '2025-01-02 09:15',
-          author: '运维团队',
-          important: false,
-          isNew: false
-        },
-        {
-          id: 4,
-          title: '2024年度优秀单位表彰名单公示',
-          content: '经过综合评定，现将2024年度优秀单位名单予以公示。公示期为2025年1月5日至1月12日...',
-          fullContent: '各单位：\n\n经过综合评定，现将2024年度优秀单位名单予以公示。\n\n优秀单位名单：\n1. XX教学组织\n2. XX领导班子\n3. XX管理部门\n\n公示期：2025年1月5日至1月12日\n\n如有异议，请在公示期内向考核办公室反馈。联系电话：XXXX-XXXXXXXX',
-          time: '2024-12-28 16:45',
-          author: '考核办公室',
-          important: true,
-          isNew: false
-        }
-      ]
+      announcements: [],
+      loading: false
     }
   },
+  created() {
+    this.loadAnnouncements()
+  },
   methods: {
+    // 加载公告列表
+    loadAnnouncements() {
+      this.loading = true
+      listNotice({
+        status: '0', // 只查询正常状态的公告
+        pageNum: 1,
+        pageSize: 10 // 获取最新的10条公告
+      }).then(response => {
+        // 将后端数据转换为前端需要的格式
+        this.announcements = response.rows.map(notice => {
+          return this.formatNotice(notice)
+        })
+      }).catch(error => {
+        console.error('加载公告失败:', error)
+        this.$message.error('加载公告失败')
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+
+    // 去除HTML标签，获取纯文本
+    stripHtmlTags(html) {
+      if (!html) return ''
+      // 创建一个临时div元素来解析HTML
+      const tmp = document.createElement('div')
+      tmp.innerHTML = html
+      return tmp.textContent || tmp.innerText || ''
+    },
+
+    // 格式化公告数据
+    formatNotice(notice) {
+      const fullContent = notice.noticeContent || ''
+      // 从富文本中提取纯文本用于摘要显示
+      const plainText = this.stripHtmlTags(fullContent)
+      // 生成摘要内容（取前100个字符）
+      const content = plainText.length > 100
+        ? plainText.substring(0, 100) + '...'
+        : plainText
+
+      // 判断是否为最新公告（3天内创建的）
+      const createTime = new Date(notice.createTime)
+      const now = new Date()
+      const diffDays = (now - createTime) / (1000 * 60 * 60 * 24)
+      const isNew = diffDays <= 3
+
+      // 判断是否为重要公告（noticeType为1表示通知，通常比较重要）
+      const important = notice.noticeType === '1'
+
+      return {
+        id: notice.noticeId,
+        title: notice.noticeTitle,
+        content: content,
+        fullContent: fullContent, // 保留原始HTML内容用于详情展示
+        time: parseTime(notice.createTime, '{y}-{m}-{d} {h}:{i}'),
+        author: notice.createBy || '系统管理员',
+        important: important,
+        isNew: isNew
+      }
+    },
+
     viewDetail(item) {
       this.currentAnnouncement = item
       this.dialogVisible = true
@@ -286,10 +320,77 @@ export default {
   color: #303133;
   font-size: 14px;
   line-height: 2;
-  white-space: pre-wrap;
   min-height: 200px;
   padding: 15px;
   background: #f9fafb;
   border-radius: 6px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 富文本内容样式优化 */
+.detail-content ::v-deep img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+}
+
+.detail-content ::v-deep p {
+  margin: 8px 0;
+}
+
+.detail-content ::v-deep h1,
+.detail-content ::v-deep h2,
+.detail-content ::v-deep h3,
+.detail-content ::v-deep h4,
+.detail-content ::v-deep h5,
+.detail-content ::v-deep h6 {
+  margin: 12px 0 8px;
+  font-weight: 600;
+}
+
+.detail-content ::v-deep ul,
+.detail-content ::v-deep ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.detail-content ::v-deep table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.detail-content ::v-deep table td,
+.detail-content ::v-deep table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.detail-content ::v-deep table th {
+  background-color: #f2f2f2;
+  font-weight: 600;
+}
+
+.detail-content ::v-deep blockquote {
+  border-left: 4px solid #ddd;
+  padding-left: 15px;
+  margin: 10px 0;
+  color: #666;
+}
+
+.detail-content ::v-deep pre {
+  background: #f4f4f4;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.detail-content ::v-deep code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
 }
 </style>
