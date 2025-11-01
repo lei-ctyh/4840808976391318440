@@ -6,7 +6,7 @@
           <div class="head-container">
             <el-input
               v-model="deptName"
-              placeholder="请输入机构名称"
+              placeholder="请输入单位名称"
               clearable
               size="small"
               prefix-icon="el-icon-search"
@@ -59,9 +59,8 @@
                                 :organizationPath="organizationPath" />
             </el-tab-pane>
           </el-tabs>
-          <div v-else class="empty-state">
-            <i class="el-icon-info" />
-            <span>当前组织类型暂无可用看板，请选择"领导班子"或"教学组织"节点。</span>
+          <div v-else class="announcement-container">
+            <announcement-board />
           </div>
         </div>
       </pane>
@@ -80,6 +79,7 @@ import ChartDashboard from "@/components/Dashboard/ChartDashboard.vue"
 import StudentDashboard from "@/components/Dashboard/StudentDashboard.vue"
 import TeacherDashboard from "@/components/Dashboard/TeacherDashboard.vue"
 import DeptDashboard from "@/components/Dashboard/DeptDashboard.vue"
+import AnnouncementBoard from "@/components/Dashboard/AnnouncementBoard.vue"
 
 export default {
   name: "Index",
@@ -90,7 +90,8 @@ export default {
     ChartDashboard,
     StudentDashboard,
     TeacherDashboard,
-    DeptDashboard
+    DeptDashboard,
+    AnnouncementBoard
   },
   data() {
     return {
@@ -228,14 +229,7 @@ export default {
 .right-pane {
   padding-left: 12px;
 }
-.empty-state {
+.announcement-container {
   min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #909399;
-}
-.empty-state .el-icon-info {
-  margin-right: 8px;
 }
 </style>

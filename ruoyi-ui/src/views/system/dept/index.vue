@@ -122,7 +122,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="机构编码" prop="orgCode">
-              <el-input v-model="form.orgCode" placeholder="请输入机构编码" maxlength="64" />
+              <el-input v-model="form.orgCode" placeholder="请输入单位编码" maxlength="64" />
             </el-form-item>
           </el-col>
           <el-col :span="12">

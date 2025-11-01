@@ -16,7 +16,7 @@
           />
         </div>
       </div>
-      <p class="description">展示当前单位的成绩、优秀率、合格率，以及下级单位对比</p>
+      <p class="description">展示当前单位的成绩、优秀率、及格率，以及下级单位对比</p>
     </div>
 
     <!-- 指标卡片 -->
@@ -50,11 +50,11 @@
                 <div class="metric-value good">{{ ((metrics.goodRate - metrics.excellentRate) * 100).toFixed(1) }}%</div>
               </div>
               <div class="metric-item">
-                <div class="metric-label">合格率</div>
+                <div class="metric-label">及格率</div>
                 <div class="metric-value pass">{{ ((metrics.passRate - metrics.goodRate) * 100).toFixed(1) }}%</div>
               </div>
               <div class="metric-item">
-                <div class="metric-label">不合格</div>
+                <div class="metric-label">不及格</div>
                 <div class="metric-value fail">{{ ((1 - metrics.passRate) * 100).toFixed(1) }}%</div>
               </div>
             </div>
@@ -75,7 +75,7 @@
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">下级单位优秀率/合格率对比</div>
+            <div class="chart-title">下级单位优秀率/及格率对比</div>
             <div ref="ratesChartRef" class="chart-box"></div>
             <div v-if="!hasChildren" class="empty-tip">无下级单位数据</div>
           </el-card>
@@ -84,13 +84,13 @@
       <el-row :gutter="12" style="margin-top: 12px;">
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">当前单位优秀/良好/合格/不合格占比</div>
+            <div class="chart-title">当前单位优秀/良好/及格/不及格占比</div>
             <div ref="pieChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">年度趋势：成绩、优秀率、合格率</div>
+            <div class="chart-title">年度趋势：成绩、优秀率、及格率</div>
             <div ref="trendChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
@@ -209,7 +209,7 @@ export default {
       const avgScore = 70 + Math.floor(rand() * 30) // 70-100
       const excellentRate = 0.15 + rand() * 0.25 // 15%-40% 优秀
       const goodRate = excellentRate + 0.2 + rand() * 0.25 // 良好（优秀基础上+20%-45%）
-      const passRate = Math.min(0.95, goodRate + 0.15 + rand() * 0.2) // 合格（良好基础上+15%-35%）
+      const passRate = Math.min(0.95, goodRate + 0.15 + rand() * 0.2) // 及格（良好基础上+15%-35%）
 
       // 下级单位对比数据（最多取前8个孩子）
       const children = Array.isArray(node.children) ? node.children.slice(0, 8) : []
@@ -316,7 +316,7 @@ export default {
         ]
       })
 
-      // 优秀率 / 合格率 对比
+      // 优秀率 / 及格率 对比
       this.ratesChart.setOption({
         tooltip: {
           trigger: 'axis',
@@ -327,7 +327,7 @@ export default {
             }
           }
         },
-        legend: { data: ['优秀率', '合格率'] },
+        legend: { data: ['优秀率', '及格率'] },
         grid: { left: 40, right: 20, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: names, axisLabel: { interval: 0, rotate: names.length > 5 ? 30 : 0 } },
         yAxis: { type: 'value', name: '%', min: 0, max: 100 },
@@ -354,7 +354,7 @@ export default {
             label: { show: true, position: 'top', formatter: '{c}%' }
           },
           {
-            name: '合格率',
+            name: '及格率',
             type: 'bar',
             data: passValues,
             itemStyle: {
@@ -373,7 +373,7 @@ export default {
         ]
       })
 
-      // 当前单位占比饼图（优秀 / 良好 / 合格 / 不合格）
+      // 当前单位占比饼图（优秀 / 良好 / 及格 / 不及格）
       const excellent = Number((this.metrics.excellentRate * 100).toFixed(1))
       const good = Number(((this.metrics.goodRate - this.metrics.excellentRate) * 100).toFixed(1))
       const pass = Number(((this.metrics.passRate - this.metrics.goodRate) * 100).toFixed(1))
@@ -432,14 +432,14 @@ export default {
             data: [
               { name: '优秀', value: excellent, itemStyle: { color: '#67C23A' } },
               { name: '良好', value: good, itemStyle: { color: '#95D475' } },
-              { name: '合格', value: pass, itemStyle: { color: '#E6A23C' } },
-              { name: '不合格', value: fail, itemStyle: { color: '#F56C6C' } }
+              { name: '及格', value: pass, itemStyle: { color: '#E6A23C' } },
+              { name: '不及格', value: fail, itemStyle: { color: '#F56C6C' } }
             ]
           }
         ]
       })
 
-      // 趋势图（年度折线）：成绩、优秀率、合格率
+      // 趋势图（年度折线）：成绩、优秀率、及格率
       this.trendChart.setOption({
         tooltip: {
           trigger: 'axis',
@@ -460,7 +460,7 @@ export default {
           }
         },
         legend: {
-          data: ['成绩', '优秀率', '合格率'],
+          data: ['成绩', '优秀率', '及格率'],
           itemGap: 20,
           textStyle: {
             fontSize: 12
@@ -579,7 +579,7 @@ export default {
             symbol: 'circle'
           },
           {
-            name: '合格率',
+            name: '及格率',
             type: 'line',
             smooth: true,
             data: this.yearlyTrend.passRates,

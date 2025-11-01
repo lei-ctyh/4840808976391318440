@@ -404,7 +404,7 @@ export default {
 
         // 综合成绩
         comprehensivePercent: backendData.totalScore || '0',
-        comprehensiveLevel: backendData.totalRating || '合格',
+        comprehensiveLevel: backendData.totalRating || '及格',
         remark: backendData.remark || '',
         description: backendData.status || ''
       }
