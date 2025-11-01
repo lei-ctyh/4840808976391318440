@@ -154,17 +154,21 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
      */
     private List<ChildComparisonDTO> getChildrenComparisons(Long parentDeptId, String year)
     {
-        // 查询所有下级部门
-        List<SysDept> childrenDepts = deptMapper.selectChildrenDeptById(parentDeptId);
+        // 查询直接下一级部门（通过 parentId 查询）
+        SysDept queryDept = new SysDept();
+        queryDept.setParentId(parentDeptId);
+        queryDept.setStatus("0"); // 只查询正常状态的部门
+
+        List<SysDept> childrenDepts = deptMapper.selectDeptList(queryDept);
 
         if (childrenDepts == null || childrenDepts.isEmpty())
         {
             return new ArrayList<>();
         }
 
-        // 限制最多8个下级单位
+        // 限制最多80个下级单位（避免数据过多）
         List<SysDept> limitedChildren = childrenDepts.stream()
-                .limit(8)
+                .limit(80)
                 .collect(Collectors.toList());
 
         List<ChildComparisonDTO> comparisons = new ArrayList<>();
