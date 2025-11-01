@@ -202,8 +202,8 @@ export default {
       // 优先使用机构编码判断，失败则回退到名称
       const type = this.resolveOrgType(node)
       if (type === 'leader') {
-        this.visibleTabKeys = ["charts", "leader"]
-        if (!["charts", "leader"].includes(this.activeTab)) this.activeTab = "charts"
+        this.visibleTabKeys = ["leader"]
+        if (!["leader"].includes(this.activeTab)) this.activeTab = "leader"
         return
       }
       if (type === 'teaching') {

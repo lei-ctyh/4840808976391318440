@@ -75,7 +75,7 @@
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">下级单位优秀率/及格率对比</div>
+            <div class="chart-title">下级单位四级评价对比</div>
             <div ref="ratesChartRef" class="chart-box"></div>
             <div v-if="!hasChildren" class="empty-tip">无下级单位数据</div>
           </el-card>
@@ -90,7 +90,7 @@
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">年度趋势：成绩、优秀率、及格率</div>
+            <div class="chart-title">年度趋势：成绩、优秀率、良好率、及格率、不及格率</div>
             <div ref="trendChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
@@ -120,7 +120,7 @@ export default {
       ratesChart: null,
       pieChart: null,
       trendChart: null,
-      yearlyTrend: { years: [], avgScores: [], excellentRates: [], passRates: [] }
+      yearlyTrend: { years: [], avgScores: [], excellentRates: [], goodRates: [], passRates: [], failRates: [] }
     }
   },
   computed: {
@@ -240,28 +240,36 @@ export default {
       const orgCode = (node && (node.orgCode || node.org_code || node.id || node.label)) || 'default'
       const avgScores = []
       const excellentRates = []
+      const goodRates = []
       const passRates = []
+      const failRates = []
 
       // 基线受组织与年度影响，确保不同单位/年度可复现
       const baseRand = this.seedRandom(String(orgCode) + '-trend-year-base-' + String(year))
       let baseScore = 70 + Math.floor(baseRand() * 20) // 70-90
-      let baseExcellent = 0.25 + baseRand() * 0.35    // 25%-60%
-      let basePass = Math.min(0.97, 0.7 + baseRand() * 0.2) // 70%-97%
+      let baseExcellent = 0.15 + baseRand() * 0.25    // 15%-40%
+      let baseGood = baseExcellent + 0.2 + baseRand() * 0.25  // 良好
+      let basePass = Math.min(0.97, baseGood + 0.15 + baseRand() * 0.2) // 及格
 
       years.forEach((y, idx) => {
         const r = this.seedRandom(String(orgCode) + '-trend-year-' + y + '-' + String(idx))
         const noiseScore = (r() - 0.5) * 8 // -4 ~ 4
         const score = Math.max(60, Math.min(100, baseScore + noiseScore))
         const eNoise = (r() - 0.5) * 0.08 // -4% ~ 4%
+        const gNoise = (r() - 0.5) * 0.08 // -4% ~ 4%
         const pNoise = (r() - 0.5) * 0.06 // -3% ~ 3%
         const eRate = Math.min(0.9, Math.max(0.1, baseExcellent + eNoise))
-        const pRate = Math.min(0.98, Math.max(0.55, basePass + pNoise))
+        const gRate = Math.min(0.95, Math.max(eRate + 0.1, baseGood + gNoise))
+        const pRate = Math.min(0.98, Math.max(gRate + 0.05, basePass + pNoise))
+        const fRate = 1 - pRate
         avgScores.push(Number(score.toFixed(1)))
         excellentRates.push(Number((eRate * 100).toFixed(1)))
+        goodRates.push(Number((gRate * 100).toFixed(1)))
         passRates.push(Number((pRate * 100).toFixed(1)))
+        failRates.push(Number((fRate * 100).toFixed(1)))
       })
 
-      return { years, avgScores, excellentRates, passRates }
+      return { years, avgScores, excellentRates, goodRates, passRates, failRates }
     },
     generateDataAndRender() {
       const { metrics, childrenComparisons } = this.generateMockMetrics(this.selectedDeptNode || {}, this.selectedYear)
@@ -276,7 +284,9 @@ export default {
       const names = this.childrenComparisons.map(c => c.name)
       const scoreValues = this.childrenComparisons.map(c => c.avgScore)
       const excellentValues = this.childrenComparisons.map(c => Number((c.excellentRate * 100).toFixed(1)))
+      const goodValues = this.childrenComparisons.map(c => Number((c.goodRate * 100).toFixed(1)))
       const passValues = this.childrenComparisons.map(c => Number((c.passRate * 100).toFixed(1)))
+      const failValues = this.childrenComparisons.map(c => Number(((1 - c.passRate) * 100).toFixed(1)))
 
       // 成绩对比图
       this.scoresChart.setOption({
@@ -316,7 +326,7 @@ export default {
         ]
       })
 
-      // 优秀率 / 及格率 对比
+      // 四级评价对比
       this.ratesChart.setOption({
         tooltip: {
           trigger: 'axis',
@@ -327,7 +337,7 @@ export default {
             }
           }
         },
-        legend: { data: ['优秀率', '及格率'] },
+        legend: { data: ['优秀率', '良好率', '及格率', '不及格率'] },
         grid: { left: 40, right: 20, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: names, axisLabel: { interval: 0, rotate: names.length > 5 ? 30 : 0 } },
         yAxis: { type: 'value', name: '%', min: 0, max: 100 },
@@ -354,6 +364,23 @@ export default {
             label: { show: true, position: 'top', formatter: '{c}%' }
           },
           {
+            name: '良好率',
+            type: 'bar',
+            data: goodValues,
+            itemStyle: {
+              color: '#95D475',
+              borderRadius: [4, 4, 0, 0]
+            },
+            emphasis: {
+              itemStyle: {
+                color: '#A8E28A',
+                shadowBlur: 10,
+                shadowColor: 'rgba(149, 212, 117, 0.5)'
+              }
+            },
+            label: { show: true, position: 'top', formatter: '{c}%' }
+          },
+          {
             name: '及格率',
             type: 'bar',
             data: passValues,
@@ -366,6 +393,23 @@ export default {
                 color: '#EBB563',
                 shadowBlur: 10,
                 shadowColor: 'rgba(230, 162, 60, 0.5)'
+              }
+            },
+            label: { show: true, position: 'top', formatter: '{c}%' }
+          },
+          {
+            name: '不及格率',
+            type: 'bar',
+            data: failValues,
+            itemStyle: {
+              color: '#F56C6C',
+              borderRadius: [4, 4, 0, 0]
+            },
+            emphasis: {
+              itemStyle: {
+                color: '#F78989',
+                shadowBlur: 10,
+                shadowColor: 'rgba(245, 108, 108, 0.5)'
               }
             },
             label: { show: true, position: 'top', formatter: '{c}%' }
@@ -439,7 +483,7 @@ export default {
         ]
       })
 
-      // 趋势图（年度折线）：成绩、优秀率、及格率
+      // 趋势图（年度折线）：成绩、优秀率、良好率、及格率、不及格率
       this.trendChart.setOption({
         tooltip: {
           trigger: 'axis',
@@ -460,8 +504,8 @@ export default {
           }
         },
         legend: {
-          data: ['成绩', '优秀率', '及格率'],
-          itemGap: 20,
+          data: ['成绩', '优秀率', '良好率', '及格率', '不及格率'],
+          itemGap: 15,
           textStyle: {
             fontSize: 12
           }
@@ -579,6 +623,42 @@ export default {
             symbol: 'circle'
           },
           {
+            name: '良好率',
+            type: 'line',
+            smooth: true,
+            data: this.yearlyTrend.goodRates,
+            yAxisIndex: 1,
+            itemStyle: { color: '#95D475' },
+            lineStyle: {
+              width: 3
+            },
+            emphasis: {
+              focus: 'series',
+              lineStyle: {
+                width: 4
+              },
+              itemStyle: {
+                borderWidth: 3,
+                borderColor: '#95D475',
+                shadowBlur: 10,
+                shadowColor: 'rgba(149, 212, 117, 0.5)'
+              }
+            },
+            areaStyle: {
+              opacity: 0.1,
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(149, 212, 117, 0.3)' },
+                  { offset: 1, color: 'rgba(149, 212, 117, 0.05)' }
+                ]
+              }
+            },
+            symbolSize: 8,
+            symbol: 'circle'
+          },
+          {
             name: '及格率',
             type: 'line',
             smooth: true,
@@ -608,6 +688,42 @@ export default {
                 colorStops: [
                   { offset: 0, color: 'rgba(230, 162, 60, 0.3)' },
                   { offset: 1, color: 'rgba(230, 162, 60, 0.05)' }
+                ]
+              }
+            },
+            symbolSize: 8,
+            symbol: 'circle'
+          },
+          {
+            name: '不及格率',
+            type: 'line',
+            smooth: true,
+            data: this.yearlyTrend.failRates,
+            yAxisIndex: 1,
+            itemStyle: { color: '#F56C6C' },
+            lineStyle: {
+              width: 3
+            },
+            emphasis: {
+              focus: 'series',
+              lineStyle: {
+                width: 4
+              },
+              itemStyle: {
+                borderWidth: 3,
+                borderColor: '#F56C6C',
+                shadowBlur: 10,
+                shadowColor: 'rgba(245, 108, 108, 0.5)'
+              }
+            },
+            areaStyle: {
+              opacity: 0.1,
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(245, 108, 108, 0.3)' },
+                  { offset: 1, color: 'rgba(245, 108, 108, 0.05)' }
                 ]
               }
             },
