@@ -430,4 +430,38 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </trim>
     </insert>
 
+    <!-- 根据人员ID和年份查询考核记录（模糊匹配period） -->
+    <select id="selectByPersonIdAndYear" resultMap="SmsDeptAssessmentResult">
+        <include refid="selectSmsDeptAssessmentVo"/>
+        where person_id = #{personId} and period LIKE CONCAT(#{year}, '%')
+        LIMIT 1
+    </select>
+
+    <!-- 根据单位ID列表和年份查询考核记录 -->
+    <select id="selectByPersonIdsAndYear" resultMap="SmsDeptAssessmentResult">
+        <include refid="selectSmsDeptAssessmentVo"/>
+        where period LIKE CONCAT(#{year}, '%')
+        <if test="personIds != null and personIds.size() > 0">
+            and person_id in
+            <foreach collection="personIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        order by person_id
+    </select>
+
+    <!-- 根据人员ID查询最近N年的考核数据 -->
+    <select id="selectYearlyTrendByPersonId" resultMap="SmsDeptAssessmentResult">
+        <include refid="selectSmsDeptAssessmentVo"/>
+        where person_id = #{personId}
+        <if test="years != null and years.size() > 0">
+            and (
+            <foreach collection="years" item="year" separator=" OR ">
+                period LIKE CONCAT(#{year}, '%')
+            </foreach>
+            )
+        </if>
+        order by period
+    </select>
+
 </mapper>

@@ -1,6 +1,7 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 import com.ruoyi.system.domain.SmsStudentAssessment;
 
@@ -61,4 +62,13 @@ public interface SmsStudentAssessmentMapper
      * @return 结果
      */
     public int updateSmsStudentAssessment(SmsStudentAssessment smsStudentAssessment);
+
+    /**
+     * 统计指定单位和年份的评级分布
+     *
+     * @param unitId 单位ID
+     * @param year 年份
+     * @return 评级分布统计（rating, count）
+     */
+    public List<Map<String, Object>> selectRatingDistribution(@Param("unitId") String unitId, @Param("year") String year);
 }

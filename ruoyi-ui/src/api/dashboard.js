@@ -60,3 +60,15 @@ export function getAssessmentChartData(year, unitId = null, type = 'all') {
     }
   })
 }
+
+// 获取看板统计数据（新接口）
+export function getDashboardStatistics(orgCode, year) {
+  return request({
+    url: '/system/assessment/dashboard/statistics',
+    method: 'get',
+    params: {
+      orgCode,
+      year
+    }
+  })
+}

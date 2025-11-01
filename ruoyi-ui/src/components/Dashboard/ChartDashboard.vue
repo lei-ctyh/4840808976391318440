@@ -102,6 +102,7 @@
 
 <script>
 import * as echarts from 'echarts'
+import { getDashboardStatistics } from '@/api/dashboard'
 
 export default {
   name: 'ChartDashboard',
@@ -288,6 +289,52 @@ export default {
       return { years, avgScores, excellentRates, goodRates, passRates, failRates }
     },
     generateDataAndRender() {
+      // 如果没有选中部门或部门没有 orgCode，使用虚拟数据
+      const node = this.selectedDeptNode || {}
+      const orgCode = node.orgCode || node.org_code || node.id
+
+      if (!orgCode) {
+        console.warn('未选择单位或单位缺少 orgCode，使用虚拟数据')
+        this.loadMockData()
+        return
+      }
+
+      // 调用真实 API
+      getDashboardStatistics(orgCode, this.selectedYear)
+        .then(response => {
+          console.log('看板数据加载成功:', response)
+
+          // 解析 API 返回的数据
+          const data = response.data || response
+
+          // 设置当前单位指标
+          this.metrics = data.currentMetrics || { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 }
+
+          // 设置下级单位对比数据
+          this.childrenComparisons = data.childrenComparisons || []
+
+          // 设置年度趋势数据
+          this.yearlyTrend = data.yearlyTrend || {
+            years: [],
+            avgScores: [],
+            excellentRates: [],
+            goodRates: [],
+            passRates: [],
+            failRates: []
+          }
+
+          // 更新图表
+          this.updateCharts()
+        })
+        .catch(error => {
+          console.error('加载看板数据失败:', error)
+          this.$message.error('加载看板数据失败，使用虚拟数据')
+          // 失败时使用虚拟数据
+          this.loadMockData()
+        })
+    },
+    loadMockData() {
+      // 使用虚拟数据（备用方案）
       const { metrics, childrenComparisons } = this.generateMockMetrics(this.selectedDeptNode || {}, this.selectedYear)
       this.metrics = metrics
       this.childrenComparisons = childrenComparisons
