@@ -30,7 +30,7 @@
         <div class="right-pane">
           <el-tabs v-if="visibleTabKeys.length > 0" v-model="activeTab" type="card">
             <el-tab-pane v-if="visibleTabKeys.includes('charts')" label="图表看板" name="charts">
-              <chart-dashboard />
+              <chart-dashboard :selectedDeptNode="selectedDeptNode" />
             </el-tab-pane>
             <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="教师看板" name="teacher">
               <teacher-dashboard
