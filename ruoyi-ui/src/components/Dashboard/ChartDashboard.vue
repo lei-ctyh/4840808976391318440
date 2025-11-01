@@ -40,17 +40,21 @@
         </el-col>
         <el-col :xs="24" :sm="8">
           <el-card shadow="never" class="metric-card">
-            <div class="metric triplet">
+            <div class="metric quadruplet">
               <div class="metric-item">
                 <div class="metric-label">优秀率</div>
-                <div class="metric-value good">{{ (metrics.excellentRate * 100).toFixed(1) }}%</div>
+                <div class="metric-value excellent">{{ (metrics.excellentRate * 100).toFixed(1) }}%</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">良好率</div>
+                <div class="metric-value good">{{ ((metrics.goodRate - metrics.excellentRate) * 100).toFixed(1) }}%</div>
               </div>
               <div class="metric-item">
                 <div class="metric-label">合格率</div>
-                <div class="metric-value pass">{{ (metrics.passRate * 100).toFixed(1) }}%</div>
+                <div class="metric-value pass">{{ ((metrics.passRate - metrics.goodRate) * 100).toFixed(1) }}%</div>
               </div>
               <div class="metric-item">
-                <div class="metric-label">未合格</div>
+                <div class="metric-label">不合格</div>
                 <div class="metric-value fail">{{ ((1 - metrics.passRate) * 100).toFixed(1) }}%</div>
               </div>
             </div>
@@ -80,7 +84,7 @@
       <el-row :gutter="12" style="margin-top: 12px;">
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">当前单位优秀/合格/未合格占比</div>
+            <div class="chart-title">当前单位优秀/良好/合格/不合格占比</div>
             <div ref="pieChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
@@ -110,7 +114,7 @@ export default {
   data() {
     return {
       selectedYear: String(new Date().getFullYear()),
-      metrics: { avgScore: 0, excellentRate: 0, passRate: 0 },
+      metrics: { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 },
       childrenComparisons: [],
       scoresChart: null,
       ratesChart: null,
@@ -194,7 +198,7 @@ export default {
     generateMockMetrics(node, year) {
       if (!node) {
         return {
-          metrics: { avgScore: 0, excellentRate: 0, passRate: 0 },
+          metrics: { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 },
           childrenComparisons: []
         }
       }
@@ -203,26 +207,29 @@ export default {
 
       // 当前单位指标
       const avgScore = 70 + Math.floor(rand() * 30) // 70-100
-      const excellentRate = 0.2 + rand() * 0.5 // 20%-70%
-      const passRate = Math.min(0.95, 0.6 + rand() * 0.35) // 60%-95%
+      const excellentRate = 0.15 + rand() * 0.25 // 15%-40% 优秀
+      const goodRate = excellentRate + 0.2 + rand() * 0.25 // 良好（优秀基础上+20%-45%）
+      const passRate = Math.min(0.95, goodRate + 0.15 + rand() * 0.2) // 合格（良好基础上+15%-35%）
 
       // 下级单位对比数据（最多取前8个孩子）
       const children = Array.isArray(node.children) ? node.children.slice(0, 8) : []
       const childrenComparisons = children.map((c, idx) => {
         const r = this.seedRandom(String(orgCode) + '-' + String(year) + '-' + String(idx))
         const cAvg = 65 + Math.floor(r() * 35)
-        const cExcellent = 0.15 + r() * 0.6
-        const cPass = Math.min(0.97, 0.55 + r() * 0.4)
+        const cExcellent = 0.1 + r() * 0.3
+        const cGood = cExcellent + 0.15 + r() * 0.3
+        const cPass = Math.min(0.97, cGood + 0.1 + r() * 0.25)
         return {
           name: c.label || c.name || c.title || `下级单位${idx + 1}`,
           avgScore: cAvg,
           excellentRate: cExcellent,
+          goodRate: cGood,
           passRate: cPass
         }
       })
 
       return {
-        metrics: { avgScore, excellentRate, passRate },
+        metrics: { avgScore, excellentRate, goodRate, passRate },
         childrenComparisons
       }
     },
@@ -273,16 +280,37 @@ export default {
 
       // 成绩对比图
       this.scoresChart.setOption({
-        tooltip: { trigger: 'axis' },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow',
+            shadowStyle: {
+              color: 'rgba(64, 158, 255, 0.1)'
+            }
+          }
+        },
         grid: { left: 40, right: 20, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: names, axisLabel: { interval: 0, rotate: names.length > 5 ? 30 : 0 } },
         yAxis: { type: 'value', name: '成绩', min: 0, max: 100 },
+        animation: true,
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
         series: [
           {
             name: '平均成绩',
             type: 'bar',
             data: scoreValues,
-            itemStyle: { color: '#409EFF' },
+            itemStyle: {
+              color: '#409EFF',
+              borderRadius: [4, 4, 0, 0]
+            },
+            emphasis: {
+              itemStyle: {
+                color: '#66B1FF',
+                shadowBlur: 10,
+                shadowColor: 'rgba(64, 158, 255, 0.5)'
+              }
+            },
             label: { show: true, position: 'top' }
           }
         ]
@@ -290,47 +318,122 @@ export default {
 
       // 优秀率 / 合格率 对比
       this.ratesChart.setOption({
-        tooltip: { trigger: 'axis' },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow',
+            shadowStyle: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
+          }
+        },
         legend: { data: ['优秀率', '合格率'] },
         grid: { left: 40, right: 20, top: 30, bottom: 40 },
         xAxis: { type: 'category', data: names, axisLabel: { interval: 0, rotate: names.length > 5 ? 30 : 0 } },
         yAxis: { type: 'value', name: '%', min: 0, max: 100 },
+        animation: true,
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
+        animationDelay: (idx) => idx * 50,
         series: [
           {
             name: '优秀率',
             type: 'bar',
             data: excellentValues,
-            itemStyle: { color: '#67C23A' },
+            itemStyle: {
+              color: '#67C23A',
+              borderRadius: [4, 4, 0, 0]
+            },
+            emphasis: {
+              itemStyle: {
+                color: '#85CE61',
+                shadowBlur: 10,
+                shadowColor: 'rgba(103, 194, 58, 0.5)'
+              }
+            },
             label: { show: true, position: 'top', formatter: '{c}%' }
           },
           {
             name: '合格率',
             type: 'bar',
             data: passValues,
-            itemStyle: { color: '#E6A23C' },
+            itemStyle: {
+              color: '#E6A23C',
+              borderRadius: [4, 4, 0, 0]
+            },
+            emphasis: {
+              itemStyle: {
+                color: '#EBB563',
+                shadowBlur: 10,
+                shadowColor: 'rgba(230, 162, 60, 0.5)'
+              }
+            },
             label: { show: true, position: 'top', formatter: '{c}%' }
           }
         ]
       })
 
-      // 当前单位占比饼图（优秀 / 合格但不优秀 / 未合格）
-      const good = Number((this.metrics.excellentRate * 100).toFixed(1))
-      const passOnly = Number(((Math.max(0, this.metrics.passRate - this.metrics.excellentRate)) * 100).toFixed(1))
+      // 当前单位占比饼图（优秀 / 良好 / 合格 / 不合格）
+      const excellent = Number((this.metrics.excellentRate * 100).toFixed(1))
+      const good = Number(((this.metrics.goodRate - this.metrics.excellentRate) * 100).toFixed(1))
+      const pass = Number(((this.metrics.passRate - this.metrics.goodRate) * 100).toFixed(1))
       const fail = Number(((1 - this.metrics.passRate) * 100).toFixed(1))
       this.pieChart.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: {c}% ({d}%)' },
-        legend: { bottom: 0 },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{b}: {c}% ({d}%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          borderColor: '#333',
+          borderWidth: 1,
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        legend: {
+          bottom: 0,
+          itemGap: 15,
+          textStyle: {
+            fontSize: 12
+          }
+        },
+        animation: true,
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
         series: [
           {
             name: '占比',
             type: 'pie',
             radius: ['35%', '60%'],
             avoidLabelOverlap: true,
-            label: { formatter: '{b}\n{c}%' },
+            itemStyle: {
+              borderRadius: 8,
+              borderColor: '#fff',
+              borderWidth: 2
+            },
+            label: {
+              formatter: '{b}\n{c}%',
+              fontSize: 12
+            },
+            emphasis: {
+              scale: true,
+              scaleSize: 10,
+              itemStyle: {
+                shadowBlur: 20,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.3)'
+              },
+              label: {
+                show: true,
+                fontSize: 14,
+                fontWeight: 'bold'
+              }
+            },
             data: [
-              { name: '优秀', value: good, itemStyle: { color: '#67C23A' } },
-              { name: '合格(非优秀)', value: passOnly, itemStyle: { color: '#E6A23C' } },
-              { name: '未合格', value: fail, itemStyle: { color: '#F56C6C' } }
+              { name: '优秀', value: excellent, itemStyle: { color: '#67C23A' } },
+              { name: '良好', value: good, itemStyle: { color: '#95D475' } },
+              { name: '合格', value: pass, itemStyle: { color: '#E6A23C' } },
+              { name: '不合格', value: fail, itemStyle: { color: '#F56C6C' } }
             ]
           }
         ]
@@ -338,29 +441,178 @@ export default {
 
       // 趋势图（年度折线）：成绩、优秀率、合格率
       this.trendChart.setOption({
-        tooltip: { trigger: 'axis' },
-        legend: { data: ['成绩', '优秀率', '合格率'] },
-        grid: { left: 40, right: 20, top: 30, bottom: 40 },
-        xAxis: { type: 'category', data: this.yearlyTrend.years },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          borderColor: '#333',
+          borderWidth: 1,
+          textStyle: {
+            color: '#fff'
+          },
+          axisPointer: {
+            type: 'cross',
+            crossStyle: {
+              color: '#999'
+            },
+            lineStyle: {
+              type: 'dashed'
+            }
+          }
+        },
+        legend: {
+          data: ['成绩', '优秀率', '合格率'],
+          itemGap: 20,
+          textStyle: {
+            fontSize: 12
+          }
+        },
+        grid: { left: 40, right: 40, top: 40, bottom: 40 },
+        xAxis: {
+          type: 'category',
+          data: this.yearlyTrend.years,
+          boundaryGap: false,
+          axisLine: {
+            lineStyle: {
+              color: '#999'
+            }
+          }
+        },
         yAxis: [
-          { type: 'value', name: '成绩', min: 0, max: 100 },
-          { type: 'value', name: '%', min: 0, max: 100, position: 'right' }
+          {
+            type: 'value',
+            name: '成绩',
+            min: 0,
+            max: 100,
+            axisLine: {
+              lineStyle: {
+                color: '#999'
+              }
+            }
+          },
+          {
+            type: 'value',
+            name: '%',
+            min: 0,
+            max: 100,
+            position: 'right',
+            axisLine: {
+              lineStyle: {
+                color: '#999'
+              }
+            }
+          }
         ],
+        animation: true,
+        animationDuration: 1500,
+        animationEasing: 'cubicOut',
         series: [
           {
-            name: '成绩', type: 'line', smooth: true,
-            data: this.yearlyTrend.avgScores, yAxisIndex: 0,
-            itemStyle: { color: '#409EFF' }, areaStyle: { opacity: 0.08 }
+            name: '成绩',
+            type: 'line',
+            smooth: true,
+            data: this.yearlyTrend.avgScores,
+            yAxisIndex: 0,
+            itemStyle: { color: '#409EFF' },
+            lineStyle: {
+              width: 3
+            },
+            emphasis: {
+              focus: 'series',
+              lineStyle: {
+                width: 4
+              },
+              itemStyle: {
+                borderWidth: 3,
+                borderColor: '#409EFF',
+                shadowBlur: 10,
+                shadowColor: 'rgba(64, 158, 255, 0.5)'
+              }
+            },
+            areaStyle: {
+              opacity: 0.1,
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
+                  { offset: 1, color: 'rgba(64, 158, 255, 0.05)' }
+                ]
+              }
+            },
+            symbolSize: 8,
+            symbol: 'circle'
           },
           {
-            name: '优秀率', type: 'line', smooth: true,
-            data: this.yearlyTrend.excellentRates, yAxisIndex: 1,
-            itemStyle: { color: '#67C23A' }, areaStyle: { opacity: 0.06 }
+            name: '优秀率',
+            type: 'line',
+            smooth: true,
+            data: this.yearlyTrend.excellentRates,
+            yAxisIndex: 1,
+            itemStyle: { color: '#67C23A' },
+            lineStyle: {
+              width: 3
+            },
+            emphasis: {
+              focus: 'series',
+              lineStyle: {
+                width: 4
+              },
+              itemStyle: {
+                borderWidth: 3,
+                borderColor: '#67C23A',
+                shadowBlur: 10,
+                shadowColor: 'rgba(103, 194, 58, 0.5)'
+              }
+            },
+            areaStyle: {
+              opacity: 0.1,
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(103, 194, 58, 0.3)' },
+                  { offset: 1, color: 'rgba(103, 194, 58, 0.05)' }
+                ]
+              }
+            },
+            symbolSize: 8,
+            symbol: 'circle'
           },
           {
-            name: '合格率', type: 'line', smooth: true,
-            data: this.yearlyTrend.passRates, yAxisIndex: 1,
-            itemStyle: { color: '#E6A23C' }, areaStyle: { opacity: 0.06 }
+            name: '合格率',
+            type: 'line',
+            smooth: true,
+            data: this.yearlyTrend.passRates,
+            yAxisIndex: 1,
+            itemStyle: { color: '#E6A23C' },
+            lineStyle: {
+              width: 3
+            },
+            emphasis: {
+              focus: 'series',
+              lineStyle: {
+                width: 4
+              },
+              itemStyle: {
+                borderWidth: 3,
+                borderColor: '#E6A23C',
+                shadowBlur: 10,
+                shadowColor: 'rgba(230, 162, 60, 0.5)'
+              }
+            },
+            areaStyle: {
+              opacity: 0.1,
+              color: {
+                type: 'linear',
+                x: 0, y: 0, x2: 0, y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(230, 162, 60, 0.3)' },
+                  { offset: 1, color: 'rgba(230, 162, 60, 0.05)' }
+                ]
+              }
+            },
+            symbolSize: 8,
+            symbol: 'circle'
           }
         ]
       })
@@ -412,12 +664,21 @@ export default {
 
 .metric-card {
   border: 1px solid #ebeef5;
+  height: 100%;
+}
+
+.metric-card ::v-deep .el-card__body {
+  height: 100%;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
 }
 
 .metric {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .metric-label {
@@ -440,12 +701,25 @@ export default {
   align-items: baseline;
 }
 
+.metric.quadruplet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.metric.quadruplet .metric-item {
+  margin-right: 0;
+  flex: 0 0 auto;
+}
+
 .current-name {
   font-size: 16px;
   font-weight: normal;
 }
 
-.metric-value.good { color: #67C23A; }
+.metric-value.excellent { color: #67C23A; }
+.metric-value.good { color: #95D475; }
 .metric-value.pass { color: #E6A23C; }
 .metric-value.fail { color: #F56C6C; }
 
