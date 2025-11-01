@@ -400,8 +400,12 @@ export default {
             }
           }
         },
-        legend: { data: ['优秀率', '良好率', '及格率', '不及格率'] },
-        grid: { left: 40, right: 20, top: 30, bottom: 40 },
+        legend: {
+          data: ['优秀率', '良好率', '及格率', '不及格率'],
+          bottom: 10,
+          itemGap: 15
+        },
+        grid: { left: 40, right: 20, top: 30, bottom: 50 },
         xAxis: { type: 'category', data: names, axisLabel: { interval: 0, rotate: names.length > 5 ? 30 : 0 } },
         yAxis: { type: 'value', name: '%', min: 0, max: 100 },
         animation: true,
@@ -497,7 +501,7 @@ export default {
           }
         },
         legend: {
-          bottom: 0,
+          bottom: 10,
           itemGap: 15,
           textStyle: {
             fontSize: 12
@@ -568,12 +572,13 @@ export default {
         },
         legend: {
           data: ['成绩', '优秀率', '良好率', '及格率', '不及格率'],
+          bottom: 10,
           itemGap: 15,
           textStyle: {
             fontSize: 12
           }
         },
-        grid: { left: 40, right: 40, top: 40, bottom: 40 },
+        grid: { left: 40, right: 40, top: 40, bottom: 50 },
         xAxis: {
           type: 'category',
           data: this.yearlyTrend.years,
