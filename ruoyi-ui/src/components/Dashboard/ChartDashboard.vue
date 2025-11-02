@@ -81,15 +81,15 @@
           </el-card>
         </el-col>
       </el-row>
-      <el-row :gutter="12" style="margin-top: 12px;">
+      <el-row :gutter="12" style="margin-top: 12px;" >
         <el-col :xs="24" :sm="12">
-          <el-card shadow="never" v-show="metrics.avgScore.toFixed(1) != 0">
+          <el-card shadow="never" >
             <div class="chart-title">当前单位优秀/良好/及格/未及格占比</div>
             <div ref="pieChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12">
-          <el-card shadow="never" v-show="metrics.avgScore.toFixed(1) != 0">
+          <el-card shadow="never" >
             <div class="chart-title">年度趋势：成绩、优秀率、良好率、及格率、未及格率</div>
             <div ref="trendChartRef" class="chart-box"></div>
           </el-card>

@@ -20,6 +20,7 @@
     <el-table
       v-else
       :data="tableData"
+      :row-class-name="getRowClassName"
       v-bind="tableProps"
       v-on="tableListeners"
       ref="dynamicTable"
@@ -271,6 +272,21 @@ export default {
       if (tableRef && tableRef.doLayout) {
         tableRef.doLayout()
       }
+    },
+
+    /**
+     * 获取行的CSS类名，用于高亮包含"不及格"的行
+     * @param {Object} row - 行数据
+     * @param {number} rowIndex - 行索引
+     * @returns {string} CSS类名
+     */
+    getRowClassName({ row, rowIndex }) {
+      // 检查行数据中是否包含"不及格"字样
+      const rowValues = Object.values(row).join(' ')
+      if (rowValues.includes('未及格')) {
+        return 'failing-row'
+      }
+      return ''
     }
   }
 }
@@ -331,5 +347,10 @@ export default {
 
 .dynamic-table-container :deep(.el-table .el-table__fixed-column--right) {
   background-color: #fafafa;
+}
+
+/* 不及格行高亮样式 */
+::v-deep .el-table__row.failing-row{
+  background-color: red;
 }
 </style>
