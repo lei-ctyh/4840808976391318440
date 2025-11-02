@@ -108,8 +108,8 @@ export default {
           commonSubject8: 86,
           commonTotal: 88.5,
           jobBusiness: 92,
-          comprehensivePercent: 89.6,
-          comprehensiveLevel: "良好",
+          totalScore: 89.6,
+          totalRating: "良好",
           remark: "表现优秀",
           description: "综合素质较高"
         },
@@ -138,8 +138,8 @@ export default {
           commonSubject8: 93,
           commonTotal: 90.5,
           jobBusiness: 95,
-          comprehensivePercent: 92.1,
-          comprehensiveLevel: "优秀",
+          totalScore: 92.1,
+          totalRating: "优秀",
           remark: "学术带头人",
           description: "教学科研并重"
         }
@@ -170,8 +170,8 @@ export default {
           commonSubject8: 95,
           commonTotal: 94.5,
           jobBusiness: 98,
-          comprehensivePercent: 95.2,
-          comprehensiveLevel: "优秀",
+          totalScore: 95.2,
+          totalRating: "优秀",
           remark: "领导能力突出",
           description: "管理水平优异"
         }

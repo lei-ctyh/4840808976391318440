@@ -49,15 +49,15 @@ export function getLeaderAssessmentData(year) {
     ) / 100;
 
     const jobBusiness = rand(75, 98);
-    const comprehensivePercent = Math.round(
+    const totalScore = Math.round(
       (baseTotal * 0.2 + commonTotal * 0.3 + jobBusiness * 0.5) * 100
     ) / 100;
 
-    const comprehensiveLevel = comprehensivePercent >= 90
+    const totalRating = totalScore >= 90
       ? "优秀"
-      : comprehensivePercent >= 80
+      : totalScore >= 80
         ? "良好"
-        : comprehensivePercent >= 60
+        : totalScore >= 60
           ? "合格"
           : "不合格";
 
@@ -86,10 +86,10 @@ export function getLeaderAssessmentData(year) {
       commonSubject8: commonSubject[7],
       commonTotal,
       jobBusiness,
-      comprehensivePercent,
-      comprehensiveLevel,
-      totalScore: comprehensivePercent, // 总成绩与综合成绩相同
-      totalRating: comprehensiveLevel,  // 总评定与综合评定相同
+      totalScore,
+      totalRating,
+      totalScore: totalScore, // 总成绩与综合成绩相同
+      totalRating: totalRating,  // 总评定与综合评定相同
       remark: "",
       description: ""
     };

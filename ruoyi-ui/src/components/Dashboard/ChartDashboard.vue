@@ -54,7 +54,7 @@
                 <div class="metric-value pass">{{ ((metrics.passRate - metrics.goodRate) * 100).toFixed(1) }}%</div>
               </div>
               <div class="metric-item">
-                <div class="metric-label">不及格</div>
+                <div class="metric-label">未及格</div>
                 <div class="metric-value fail">{{ ((1 - metrics.passRate) * 100).toFixed(1) }}%</div>
               </div>
             </div>
@@ -84,13 +84,13 @@
       <el-row :gutter="12" style="margin-top: 12px;">
         <el-col :xs="24" :sm="12">
           <el-card shadow="never" v-show="metrics.avgScore.toFixed(1) != 0">
-            <div class="chart-title">当前单位优秀/良好/及格/不及格占比</div>
+            <div class="chart-title">当前单位优秀/良好/及格/未及格占比</div>
             <div ref="pieChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-card shadow="never" v-show="metrics.avgScore.toFixed(1) != 0">
-            <div class="chart-title">年度趋势：成绩、优秀率、良好率、及格率、不及格率</div>
+            <div class="chart-title">年度趋势：成绩、优秀率、良好率、及格率、未及格率</div>
             <div ref="trendChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
@@ -138,7 +138,7 @@ export default {
       if (score >= 90) return '优秀'
       if (score >= 80) return '良好'
       if (score >= 60) return '及格'
-      return '不及格'
+      return '未及格'
     },
     // 根据评级返回对应的CSS class
     gradeLevelClass() {
@@ -401,7 +401,7 @@ export default {
           }
         },
         legend: {
-          data: ['优秀率', '良好率', '及格率', '不及格率'],
+          data: ['优秀率', '良好率', '及格率', '未及格率'],
           bottom: 10,
           itemGap: 15
         },
@@ -465,7 +465,7 @@ export default {
             label: { show: true, position: 'top', formatter: '{c}%' }
           },
           {
-            name: '不及格率',
+            name: '未及格率',
             type: 'bar',
             data: failValues,
             itemStyle: {
@@ -484,7 +484,7 @@ export default {
         ]
       })
 
-      // 当前单位占比饼图（优秀 / 良好 / 及格 / 不及格）
+      // 当前单位占比饼图（优秀 / 良好 / 及格 / 未及格）
       const excellent = Number((this.metrics.excellentRate * 100).toFixed(1))
       const good = Number(((this.metrics.goodRate - this.metrics.excellentRate) * 100).toFixed(1))
       const pass = Number(((this.metrics.passRate - this.metrics.goodRate) * 100).toFixed(1))
@@ -544,13 +544,13 @@ export default {
               { name: '优秀', value: excellent, itemStyle: { color: '#67C23A' } },
               { name: '良好', value: good, itemStyle: { color: '#95D475' } },
               { name: '及格', value: pass, itemStyle: { color: '#E6A23C' } },
-              { name: '不及格', value: fail, itemStyle: { color: '#F56C6C' } }
+              { name: '未及格', value: fail, itemStyle: { color: '#F56C6C' } }
             ]
           }
         ]
       })
 
-      // 趋势图（年度折线）：成绩、优秀率、良好率、及格率、不及格率
+      // 趋势图（年度折线）：成绩、优秀率、良好率、及格率、未及格率
       this.trendChart.setOption({
         tooltip: {
           trigger: 'axis',
@@ -571,7 +571,7 @@ export default {
           }
         },
         legend: {
-          data: ['成绩', '优秀率', '良好率', '及格率', '不及格率'],
+          data: ['成绩', '优秀率', '良好率', '及格率', '未及格率'],
           bottom: 10,
           itemGap: 15,
           textStyle: {
@@ -763,7 +763,7 @@ export default {
             symbol: 'circle'
           },
           {
-            name: '不及格率',
+            name: '未及格率',
             type: 'line',
             smooth: true,
             data: this.yearlyTrend.failRates,

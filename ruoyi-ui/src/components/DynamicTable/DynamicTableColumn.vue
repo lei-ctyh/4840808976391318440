@@ -9,6 +9,7 @@
         v-for="childColumn in column.children"
         :key="getColumnKey(childColumn)"
         :column="childColumn"
+        :style="{ backgroundColor: '#ffebee'}"
       />
     </template>
 

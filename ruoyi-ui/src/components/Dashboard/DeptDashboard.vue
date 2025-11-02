@@ -403,8 +403,8 @@ export default {
         jobBusiness: backendData.metric015 || '0',
 
         // 综合成绩
-        comprehensivePercent: backendData.totalScore || '0',
-        comprehensiveLevel: backendData.totalRating || '及格',
+        totalScore: backendData.totalScore || '0',
+        totalRating: backendData.totalRating || '及格',
         remark: backendData.remark || '',
         description: backendData.status || ''
       }

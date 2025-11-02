@@ -144,13 +144,13 @@
       "label": "综合成绩",
       "children": [
         {
-          "label": "百分制",
-          "prop": "comprehensivePercent",
+          "label": "成绩",
+          "prop": "totalScore",
           "width": "120"
         },
         {
-          "label": "四级制 不合格，合格，良好，优秀",
-          "prop": "comprehensiveLevel",
+          "label": "评定",
+          "prop": "totalRating",
           "width": "180"
         }
       ]

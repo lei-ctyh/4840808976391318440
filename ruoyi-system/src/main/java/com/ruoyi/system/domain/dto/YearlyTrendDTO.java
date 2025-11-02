@@ -24,7 +24,7 @@ public class YearlyTrendDTO
     /** 对应年份的及格率（百分比形式，累计） */
     private List<Double> passRates;
 
-    /** 对应年份的不及格率（百分比形式） */
+    /** 对应年份的未及格率（百分比形式） */
     private List<Double> failRates;
 
     public YearlyTrendDTO()
