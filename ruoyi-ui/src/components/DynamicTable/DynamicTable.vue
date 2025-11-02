@@ -20,7 +20,7 @@
     <el-table
       v-else
       :data="tableData"
-      :row-class-name="getRowClassName"
+      :cell-class-name="getCellClassName"
       v-bind="tableProps"
       v-on="tableListeners"
       ref="dynamicTable"
@@ -288,6 +288,24 @@ export default {
       }
       return ''
     }
+    ,
+    /**
+     * 获取单元格的CSS类名，仅高亮包含“未及格/不及格”的单元格
+     * @param {Object} row - 行数据
+     * @param {Object} column - 列对象（含property/prop）
+     * @param {number} rowIndex - 行索引
+     * @param {number} columnIndex - 列索引
+     * @returns {string} CSS类名
+     */
+    getCellClassName({ row, column, rowIndex, columnIndex }) {
+      const prop = column?.property || column?.prop
+      const value = prop ? row[prop] : ''
+      const text = value == null ? '' : String(value)
+      if (text.includes('未及格') || text.includes('不及格')) {
+        return 'failing-cell'
+      }
+      return ''
+    }
   }
 }
 </script>
@@ -349,8 +367,8 @@ export default {
   background-color: #fafafa;
 }
 
-/* 不及格行高亮样式 */
-::v-deep .el-table__row.failing-row{
+/* 不及格单元格高亮样式 */
+::v-deep .el-table__body td.failing-cell {
   background-color: red;
 }
 </style>
