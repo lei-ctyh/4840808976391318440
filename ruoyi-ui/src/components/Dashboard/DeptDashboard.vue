@@ -803,6 +803,10 @@ export default {
   margin-right: 8px;
 }
 
+.dept-right .el-date-picker {
+  margin-right: 8px;
+}
+
 .table-pagination {
   margin-top: 12px;
   text-align: right;
@@ -854,3 +858,9 @@ export default {
   margin: 5px 0;
 }
 </style>
+  watch: {
+    searchText() {
+      this.deptPagination.currentPage = 1
+      this.deptPagination.total = this.deptTableFiltered.length
+    }
+  },

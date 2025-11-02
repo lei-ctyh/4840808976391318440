@@ -67,6 +67,13 @@
         <el-tag size="small" class="teacher-dept">{{ organizationPath }}</el-tag>
       </div>
       <div class="teacher-right">
+        <el-input
+          v-model="searchText"
+          size="small"
+          clearable
+          placeholder="搜索（姓名/编号/单位/指标等）"
+          prefix-icon="el-icon-search"
+        />
         <el-button type="primary" icon="el-icon-upload" size="small" @click="importDialogVisible = true">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
         <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
@@ -214,6 +221,7 @@ export default {
   data() {
     return {
       selectedYear: String(new Date().getFullYear()),
+      searchText: '',
       teacherTableData: [],
       teacherPagination: { currentPage: 1, pageSize: 10, total: 0 },
       uploadTemplateDialogVisible: false,
@@ -248,10 +256,19 @@ export default {
     }
   },
   computed: {
+    teacherTableFiltered() {
+      const text = (this.searchText || '').trim().toLowerCase()
+      if (!text) return this.teacherTableData
+      return this.teacherTableData.filter(row => {
+        const joined = Object.values(row).map(v => String(v ?? '')).join(' ').toLowerCase()
+        return joined.includes(text)
+      })
+    },
     teacherTablePageData() {
+      const list = this.teacherTableFiltered
       const start = (this.teacherPagination.currentPage - 1) * this.teacherPagination.pageSize
       const end = start + this.teacherPagination.pageSize
-      return this.teacherTableData.slice(start, end)
+      return list.slice(start, end)
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -273,6 +290,10 @@ export default {
     currentOrgCode() {
       // 当组织节点切换时，重新加载数据
       this.loadTeacherData()
+    },
+    searchText() {
+      this.teacherPagination.currentPage = 1
+      this.teacherPagination.total = this.teacherTableFiltered.length
     }
   },
   created() {
@@ -552,7 +573,7 @@ export default {
         this.$loading().close()
       }
 
-      this.teacherPagination.total = this.teacherTableData.length
+      this.teacherPagination.total = this.teacherTableFiltered.length
       this.teacherPagination.currentPage = 1
     },
     handleTeacherSizeChange(size) {
@@ -770,6 +791,7 @@ export default {
 .teacher-right {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
 }
 
 .teacher-right .label {
@@ -780,6 +802,12 @@ export default {
 .teacher-right .el-button,
 .teacher-right .el-date-picker {
   margin-right: 8px;
+}
+
+.teacher-right .el-input {
+  margin-right: 8px;
+  width: 220px;
+  flex: 0 0 220px;
 }
 
 .dashboard-header {

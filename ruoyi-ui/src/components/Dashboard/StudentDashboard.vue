@@ -134,6 +134,13 @@
         <el-tag size="small" class="student-dept">{{ organizationPath }}</el-tag>
       </div>
       <div class="student-right">
+        <el-input
+          v-model="searchText"
+          size="small"
+          clearable
+          placeholder="搜索（姓名/编号/单位/指标等）"
+          prefix-icon="el-icon-search"
+        />
         <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
         <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
@@ -214,6 +221,7 @@ export default {
   data() {
     return {
       selectedYear: new Date().getFullYear().toString(),
+      searchText: '',
       studentTableData: [],
       studentPagination: {
         currentPage: 1,
@@ -252,10 +260,19 @@ export default {
     }
   },
   computed: {
+    studentTableFiltered() {
+      const text = (this.searchText || '').trim().toLowerCase()
+      if (!text) return this.studentTableData
+      return this.studentTableData.filter(row => {
+        const joined = Object.values(row).map(v => String(v ?? '')).join(' ').toLowerCase()
+        return joined.includes(text)
+      })
+    },
     studentTablePageData() {
+      const list = this.studentTableFiltered
       const start = (this.studentPagination.currentPage - 1) * this.studentPagination.pageSize
       const end = start + this.studentPagination.pageSize
-      return this.studentTableData.slice(start, end)
+      return list.slice(start, end)
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -350,7 +367,7 @@ export default {
           // 处理后端返回的数据格式，将metric字段映射为前端表格字段
           const rawData = response.rows || response.data || []
           this.studentTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
-          this.studentPagination.total = response.total || this.studentTableData.length
+          this.studentPagination.total = this.studentTableFiltered.length
           this.studentPagination.currentPage = 1
         } else {
           this.$message.error(response.msg || '获取数据失败')
@@ -803,6 +820,22 @@ export default {
   margin-right: 8px;
 }
 
+.student-right .el-date-picker,
+.student-right .el-input {
+  margin-right: 8px;
+}
+/* 保持右侧工具区在同一行并限制搜索框宽度 */
+.student-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.student-right .el-input {
+  width: 220px;
+  flex: 0 0 220px;
+}
+
 .table-pagination {
   margin-top: 12px;
   text-align: right;
@@ -854,3 +887,9 @@ export default {
   margin: 5px 0;
 }
 </style>
+  watch: {
+    searchText() {
+      this.studentPagination.currentPage = 1
+      this.studentPagination.total = this.studentTableFiltered.length
+    }
+  },

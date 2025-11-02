@@ -134,6 +134,13 @@
         <el-tag size="small" class="leader-dept">{{ organizationPath }}</el-tag>
       </div>
       <div class="leader-right">
+        <el-input
+          v-model="searchText"
+          size="small"
+          clearable
+          placeholder="搜索（姓名/编号/单位/指标等）"
+          prefix-icon="el-icon-search"
+        />
         <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>
         <el-button icon="el-icon-upload2" size="small" @click="openUploadTemplateDialog">上传模板</el-button>
@@ -214,6 +221,7 @@ export default {
   data() {
     return {
       selectedYear: new Date().getFullYear().toString(),
+      searchText: '',
       leaderTableData: [],
       leaderPagination: {
         currentPage: 1,
@@ -252,10 +260,19 @@ export default {
     }
   },
   computed: {
+    leaderTableFiltered() {
+      const text = (this.searchText || '').trim().toLowerCase()
+      if (!text) return this.leaderTableData
+      return this.leaderTableData.filter(row => {
+        const joined = Object.values(row).map(v => String(v ?? '')).join(' ').toLowerCase()
+        return joined.includes(text)
+      })
+    },
     leaderTablePageData() {
+      const list = this.leaderTableFiltered
       const start = (this.leaderPagination.currentPage - 1) * this.leaderPagination.pageSize
       const end = start + this.leaderPagination.pageSize
-      return this.leaderTableData.slice(start, end)
+      return list.slice(start, end)
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -803,6 +820,22 @@ export default {
   margin-right: 8px;
 }
 
+.leader-right .el-date-picker,
+.leader-right .el-input {
+  margin-right: 8px;
+}
+/* 保持右侧工具区在同一行并限制搜索框宽度 */
+.leader-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.leader-right .el-input {
+  width: 220px;
+  flex: 0 0 220px;
+}
+
 .table-pagination {
   margin-top: 12px;
   text-align: right;
@@ -854,3 +887,9 @@ export default {
   margin: 5px 0;
 }
 </style>
+  watch: {
+    searchText() {
+      this.leaderPagination.currentPage = 1
+      this.leaderPagination.total = this.leaderTableFiltered.length
+    }
+  },
