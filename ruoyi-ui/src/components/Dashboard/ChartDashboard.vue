@@ -68,16 +68,16 @@
       <el-row :gutter="12">
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">下级单位成绩对比</div>
+            <div class="chart-title">成绩对比</div>
             <div ref="scoresChartRef" class="chart-box"></div>
-            <div v-if="!hasChildren" class="empty-tip">无下级单位数据</div>
+            <div v-if="!hasChildren" class="empty-tip">无数据</div>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-card shadow="never">
-            <div class="chart-title">下级单位四级评价对比</div>
+            <div class="chart-title">评价对比</div>
             <div ref="ratesChartRef" class="chart-box"></div>
-            <div v-if="!hasChildren" class="empty-tip">无下级单位数据</div>
+            <div v-if="!hasChildren" class="empty-tip">无数据</div>
           </el-card>
         </el-col>
       </el-row>
@@ -97,7 +97,7 @@
       </el-row>
     </div>
   </div>
-  
+
 </template>
 
 <script>
