@@ -2,7 +2,7 @@
 
 ## 概述
 
-动态表格组件支持根据配置文件动态生成多层级表头，适用于教师看板和领导看板等需要灵活表头配置的场景。
+动态表格组件支持根据配置文件动态生成多层级表头，适用于教师成绩和个人成绩等需要灵活表头配置的场景。
 
 ## 组件结构
 
@@ -26,7 +26,7 @@ DynamicTable/
 {
   "version": "1.0",
   "boardType": "teacher",
-  "description": "教师看板表头配置",
+  "description": "教师成绩表头配置",
   "columns": [
     {
       "prop": "personId",
@@ -181,13 +181,13 @@ const table = this.$refs.dynamicTable.getTableRef()
 
 ## 示例配置文件
 
-### 教师看板默认配置 (default-teacher.json)
+### 教师成绩默认配置 (default-teacher.json)
 
 ```json
 {
   "version": "1.0",
   "boardType": "teacher",
-  "description": "教师看板默认表头配置",
+  "description": "教师成绩默认表头配置",
   "columns": [
     {
       "prop": "personId",
@@ -247,7 +247,7 @@ const table = this.$refs.dynamicTable.getTableRef()
   "boardType": "teacher",
   "year": "2024",
   "orgCode": "0001",
-  "description": "2024年机构0001教师看板自定义配置",
+  "description": "2024年机构0001教师成绩自定义配置",
   "columns": [
     {
       "prop": "personId",

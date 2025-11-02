@@ -18,7 +18,7 @@
             </div>
           </el-alert>
         </div>
-        
+
         <!-- 无模板提示 -->
         <div v-else-if="templateCheckCompleted" class="no-template-info" style="margin-bottom: 20px;">
           <el-alert
@@ -31,7 +31,7 @@
             </div>
           </el-alert>
         </div>
-        
+
         <!-- 加载中提示 -->
         <div v-else class="loading-template-info" style="margin-bottom: 20px;">
           <el-alert
@@ -41,7 +41,7 @@
             show-icon>
           </el-alert>
         </div>
-        
+
         <p>请选择模板文件并上传到服务器。</p>
         <file-upload
           v-model="templateUrl"
@@ -126,7 +126,7 @@
       </span>
     </el-dialog>
 
-    <!-- 领导看板头部 -->
+    <!-- 个人成绩头部 -->
     <div class="leader-header">
       <div class="leader-left">
         <span class="leader-title">领导班子年度考核</span>
@@ -151,7 +151,7 @@
       </div>
     </div>
 
-    <!-- 领导看板表格 -->
+    <!-- 个人成绩表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="leaderTablePageData"
@@ -286,15 +286,15 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('领导看板表格配置加载成功:', config)
+      console.log('个人成绩表格配置加载成功:', config)
     },
-    
+
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('领导看板表格配置加载失败:', error)
+      console.error('个人成绩表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
-    
+
     // 获取部门树数据
     getDeptTreeData() {
       deptTreeSelect().then(response => {
@@ -704,12 +704,12 @@ export default {
       this.importDialogVisible = false
       this.resetImportState()
     },
-    
+
     // 加载已有模板信息
     async loadExistingTemplate() {
       this.existingTemplate = null
       this.templateCheckCompleted = false
-      
+
       // 验证必需参数
       if (!this.currentOrgCode || !this.boardType || !this.selectedYear) {
         console.log('参数不完整，跳过模板查询:', {
@@ -720,14 +720,14 @@ export default {
         this.templateCheckCompleted = true
         return
       }
-      
+
       try {
         const response = await getTemplate({
           orgCode: this.currentOrgCode,
           boardType: this.boardType,
           year: this.selectedYear
         })
-        
+
         if (response.code === 200 && response.data) {
           this.existingTemplate = response.data
           // 设置模板文件名和URL，用于显示当前模板信息
@@ -740,20 +740,20 @@ export default {
         this.templateCheckCompleted = true
       }
     },
-    
+
     // 格式化文件大小
     formatFileSize(size) {
       if (!size) return '未知'
-      
+
       const units = ['B', 'KB', 'MB', 'GB']
       let index = 0
       let fileSize = parseFloat(size)
-      
+
       while (fileSize >= 1024 && index < units.length - 1) {
         fileSize /= 1024
         index++
       }
-      
+
       return fileSize.toFixed(2) + ' ' + units[index]
     }
   }

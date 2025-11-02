@@ -1,6 +1,6 @@
 {
   "boardType": "leader",
-  "description": "领导看板默认表头配置",
+  "description": "个人成绩默认表头配置",
   "version": "1.0.0",
   "columns": [
     {

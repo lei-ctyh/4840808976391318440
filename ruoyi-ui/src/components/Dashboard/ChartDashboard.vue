@@ -2,7 +2,7 @@
   <div class="chart-dashboard">
     <div class="dashboard-header">
       <div class="title-line">
-        <h3>图表看板</h3>
+        <h3>成绩对比</h3>
         <div class="toolbar">
           <span class="label">年度</span>
           <el-date-picker
@@ -20,7 +20,7 @@
     </div>
 
     <!-- 指标卡片 -->
-    <div class="metric-cards">
+    <div class="metric-cards" v-show="metrics.avgScore.toFixed(1) != 0">
       <el-row :gutter="12">
         <el-col :xs="24" :sm="8">
           <el-card shadow="never" class="metric-card">
@@ -83,13 +83,13 @@
       </el-row>
       <el-row :gutter="12" style="margin-top: 12px;">
         <el-col :xs="24" :sm="12">
-          <el-card shadow="never">
+          <el-card shadow="never" v-show="metrics.avgScore.toFixed(1) != 0">
             <div class="chart-title">当前单位优秀/良好/及格/不及格占比</div>
             <div ref="pieChartRef" class="chart-box"></div>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12">
-          <el-card shadow="never">
+          <el-card shadow="never" v-show="metrics.avgScore.toFixed(1) != 0">
             <div class="chart-title">年度趋势：成绩、优秀率、良好率、及格率、不及格率</div>
             <div ref="trendChartRef" class="chart-box"></div>
           </el-card>

@@ -1,23 +1,23 @@
 <template>
   <div class="dynamic-table-test">
     <h2>动态表格组件测试</h2>
-    
+
     <div class="test-section">
-      <h3>教师看板表格测试</h3>
+      <h3>教师成绩表格测试</h3>
       <div class="controls">
         <label>年份：</label>
         <el-select v-model="teacherYear" @change="onTeacherYearChange">
           <el-option label="2024" value="2024"></el-option>
           <el-option label="2023" value="2023"></el-option>
         </el-select>
-        
+
         <label style="margin-left: 20px;">机构编码：</label>
         <el-select v-model="teacherOrgCode" @change="onTeacherOrgChange">
           <el-option label="0001 (有自定义配置)" value="0001"></el-option>
           <el-option label="0002 (使用默认配置)" value="0002"></el-option>
         </el-select>
       </div>
-      
+
       <dynamic-table
         :data="teacherTestData"
         board-type="teacher"
@@ -34,23 +34,23 @@
         ref="teacherTable"
       />
     </div>
-    
+
     <div class="test-section" style="margin-top: 40px;">
-      <h3>领导看板表格测试</h3>
+      <h3>个人成绩表格测试</h3>
       <div class="controls">
         <label>年份：</label>
         <el-select v-model="leaderYear" @change="onLeaderYearChange">
           <el-option label="2024" value="2024"></el-option>
           <el-option label="2023" value="2023"></el-option>
         </el-select>
-        
+
         <label style="margin-left: 20px;">机构编码：</label>
         <el-select v-model="leaderOrgCode" @change="onLeaderOrgChange">
           <el-option label="0001 (使用默认配置)" value="0001"></el-option>
           <el-option label="0002 (使用默认配置)" value="0002"></el-option>
         </el-select>
       </div>
-      
+
       <dynamic-table
         :data="leaderTestData"
         board-type="leader"
@@ -80,7 +80,7 @@ export default {
     return {
       teacherYear: "2024",
       teacherOrgCode: "0001",
-      leaderYear: "2024", 
+      leaderYear: "2024",
       leaderOrgCode: "0001",
       teacherTestData: [
         {
@@ -114,7 +114,7 @@ export default {
           description: "综合素质较高"
         },
         {
-          personId: "T002", 
+          personId: "T002",
           name: "李四",
           unitPath: "教学组织/数学系/应用数学班",
           birthdate: "1982-03-20",

@@ -18,7 +18,7 @@
             </div>
           </el-alert>
         </div>
-        
+
         <!-- 无模板提示 -->
         <div v-else-if="templateCheckCompleted" class="no-template-info" style="margin-bottom: 20px;">
           <el-alert
@@ -31,7 +31,7 @@
             </div>
           </el-alert>
         </div>
-        
+
         <!-- 加载中提示 -->
         <div v-else class="loading-template-info" style="margin-bottom: 20px;">
           <el-alert
@@ -41,7 +41,7 @@
             show-icon>
           </el-alert>
         </div>
-        
+
         <p>请选择模板文件并上传到服务器。</p>
         <file-upload
           v-model="templateUrl"
@@ -59,7 +59,7 @@
       </span>
     </el-dialog>
 
-    <!-- 教师看板头部 -->
+    <!-- 教师成绩头部 -->
     <div class="teacher-header">
       <div class="teacher-left">
         <span class="teacher-title">教师年度考核</span>
@@ -84,7 +84,7 @@
       </div>
     </div>
 
-    <!-- 教师看板表格 -->
+    <!-- 教师成绩表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="teacherTablePageData"
@@ -282,15 +282,15 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('教师看板表格配置加载成功:', config)
+      console.log('教师成绩表格配置加载成功:', config)
     },
-    
+
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('教师看板表格配置加载失败:', error)
+      console.error('教师成绩表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
-    
+
     // 处理模板上传成功
     handleTemplateUpload(fileUrl) {
       if (fileUrl) {
@@ -308,7 +308,7 @@ export default {
     onYearChange() {
       this.loadTeacherData()
     },
-    
+
     // 导入相关方法
     /** 下载模板操作 */
     importTemplate() {
@@ -316,7 +316,7 @@ export default {
         this.$download.excel(response, '教师考核数据导入模板.xlsx');
       });
     },
-    
+
     // 重置导入状态
     resetImportState() {
       this.hasImportFile = false
@@ -334,7 +334,7 @@ export default {
         message: ''
       }
     },
-    
+
     // 设置上传头部信息
     setupUploadHeaders() {
       this.uploadHeaders = {
@@ -345,18 +345,18 @@ export default {
         year: this.selectedYear
       }
     },
-    
+
     // 文件选择变化处理
     handleFileChange(file, fileList) {
       this.hasImportFile = fileList.length > 0
     },
-    
+
     // 上传前验证
     beforeImportUpload(file) {
-      const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+      const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
                      file.type === 'application/vnd.ms-excel'
       const isLt10M = file.size / 1024 / 1024 < 10
-      
+
       if (!isExcel) {
         this.$message.error('只能上传 Excel 格式文件!')
         return false
@@ -365,13 +365,13 @@ export default {
         this.$message.error('上传文件大小不能超过 10MB!')
         return false
       }
-      
+
       // 更新上传数据
       this.uploadData.updateSupport = this.updateSupport
-      
+
       return true
     },
-    
+
     // 导入进度处理
     handleImportProgress(event, file, fileList) {
       this.importing = true
@@ -382,7 +382,7 @@ export default {
         text: '正在上传文件...'
       }
     },
-    
+
     // 导入成功处理
     handleImportSuccess(response, file, fileList) {
       console.log('导入响应:', response)
@@ -431,12 +431,12 @@ export default {
         this.importResult.type = 'error'
         this.importResult.message = `<p>${response.msg || '导入过程中发生错误'}</p>`
       }
-      
+
       // 清空文件列表
       this.$refs.importUpload.clearFiles()
       this.hasImportFile = false
     },
-    
+
     // 导入错误处理
     handleImportError(error, file, fileList) {
       this.importing = false
@@ -445,12 +445,12 @@ export default {
       this.importResult.title = '导入失败'
       this.importResult.type = 'error'
       this.importResult.message = `<p>文件上传失败: ${error.message || '未知错误'}</p>`
-      
+
       // 清空文件列表
       this.$refs.importUpload.clearFiles()
       this.hasImportFile = false
     },
-    
+
     // 提交导入
     submitImport() {
       if (!this.hasImportFile) {
@@ -465,35 +465,35 @@ export default {
 
       this.$refs.importUpload.submit()
     },
-    
+
     // 取消导入
     cancelImport() {
       this.importDialogVisible = false
       this.resetImportState()
     },
-    
+
     // 处理导入点击
     handleImportClick() {
       this.resetImportState()
       this.importDialogVisible = true
       this.setupUploadHeaders()
     },
-    
+
     async handleExportClick() {
       try {
         this.$loading({ text: '正在导出数据...' })
-        
+
         // 构建查询参数
         const queryParams = {
           period: this.selectedYear,
           unitId: this.currentOrgCode
         }
-        
+
         const response = await exportTeacherAssessment(queryParams)
-        
+
         // 创建下载链接
-        const blob = new Blob([response], { 
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        const blob = new Blob([response], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         })
         const url = window.URL.createObjectURL(blob)
         const link = document.createElement('a')
@@ -503,7 +503,7 @@ export default {
         link.click()
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
-        
+
         this.$message.success('导出成功')
       } catch (error) {
         console.error('导出失败:', error)
@@ -527,16 +527,16 @@ export default {
     async loadTeacherData() {
       try {
         this.$loading({ text: '正在加载数据...' })
-        
+
         // 构建查询参数
         const queryParams = {
           period: this.selectedYear,
           unitId: this.currentOrgCode
         }
-        
+
         // 调用实际API获取数据
         const response = await getTeacherAssessmentByUnitAndPeriod(this.currentOrgCode, this.selectedYear)
-        
+
         if (response.code === 200) {
           this.teacherTableData = response.data || []
         } else {
@@ -681,12 +681,12 @@ export default {
 
       return buildPath(unitId)
     },
-    
+
     // 加载已有模板信息
     async loadExistingTemplate() {
       this.existingTemplate = null
       this.templateCheckCompleted = false
-      
+
       // 验证必需参数
       if (!this.currentOrgCode || !this.boardType || !this.selectedYear) {
         console.log('参数不完整，跳过模板查询:', {
@@ -697,14 +697,14 @@ export default {
         this.templateCheckCompleted = true
         return
       }
-      
+
       try {
         const response = await getTemplate({
           orgCode: this.currentOrgCode,
           boardType: this.boardType,
           year: this.selectedYear
         })
-        
+
         if (response.code === 200 && response.data) {
           this.existingTemplate = response.data
           // 设置模板文件名和URL，用于显示当前模板信息
@@ -717,20 +717,20 @@ export default {
         this.templateCheckCompleted = true
       }
     },
-    
+
     // 格式化文件大小
     formatFileSize(size) {
       if (!size) return '未知'
-      
+
       const units = ['B', 'KB', 'MB', 'GB']
       let index = 0
       let fileSize = parseFloat(size)
-      
+
       while (fileSize >= 1024 && index < units.length - 1) {
         fileSize /= 1024
         index++
       }
-      
+
       return fileSize.toFixed(2) + ' ' + units[index]
     }
   }

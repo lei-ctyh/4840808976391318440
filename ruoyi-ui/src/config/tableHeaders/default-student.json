@@ -1,6 +1,6 @@
 {
   "boardType": "student",
-  "description": "学生看板默认表头配置",
+  "description": "学生成绩默认表头配置",
   "version": "1.0.0",
   "columns": [
     {

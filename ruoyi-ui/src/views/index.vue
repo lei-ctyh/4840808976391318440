@@ -29,24 +29,24 @@
       <pane size="82">
         <div class="right-pane">
           <el-tabs v-if="visibleTabKeys.length > 0" v-model="activeTab" type="card">
-            <el-tab-pane v-if="visibleTabKeys.includes('charts')" label="图表看板" name="charts">
+            <el-tab-pane v-if="visibleTabKeys.includes('charts')" label="成绩对比" name="charts">
               <chart-dashboard :selectedDeptNode="selectedDeptNode" />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="教师看板" name="teacher">
+            <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="教师成绩" name="teacher">
               <teacher-dashboard
                 :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('student')" label="学生看板" name="student">
+            <el-tab-pane v-if="visibleTabKeys.includes('student')" label="学生成绩" name="student">
               <student-dashboard
                 :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="领导看板" name="leader">
+            <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="个人成绩" name="leader">
               <leader-dashboard
                 :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"

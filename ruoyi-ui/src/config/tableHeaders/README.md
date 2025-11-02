@@ -1,6 +1,6 @@
 # 表头配置 JSON 使用说明
 
-本文档说明 `ruoyi-ui/src/config/tableHeaders` 目录下表头配置 JSON 的用途、命名规范与字段含义，便于扩展学生、教师、领导看板的列展示与分组表头。
+本文档说明 `ruoyi-ui/src/config/tableHeaders` 目录下表头配置 JSON 的用途、命名规范与字段含义，便于扩展学生、教师、个人成绩的列展示与分组表头。
 
 ## 文件作用
 - 定义看板（学生/教师/领导）表格的列顺序、显示名称、宽度与是否固定列。
@@ -18,7 +18,7 @@
 ```json
 {
   "boardType": "student",
-  "description": "学生看板默认表头配置",
+  "description": "学生成绩默认表头配置",
   "version": "1.0.0",
   "columns": [ /* 列配置数组，见下文 */ ]
 }
@@ -72,7 +72,7 @@
 ```json
 {
   "boardType": "student",
-  "description": "学生看板自定义方案",
+  "description": "学生成绩自定义方案",
   "version": "1.1.0",
   "columns": [
     { "label": "人员编号", "prop": "personId", "width": "110", "fixed": true },

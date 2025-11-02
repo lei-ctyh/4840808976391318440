@@ -126,7 +126,7 @@
       </span>
     </el-dialog>
 
-    <!-- 学生看板头部 -->
+    <!-- 学生成绩头部 -->
     <div class="student-header">
       <div class="student-left">
         <span class="student-title">学生成绩年度考核</span>
@@ -151,7 +151,7 @@
       </div>
     </div>
 
-    <!-- 学生看板表格 -->
+    <!-- 学生成绩表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="studentTablePageData"
@@ -286,12 +286,12 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('学生看板表格配置加载成功:', config)
+      console.log('学生成绩表格配置加载成功:', config)
     },
 
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('学生看板表格配置加载失败:', error)
+      console.error('学生成绩表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
 
