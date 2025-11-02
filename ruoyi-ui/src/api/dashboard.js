@@ -12,14 +12,14 @@ export function getLeaderAssessmentData(year, unitId = null) {
   })
 }
 
-// 获取教师考核看板数据
+// 获取教师考核看板数据（对齐后端现有列表接口与参数名）
 export function getTeacherAssessmentData(year, unitId = null) {
   return request({
-    url: '/system/teacherAssessment/dashboard',
+    url: '/system/teacher-assessment/list',
     method: 'get',
     params: {
-      year,
-      unitId
+      period: year,
+      unitId: unitId
     }
   })
 }

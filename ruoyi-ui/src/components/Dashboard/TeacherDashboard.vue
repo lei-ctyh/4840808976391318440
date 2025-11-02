@@ -194,11 +194,11 @@
 </template>
 
 <script>
-import { getTeacherAssessmentData } from "@/mock/mockData"
+import { getTeacherAssessmentData } from "@/api/dashboard"
 import { deptTreeSelect } from "@/api/system/user"
 import FileUpload from "@/components/FileUpload"
 import { bindTemplate, resolveTemplate, getTemplate } from "@/api/system/template"
-import { listTeacherAssessment, getTeacherAssessmentByUnitAndPeriod, importTemplate, importData, exportTeacherAssessment } from "@/api/system/teacherAssessment"
+import { listTeacherAssessment, importTemplate, importData, exportTeacherAssessment } from "@/api/system/teacherAssessment"
 import DynamicTable from "@/components/DynamicTable"
 
 export default {
@@ -548,27 +548,90 @@ export default {
     async loadTeacherData() {
       try {
         this.$loading({ text: '正在加载数据...' })
-
-        // 构建查询参数
-        const queryParams = {
-          period: this.selectedYear,
-          unitId: this.currentOrgCode
-        }
-
-        // 调用实际API获取数据
-        const response = await getTeacherAssessmentByUnitAndPeriod(this.currentOrgCode, this.selectedYear)
+        const response = await getTeacherAssessmentData(this.selectedYear, this.currentOrgCode)
 
         if (response.code === 200) {
-          this.teacherTableData = response.data || []
+          const rawData = response.rows || response.data || []
+          this.teacherTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
+          this.teacherPagination.total = response.total || this.teacherTableData.length
+          this.teacherPagination.currentPage = 1
+        } else {
+          this.$message.error(response.msg || '获取数据失败')
+          this.teacherTableData = []
+          this.teacherPagination.total = 0
         }
       } catch (error) {
         console.error('加载教师考核数据失败:', error)
+        this.$message.error('加载数据失败，请稍后重试')
+        this.teacherTableData = []
+        this.teacherPagination.total = 0
       } finally {
         this.$loading().close()
       }
+    },
+    // 将后端数据映射为前端表格数据（对齐教师表头配置）
+    mapBackendDataToFrontend(backendData) {
+      return {
+        personId: backendData.personId,
+        personName: backendData.personName,
+        unitId: backendData.unitId,
+        unitPath: this.getUnitDisplayName(backendData.unitId),
+        birthDate: backendData.birthDate,
+        age: backendData.age,
+        title: backendData.title,
+        period: backendData.period,
 
-      this.teacherPagination.total = this.teacherTableFiltered.length
-      this.teacherPagination.currentPage = 1
+        // 基础科目 20% - 映射到metric001-metric006
+        baseBasicKnowledge: backendData.metric001 || '0',
+        baseSportsTrack: backendData.metric002 || '0',
+        baseSportsRope: backendData.metric003 || '0',
+        baseSportsLongJump: backendData.metric004 || '0',
+        baseGroupA: backendData.metric005 || '0',
+        baseGroupB: backendData.metric006 || '0',
+        baseTotal: this.calculateBaseTotal(backendData),
+
+        // 共同科目 30% - 映射到metric007-metric014
+        commonSubject1: backendData.metric007 || '0',
+        commonSubject2: backendData.metric008 || '0',
+        commonSubject3: backendData.metric009 || '0',
+        commonSubject4: backendData.metric010 || '0',
+        commonSubject5: backendData.metric011 || '0',
+        commonSubject6: backendData.metric012 || '0',
+        commonSubject7: backendData.metric013 || '0',
+        commonSubject8: backendData.metric014 || '0',
+        commonTotal: this.calculateCommonTotal(backendData),
+
+        // 岗位业务 50% - 映射到metric015
+        jobBusiness: backendData.metric015 || '0',
+
+        // 综合成绩与评定
+        totalScore: backendData.totalScore || '0',
+        totalRating: backendData.totalRating || '及格',
+        remark: backendData.remark || '',
+        description: backendData.status || ''
+      }
+    },
+    // 计算基础科目总成绩
+    calculateBaseTotal(data) {
+      const basicKnowledge = parseFloat(data.metric001 || 0) * 0.2
+      const sportsAvg = (parseFloat(data.metric002 || 0) + parseFloat(data.metric003 || 0) + parseFloat(data.metric004 || 0)) / 3
+      const sports = sportsAvg * 0.3
+      const groupA = parseFloat(data.metric005 || 0) * 0.25
+      const groupB = parseFloat(data.metric006 || 0) * 0.25
+      return (basicKnowledge + sports + groupA + groupB).toFixed(1)
+    },
+    // 计算共同科目总成绩
+    calculateCommonTotal(data) {
+      let total = 0
+      let count = 0
+      for (let i = 7; i <= 14; i++) {
+        const key = `metric${i.toString().padStart(3, '0')}`
+        if (data[key]) {
+          total += parseFloat(data[key])
+          count++
+        }
+      }
+      return count > 0 ? (total / count).toFixed(1) : '0'
     },
     handleTeacherSizeChange(size) {
       this.teacherPagination.pageSize = size

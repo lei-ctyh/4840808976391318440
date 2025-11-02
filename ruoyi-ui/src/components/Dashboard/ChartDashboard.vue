@@ -199,103 +199,17 @@ export default {
       if (this.pieChart) this.pieChart.resize()
       if (this.trendChart) this.trendChart.resize()
     },
-    // 生成可重复的模拟数据（基于orgCode与year）
-    seedRandom(seedStr) {
-      let seed = 0
-      for (let i = 0; i < seedStr.length; i++) {
-        seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0
-      }
-      return () => {
-        seed ^= seed << 13
-        seed ^= seed >>> 17
-        seed ^= seed << 5
-        return ((seed >>> 0) % 1000) / 1000
-      }
-    },
-    generateMockMetrics(node, year) {
-      if (!node) {
-        return {
-          metrics: { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 },
-          childrenComparisons: []
-        }
-      }
-      const orgCode = node.orgCode || node.org_code || node.id || node.label || 'default'
-      const rand = this.seedRandom(String(orgCode) + '-' + String(year))
-
-      // 当前单位指标
-      const avgScore = 70 + Math.floor(rand() * 30) // 70-100
-      const excellentRate = 0.15 + rand() * 0.25 // 15%-40% 优秀
-      const goodRate = excellentRate + 0.2 + rand() * 0.25 // 良好（优秀基础上+20%-45%）
-      const passRate = Math.min(0.95, goodRate + 0.15 + rand() * 0.2) // 及格（良好基础上+15%-35%）
-
-      // 下级单位对比数据（最多取前8个孩子）
-      const children = Array.isArray(node.children) ? node.children.slice(0, 8) : []
-      const childrenComparisons = children.map((c, idx) => {
-        const r = this.seedRandom(String(orgCode) + '-' + String(year) + '-' + String(idx))
-        const cAvg = 65 + Math.floor(r() * 35)
-        const cExcellent = 0.1 + r() * 0.3
-        const cGood = cExcellent + 0.15 + r() * 0.3
-        const cPass = Math.min(0.97, cGood + 0.1 + r() * 0.25)
-        return {
-          name: c.label || c.name || c.title || `下级单位${idx + 1}`,
-          avgScore: cAvg,
-          excellentRate: cExcellent,
-          goodRate: cGood,
-          passRate: cPass
-        }
-      })
-
-      return {
-        metrics: { avgScore, excellentRate, goodRate, passRate },
-        childrenComparisons
-      }
-    },
-    generateYearlyTrendData(node, year) {
-      const baseYear = Number(year)
-      const startYear = baseYear - 4
-      const years = Array.from({ length: 5 }, (_, i) => String(startYear + i))
-      const orgCode = (node && (node.orgCode || node.org_code || node.id || node.label)) || 'default'
-      const avgScores = []
-      const excellentRates = []
-      const goodRates = []
-      const passRates = []
-      const failRates = []
-
-      // 基线受组织与年度影响，确保不同单位/年度可复现
-      const baseRand = this.seedRandom(String(orgCode) + '-trend-year-base-' + String(year))
-      let baseScore = 70 + Math.floor(baseRand() * 20) // 70-90
-      let baseExcellent = 0.15 + baseRand() * 0.25    // 15%-40%
-      let baseGood = baseExcellent + 0.2 + baseRand() * 0.25  // 良好
-      let basePass = Math.min(0.97, baseGood + 0.15 + baseRand() * 0.2) // 及格
-
-      years.forEach((y, idx) => {
-        const r = this.seedRandom(String(orgCode) + '-trend-year-' + y + '-' + String(idx))
-        const noiseScore = (r() - 0.5) * 8 // -4 ~ 4
-        const score = Math.max(60, Math.min(100, baseScore + noiseScore))
-        const eNoise = (r() - 0.5) * 0.08 // -4% ~ 4%
-        const gNoise = (r() - 0.5) * 0.08 // -4% ~ 4%
-        const pNoise = (r() - 0.5) * 0.06 // -3% ~ 3%
-        const eRate = Math.min(0.9, Math.max(0.1, baseExcellent + eNoise))
-        const gRate = Math.min(0.95, Math.max(eRate + 0.1, baseGood + gNoise))
-        const pRate = Math.min(0.98, Math.max(gRate + 0.05, basePass + pNoise))
-        const fRate = 1 - pRate
-        avgScores.push(Number(score.toFixed(1)))
-        excellentRates.push(Number((eRate * 100).toFixed(1)))
-        goodRates.push(Number((gRate * 100).toFixed(1)))
-        passRates.push(Number((pRate * 100).toFixed(1)))
-        failRates.push(Number((fRate * 100).toFixed(1)))
-      })
-
-      return { years, avgScores, excellentRates, goodRates, passRates, failRates }
-    },
     generateDataAndRender() {
       // 如果没有选中部门或部门没有 orgCode，使用虚拟数据
       const node = this.selectedDeptNode || {}
       const orgCode = node.orgCode || node.org_code || node.id
 
       if (!orgCode) {
-        console.warn('未选择单位或单位缺少 orgCode，使用虚拟数据')
-        this.loadMockData()
+        console.warn('未选择单位或单位缺少 orgCode，显示空数据')
+        this.metrics = { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 }
+        this.childrenComparisons = []
+        this.yearlyTrend = { years: [], avgScores: [], excellentRates: [], goodRates: [], passRates: [], failRates: [] }
+        this.updateCharts()
         return
       }
 
@@ -328,18 +242,12 @@ export default {
         })
         .catch(error => {
           console.error('加载看板数据失败:', error)
-          this.$message.error('加载看板数据失败，使用虚拟数据')
-          // 失败时使用虚拟数据
-          this.loadMockData()
+          this.$message.error('加载看板数据失败')
+          this.metrics = { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 }
+          this.childrenComparisons = []
+          this.yearlyTrend = { years: [], avgScores: [], excellentRates: [], goodRates: [], passRates: [], failRates: [] }
+          this.updateCharts()
         })
-    },
-    loadMockData() {
-      // 使用虚拟数据（备用方案）
-      const { metrics, childrenComparisons } = this.generateMockMetrics(this.selectedDeptNode || {}, this.selectedYear)
-      this.metrics = metrics
-      this.childrenComparisons = childrenComparisons
-      this.yearlyTrend = this.generateYearlyTrendData(this.selectedDeptNode || {}, this.selectedYear)
-      this.updateCharts()
     },
     updateCharts() {
       if (!this.scoresChart || !this.ratesChart || !this.pieChart || !this.trendChart) return

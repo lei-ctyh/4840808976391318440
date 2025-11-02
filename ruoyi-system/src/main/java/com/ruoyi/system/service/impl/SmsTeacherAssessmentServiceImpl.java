@@ -248,7 +248,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      * 验证必需字段
      */
     private void validateRequiredFields(Map<String, Integer> fieldMapping) throws Exception {
-        String[] requiredFields = {"personId", "personName", "period"};
+        String[] requiredFields = {"personId", "personName", "unitId", "period"};
         for (String field : requiredFields) {
             if (!fieldMapping.containsKey(field)) {
                 throw new Exception("缺少必需的表头：" + getFieldDescription(field));
@@ -439,11 +439,18 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
         if (StringUtils.isEmpty(assessment.getPersonName())) {
             return "姓名不能为空";
         }
+        if (StringUtils.isEmpty(assessment.getUnitId())) {
+            return "单位不能为空";
+        }
+        if (!isValidUnitId(assessment.getUnitId())) {
+            return "单位编码格式不正确";
+        }
         if (StringUtils.isEmpty(assessment.getPeriod())) {
             return "评定周期不能为空";
         }
-        if (StringUtils.isNotEmpty(assessment.getUnitId()) && !isValidUnitId(assessment.getUnitId())) {
-            return "单位编号格式不正确";
+        // 评定周期必须是yyyy格式
+        if (!assessment.getPeriod().matches("\\d{4}")) {
+            return "评定周期格式不正确";
         }
         return null;
     }
@@ -452,7 +459,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      * 验证单位编号格式
      */
     private boolean isValidUnitId(String unitId) {
-        // 根据机构编码规则验证
-        return Pattern.matches("^(00|01)\\d*$", unitId);
+        // 根据机构编码规则验证：00/01开头，后续最多10位数字
+        return Pattern.matches("^(00|01)\\d{0,10}$", unitId);
     }
 }
