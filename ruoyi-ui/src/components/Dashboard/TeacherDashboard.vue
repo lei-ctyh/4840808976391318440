@@ -560,15 +560,9 @@ export default {
 
         if (response.code === 200) {
           this.teacherTableData = response.data || []
-        } else {
-          console.warn('获取教师考核数据失败:', response.msg)
-          // 如果API调用失败，使用模拟数据作为后备
-          this.teacherTableData = getTeacherAssessmentData()
         }
       } catch (error) {
         console.error('加载教师考核数据失败:', error)
-        // 如果API调用失败，使用模拟数据作为后备
-        this.teacherTableData = getTeacherAssessmentData()
       } finally {
         this.$loading().close()
       }
