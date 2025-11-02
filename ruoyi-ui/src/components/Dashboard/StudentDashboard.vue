@@ -60,7 +60,7 @@
     </el-dialog>
 
     <!-- 数据导入对话框 -->
-    <el-dialog title="导入学生成绩考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
+    <el-dialog title="导入战士成绩考核数据" :visible.sync="importDialogVisible" width="600px" :close-on-click-modal="false">
       <div>
         <div class="import-tips">
           <el-alert
@@ -126,10 +126,10 @@
       </span>
     </el-dialog>
 
-    <!-- 学生成绩头部 -->
+    <!-- 战士成绩头部 -->
     <div class="student-header">
       <div class="student-left">
-        <span class="student-title">学生成绩年度考核</span>
+        <span class="student-title">战士成绩年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
         <el-tag size="small" class="student-dept">{{ organizationPath }}</el-tag>
       </div>
@@ -158,7 +158,7 @@
       </div>
     </div>
 
-    <!-- 学生成绩表格 -->
+    <!-- 战士成绩表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="studentTablePageData"
@@ -284,7 +284,17 @@ export default {
     },
     // 导入说明描述
     importDescription() {
-      return '1. 支持.xls和.xlsx格式的Excel文件\n2. 必填字段：人员编号、姓名、评定周期\n3. 如果存在相同人员和年度的记录，可选择是否覆盖'
+      return [
+        '1. 支持 .xls / .xlsx 文件，大小不超过 10MB',
+        '2. 必填列（表头需与下列同义词之一一致）：',
+        '   - 人员编号/编号（personId）',
+        '   - 姓名（personName）',
+        '   - 单位/单位编号（unitId，需符合机构编码规则：00/01开头，后续最多10位数字）',
+        '   - 评定周期（period，年度，格式为 yyyy）',
+        '3. 可选列：总成绩、总评定、备注、状态',
+        '4. 指标列：除以上表头外的任何列会按列序映射为 metric001、metric002…，用于自定义指标',
+        '5. 覆盖策略：同一人员+年度存在记录时，可选择是否覆盖'
+      ].join('\n')
     }
   },
   watch: {
@@ -303,12 +313,12 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('学生成绩表格配置加载成功:', config)
+      console.log('战士成绩表格配置加载成功:', config)
     },
 
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('学生成绩表格配置加载失败:', error)
+      console.error('战士成绩表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
 

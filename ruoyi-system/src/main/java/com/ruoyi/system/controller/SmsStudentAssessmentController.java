@@ -19,7 +19,7 @@ import com.ruoyi.system.service.ISmsStudentAssessmentService;
 import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
- * 学生成绩考核Controller
+ * 战士成绩考核Controller
  *
  * @author ruoyi
  * @date 2025-01-10
@@ -32,7 +32,7 @@ public class SmsStudentAssessmentController extends BaseController
     private ISmsStudentAssessmentService smsStudentAssessmentService;
 
     /**
-     * 查询学生成绩考核列表
+     * 查询战士成绩考核列表
      */
     @PreAuthorize("@ss.hasPermi('system:studentAssessment:list')")
     @GetMapping("/list")
@@ -67,10 +67,10 @@ public class SmsStudentAssessmentController extends BaseController
     }
 
     /**
-     * 导入学生成绩考核数据
+     * 导入战士成绩考核数据
      */
     @PreAuthorize("@ss.hasPermi('system:studentAssessment:import')")
-    @Log(title = "学生成绩考核", businessType = BusinessType.IMPORT)
+    @Log(title = "战士成绩考核", businessType = BusinessType.IMPORT)
     @PostMapping("/importData")
     public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
     {

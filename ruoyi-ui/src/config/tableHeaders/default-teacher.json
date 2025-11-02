@@ -1,6 +1,6 @@
 {
   "boardType": "teacher",
-  "description": "教师成绩默认表头配置",
+  "description": "干部成绩默认表头配置",
   "version": "1.0.0",
   "columns": [
     {

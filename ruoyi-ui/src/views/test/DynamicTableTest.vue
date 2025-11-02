@@ -3,7 +3,7 @@
     <h2>动态表格组件测试</h2>
 
     <div class="test-section">
-      <h3>教师成绩表格测试</h3>
+      <h3>干部成绩表格测试</h3>
       <div class="controls">
         <label>年份：</label>
         <el-select v-model="teacherYear" @change="onTeacherYearChange">

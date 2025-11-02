@@ -7,7 +7,7 @@ import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 教师成绩考核对象 sms_teacher_assessment
+ * 干部成绩考核对象 sms_teacher_assessment
  * 
  * @author ruoyi
  * @date 2025-01-10

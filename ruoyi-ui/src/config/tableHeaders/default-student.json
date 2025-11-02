@@ -1,6 +1,6 @@
 {
   "boardType": "student",
-  "description": "学生成绩默认表头配置",
+  "description": "战士成绩默认表头配置",
   "version": "1.0.0",
   "columns": [
     {
@@ -38,6 +38,11 @@
     {
       "label": "评定周期",
       "prop": "period",
+      "width": "120"
+    },
+    {
+      "label": "32",
+      "prop": "metric031",
       "width": "120"
     }
   ]

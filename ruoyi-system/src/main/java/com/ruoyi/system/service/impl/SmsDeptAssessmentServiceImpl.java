@@ -191,17 +191,21 @@ public class SmsDeptAssessmentServiceImpl implements ISmsDeptAssessmentService
 
     private String mapHeaderToField(String headerName, int columnIndex) {
         Map<String, String> headerMapping = new HashMap<>();
-        headerMapping.put("人员编号", "personId");
-        headerMapping.put("姓名", "personName");
-        headerMapping.put("单位", "unitId");
-        headerMapping.put("出生年月", "birthDate");
-        headerMapping.put("年龄", "age");
-        headerMapping.put("衔级", "title");
+        // 单位成绩场景：personId 表示“单位编号”
+        headerMapping.put("单位编号", "personId");
+        headerMapping.put("部门编号", "personId");
+        headerMapping.put("单位代码", "personId");
+        // unitId 表示“所属单位编号”（上级单位/归属单位）
+        headerMapping.put("所属单位编号", "unitId");
+        headerMapping.put("所属单位", "unitId");
+        headerMapping.put("上级单位编号", "unitId");
+        // 评定周期
         headerMapping.put("评定周期", "period");
         headerMapping.put("总成绩", "totalScore");
+        headerMapping.put("成绩", "totalScore");
         headerMapping.put("综合成绩", "totalScore");
         headerMapping.put("总评定", "totalRating");
-        headerMapping.put("四级制", "totalRating");
+        headerMapping.put("成绩评定", "totalRating");
         headerMapping.put("备注", "remark");
         headerMapping.put("状态", "status");
         
@@ -220,7 +224,8 @@ public class SmsDeptAssessmentServiceImpl implements ISmsDeptAssessmentService
     }
 
     private void validateRequiredFields(Map<String, Integer> fieldMapping) throws Exception {
-        String[] requiredFields = {"personId", "personName", "unitId", "period"};
+        // 单位成绩导入的必填列：单位编号(personId)、所属单位编号(unitId)、评定周期(period)
+        String[] requiredFields = {"personId", "unitId", "period"};
         List<String> missingFields = new ArrayList<>();
         
         for (String field : requiredFields) {
@@ -236,9 +241,9 @@ public class SmsDeptAssessmentServiceImpl implements ISmsDeptAssessmentService
 
     private String getFieldDescription(String fieldName) {
         Map<String, String> descriptions = new HashMap<>();
-        descriptions.put("personId", "人员编号");
-        descriptions.put("personName", "姓名");
-        descriptions.put("unitId", "单位");
+        // 单位成绩场景
+        descriptions.put("personId", "单位编号");
+        descriptions.put("unitId", "所属单位编号");
         descriptions.put("period", "评定周期");
         descriptions.put("totalScore", "总成绩");
         descriptions.put("totalRating", "总评定");

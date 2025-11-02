@@ -7,7 +7,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.system.domain.SmsStudentAssessment;
 
 /**
- * 学生成绩考核Service接口
+ * 战士成绩考核Service接口
  *
  * @author ruoyi
  * @date 2025-01-10
@@ -15,10 +15,10 @@ import com.ruoyi.system.domain.SmsStudentAssessment;
 public interface ISmsStudentAssessmentService
 {
     /**
-     * 查询学生成绩考核列表
+     * 查询战士成绩考核列表
      *
-     * @param smsStudentAssessment 学生成绩考核
-     * @return 学生成绩考核集合
+     * @param smsStudentAssessment 战士成绩考核
+     * @return 战士成绩考核集合
      */
     public List<SmsStudentAssessment> selectSmsStudentAssessmentList(SmsStudentAssessment smsStudentAssessment);
 
@@ -41,7 +41,7 @@ public interface ISmsStudentAssessmentService
     public List<SmsStudentAssessment> selectByUnitIdAndPeriod(String unitId, String period);
 
     /**
-     * 导入学生成绩考核数据
+     * 导入战士成绩考核数据
      *
      * @param file Excel文件
      * @param updateSupport 是否更新已存在数据

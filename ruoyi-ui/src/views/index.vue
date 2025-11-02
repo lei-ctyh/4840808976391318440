@@ -32,14 +32,14 @@
             <el-tab-pane v-if="visibleTabKeys.includes('charts')" label="成绩对比" name="charts">
               <chart-dashboard :selectedDeptNode="selectedDeptNode" />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="教师成绩" name="teacher">
+            <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="干部成绩" name="teacher">
               <teacher-dashboard
                 :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('student')" label="学生成绩" name="student">
+            <el-tab-pane v-if="visibleTabKeys.includes('student')" label="战士成绩" name="student">
               <student-dashboard
                 :selectedDeptNode="selectedDeptNode"
                 :orgTypeText="orgTypeText"

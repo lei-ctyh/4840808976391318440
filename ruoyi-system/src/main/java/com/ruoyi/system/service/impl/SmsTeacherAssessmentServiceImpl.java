@@ -217,6 +217,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
     private String mapHeaderToField(String headerName, int columnIndex) {
         Map<String, String> headerMapping = new HashMap<>();
         headerMapping.put("人员编号", "personId");
+        headerMapping.put("编号", "personId");
         headerMapping.put("姓名", "personName");
         headerMapping.put("单位", "unitId");
         headerMapping.put("出生年月", "birthDate");
@@ -224,8 +225,10 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
         headerMapping.put("衔级", "title");
         headerMapping.put("评定周期", "period");
         headerMapping.put("总成绩", "totalScore");
+        headerMapping.put("成绩", "totalScore");
         headerMapping.put("综合成绩", "totalScore");
         headerMapping.put("总评定", "totalRating");
+        headerMapping.put("成绩评定", "totalRating");
         headerMapping.put("四级制", "totalRating");
         headerMapping.put("备注", "remark");
         headerMapping.put("状态", "status");

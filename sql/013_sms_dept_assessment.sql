@@ -1,4 +1,4 @@
--- 学生成绩考核表定义
+-- 战士成绩考核表定义
 DROP TABLE IF EXISTS `sms_dept_assessment`;
 -- auto-generated definition
 CREATE TABLE sms_dept_assessment
@@ -116,7 +116,7 @@ CREATE TABLE sms_dept_assessment
     update_time  datetime         NULL COMMENT '更新时间',
     PRIMARY KEY (person_id, period)
 )
-    COMMENT '学生成绩考核表';
+    COMMENT '战士成绩考核表';
 
 CREATE INDEX idx_unit
     ON sms_dept_assessment (unit_id);

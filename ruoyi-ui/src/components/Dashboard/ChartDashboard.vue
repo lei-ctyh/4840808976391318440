@@ -310,7 +310,7 @@ export default {
         },
         legend: {
           data: ['优秀率', '良好率', '及格率', '未及格率'],
-          bottom: 10,
+          bottom: 0,
           itemGap: 15
         },
         grid: { left: 40, right: 20, top: 30, bottom: 50 },
@@ -336,7 +336,7 @@ export default {
                 shadowColor: 'rgba(103, 194, 58, 0.5)'
               }
             },
-            label: { show: true, position: 'top', formatter: '{c}%' }
+            label: { show: false, position: 'top', formatter: '{c}%' }
           },
           {
             name: '良好率',
@@ -353,7 +353,7 @@ export default {
                 shadowColor: 'rgba(149, 212, 117, 0.5)'
               }
             },
-            label: { show: true, position: 'top', formatter: '{c}%' }
+            label: { show: false, position: 'top', formatter: '{c}%' }
           },
           {
             name: '及格率',
@@ -370,7 +370,7 @@ export default {
                 shadowColor: 'rgba(230, 162, 60, 0.5)'
               }
             },
-            label: { show: true, position: 'top', formatter: '{c}%' }
+            label: { show: false, position: 'top', formatter: '{c}%' }
           },
           {
             name: '未及格率',
@@ -387,7 +387,7 @@ export default {
                 shadowColor: 'rgba(245, 108, 108, 0.5)'
               }
             },
-            label: { show: true, position: 'top', formatter: '{c}%' }
+            label: { show: false, position: 'top', formatter: '{c}%' }
           }
         ]
       })

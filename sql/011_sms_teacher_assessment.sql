@@ -1,4 +1,4 @@
--- 教师成绩考核表定义
+-- 干部成绩考核表定义
 DROP TABLE IF EXISTS `sms_teacher_assessment`;
 -- auto-generated definition
 CREATE TABLE sms_teacher_assessment
@@ -120,7 +120,7 @@ CREATE TABLE sms_teacher_assessment
     update_time  datetime         NULL COMMENT '更新时间',
     PRIMARY KEY (person_id, period)
 )
-    COMMENT '教师成绩考核表';
+    COMMENT '干部成绩考核表';
 
 CREATE INDEX idx_unit
     ON sms_teacher_assessment (unit_id);

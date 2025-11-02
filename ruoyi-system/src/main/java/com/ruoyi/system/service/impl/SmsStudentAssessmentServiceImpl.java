@@ -26,7 +26,7 @@ import com.ruoyi.system.mapper.SmsStudentAssessmentMapper;
 import com.ruoyi.system.service.ISmsStudentAssessmentService;
 
 /**
- * 学生成绩考核Service业务层处理
+ * 战士成绩考核Service业务层处理
  *
  * @author ruoyi
  * @date 2025-01-10
@@ -40,10 +40,10 @@ public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentSer
     private SmsStudentAssessmentMapper smsStudentAssessmentMapper;
 
     /**
-     * 查询学生成绩考核列表
+     * 查询战士成绩考核列表
      *
-     * @param smsStudentAssessment 学生成绩考核
-     * @return 学生成绩考核
+     * @param smsStudentAssessment 战士成绩考核
+     * @return 战士成绩考核
      */
     @Override
     public List<SmsStudentAssessment> selectSmsStudentAssessmentList(SmsStudentAssessment smsStudentAssessment)
@@ -78,7 +78,7 @@ public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentSer
     }
 
     /**
-     * 导入学生成绩考核数据
+     * 导入战士成绩考核数据
      *
      * @param file Excel文件
      * @param updateSupport 是否更新已存在数据
@@ -197,15 +197,19 @@ public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentSer
     private String mapHeaderToField(String headerName, int columnIndex) {
         Map<String, String> headerMapping = new HashMap<>();
         headerMapping.put("人员编号", "personId");
+        headerMapping.put("编号", "personId");
         headerMapping.put("姓名", "personName");
         headerMapping.put("单位", "unitId");
+        headerMapping.put("单位编号", "unitId");
         headerMapping.put("出生年月", "birthDate");
         headerMapping.put("年龄", "age");
         headerMapping.put("衔级", "title");
         headerMapping.put("评定周期", "period");
         headerMapping.put("总成绩", "totalScore");
         headerMapping.put("综合成绩", "totalScore");
+        headerMapping.put("成绩", "totalScore");
         headerMapping.put("总评定", "totalRating");
+        headerMapping.put("成绩评定", "totalRating");
         headerMapping.put("四级制", "totalRating");
         headerMapping.put("备注", "remark");
         headerMapping.put("状态", "status");

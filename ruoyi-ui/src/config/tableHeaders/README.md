@@ -18,7 +18,7 @@
 ```json
 {
   "boardType": "student",
-  "description": "学生成绩默认表头配置",
+  "description": "战士成绩默认表头配置",
   "version": "1.0.0",
   "columns": [ /* 列配置数组，见下文 */ ]
 }
@@ -72,7 +72,7 @@
 ```json
 {
   "boardType": "student",
-  "description": "学生成绩自定义方案",
+  "description": "战士成绩自定义方案",
   "version": "1.1.0",
   "columns": [
     { "label": "人员编号", "prop": "personId", "width": "110", "fixed": true },

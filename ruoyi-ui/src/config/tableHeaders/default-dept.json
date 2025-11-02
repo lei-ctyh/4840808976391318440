@@ -5,7 +5,7 @@
   "columns": [
     {
       "label": "单位编码",
-      "prop": "orgCode",
+      "prop": "personId",
       "width": "120",
       "fixed": true
     },
@@ -16,18 +16,23 @@
       "fixed": true
     },
     {
-      "label": "单位路径",
-      "prop": "unitPath",
-      "minWidth": "260"
-    },
-    {
       "label": "上级单位",
-      "prop": "unit",
+      "prop": "unitId",
       "width": "180"
     },
     {
       "label": "评定周期",
       "prop": "period",
+      "width": "120"
+    },
+    {
+      "label": "成绩",
+      "prop": "totalScore",
+      "width": "120"
+    },
+    {
+      "label": "成绩评定",
+      "prop": "totalRating",
       "width": "120"
     }
   ]

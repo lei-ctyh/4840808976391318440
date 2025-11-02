@@ -92,6 +92,7 @@ export default {
   },
   computed: {
     tableData() {
+      console.log(this.data)
       return this.data || []
     },
     tableListeners() {

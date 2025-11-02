@@ -59,7 +59,7 @@
       </span>
     </el-dialog>
 
-    <!-- 教师成绩头部 -->
+    <!-- 干部成绩头部 -->
     <div class="teacher-header">
       <div class="teacher-left">
         <span class="teacher-title">教师年度考核</span>
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <!-- 教师成绩表格 -->
+    <!-- 干部成绩表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="teacherTablePageData"
@@ -280,7 +280,17 @@ export default {
     },
     // 导入说明
     importDescription() {
-      return '请选择要导入的教师考核数据文件。支持 Excel 格式（.xlsx/.xls），文件大小不超过 10MB。'
+      return [
+        '1. 支持 .xls / .xlsx 文件，大小不超过 10MB',
+        '2. 必填列（表头需与下列同义词之一一致）：',
+        '   - 人员编号/编号（personId）',
+        '   - 姓名（personName）',
+        '   - 单位/单位编号（unitId，需符合机构编码规则：00/01开头，后续最多10位数字）',
+        '   - 评定周期（period，年度，格式为 yyyy）',
+        '3. 可选列：总成绩、总评定、备注、状态',
+        '4. 指标列：除以上表头外的任何列会按列序映射为 metric001、metric002…，用于自定义指标',
+        '5. 覆盖策略：同一人员+年度存在记录时，可选择是否覆盖'
+      ].join('\n')
     }
   },
   watch: {
@@ -303,12 +313,12 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('教师成绩表格配置加载成功:', config)
+      console.log('干部成绩表格配置加载成功:', config)
     },
 
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('教师成绩表格配置加载失败:', error)
+      console.error('干部成绩表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
 

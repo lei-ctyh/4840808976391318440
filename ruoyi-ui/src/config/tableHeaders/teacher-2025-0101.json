@@ -2,7 +2,7 @@
   "boardType": "teacher",
   "year": "2024",
   "orgCode": "0001",
-  "description": "2024年机构0001教师成绩自定义表头配置",
+  "description": "2024年机构0001干部成绩自定义表头配置",
   "version": "1.0.0",
   "columns": [
     {

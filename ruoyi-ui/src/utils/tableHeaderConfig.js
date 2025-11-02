@@ -176,9 +176,9 @@ class TableHeaderConfigManager {
   getAvailableConfigs() {
     // 这里可以扩展为从服务器获取配置文件列表
     return [
-      { boardType: 'teacher', year: '2024', orgCode: '0001', description: '2024年机构0001教师成绩配置' },
+      { boardType: 'teacher', year: '2024', orgCode: '0001', description: '2024年机构0001干部成绩配置' },
       { boardType: 'leader', year: '2024', orgCode: '0001', description: '2024年机构0001个人成绩配置' },
-      { boardType: 'student', year: '2024', orgCode: '0001', description: '2024年机构0001学生成绩配置' },
+      { boardType: 'student', year: '2024', orgCode: '0001', description: '2024年机构0001战士成绩配置' },
       { boardType: 'dept', year: '2024', orgCode: '0001', description: '2024年机构0001单位看板配置' }
       // 可以添加更多配置
     ]
