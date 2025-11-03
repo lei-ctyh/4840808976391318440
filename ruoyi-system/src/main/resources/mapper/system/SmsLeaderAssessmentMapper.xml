@@ -32,9 +32,90 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="metric018"    column="metric_018"    />
         <result property="metric019"    column="metric_019"    />
         <result property="metric020"    column="metric_020"    />
+        <result property="metric021"    column="metric_021"    />
+        <result property="metric022"    column="metric_022"    />
+        <result property="metric023"    column="metric_023"    />
+        <result property="metric024"    column="metric_024"    />
+        <result property="metric025"    column="metric_025"    />
+        <result property="metric026"    column="metric_026"    />
+        <result property="metric027"    column="metric_027"    />
+        <result property="metric028"    column="metric_028"    />
+        <result property="metric029"    column="metric_029"    />
+        <result property="metric030"    column="metric_030"    />
+        <result property="metric031"    column="metric_031"    />
+        <result property="metric032"    column="metric_032"    />
+        <result property="metric033"    column="metric_033"    />
+        <result property="metric034"    column="metric_034"    />
+        <result property="metric035"    column="metric_035"    />
+        <result property="metric036"    column="metric_036"    />
+        <result property="metric037"    column="metric_037"    />
+        <result property="metric038"    column="metric_038"    />
+        <result property="metric039"    column="metric_039"    />
+        <result property="metric040"    column="metric_040"    />
+        <result property="metric041"    column="metric_041"    />
+        <result property="metric042"    column="metric_042"    />
+        <result property="metric043"    column="metric_043"    />
+        <result property="metric044"    column="metric_044"    />
+        <result property="metric045"    column="metric_045"    />
+        <result property="metric046"    column="metric_046"    />
+        <result property="metric047"    column="metric_047"    />
+        <result property="metric048"    column="metric_048"    />
+        <result property="metric049"    column="metric_049"    />
+        <result property="metric050"    column="metric_050"    />
+        <result property="metric051"    column="metric_051"    />
+        <result property="metric052"    column="metric_052"    />
+        <result property="metric053"    column="metric_053"    />
+        <result property="metric054"    column="metric_054"    />
+        <result property="metric055"    column="metric_055"    />
+        <result property="metric056"    column="metric_056"    />
+        <result property="metric057"    column="metric_057"    />
+        <result property="metric058"    column="metric_058"    />
+        <result property="metric059"    column="metric_059"    />
+        <result property="metric060"    column="metric_060"    />
+        <result property="metric061"    column="metric_061"    />
+        <result property="metric062"    column="metric_062"    />
+        <result property="metric063"    column="metric_063"    />
+        <result property="metric064"    column="metric_064"    />
+        <result property="metric065"    column="metric_065"    />
+        <result property="metric066"    column="metric_066"    />
+        <result property="metric067"    column="metric_067"    />
+        <result property="metric068"    column="metric_068"    />
+        <result property="metric069"    column="metric_069"    />
+        <result property="metric070"    column="metric_070"    />
+        <result property="metric071"    column="metric_071"    />
+        <result property="metric072"    column="metric_072"    />
+        <result property="metric073"    column="metric_073"    />
+        <result property="metric074"    column="metric_074"    />
+        <result property="metric075"    column="metric_075"    />
+        <result property="metric076"    column="metric_076"    />
+        <result property="metric077"    column="metric_077"    />
+        <result property="metric078"    column="metric_078"    />
+        <result property="metric079"    column="metric_079"    />
+        <result property="metric080"    column="metric_080"    />
+        <result property="metric081"    column="metric_081"    />
+        <result property="metric082"    column="metric_082"    />
+        <result property="metric083"    column="metric_083"    />
+        <result property="metric084"    column="metric_084"    />
+        <result property="metric085"    column="metric_085"    />
+        <result property="metric086"    column="metric_086"    />
+        <result property="metric087"    column="metric_087"    />
+        <result property="metric088"    column="metric_088"    />
+        <result property="metric089"    column="metric_089"    />
+        <result property="metric090"    column="metric_090"    />
+        <result property="metric091"    column="metric_091"    />
+        <result property="metric092"    column="metric_092"    />
+        <result property="metric093"    column="metric_093"    />
+        <result property="metric094"    column="metric_094"    />
+        <result property="metric095"    column="metric_095"    />
+        <result property="metric096"    column="metric_096"    />
+        <result property="metric097"    column="metric_097"    />
+        <result property="metric098"    column="metric_098"    />
+        <result property="metric099"    column="metric_099"    />
+        <result property="metric100"    column="metric_100"    />
         <result property="totalScore"    column="total_score"    />
         <result property="totalRating"    column="total_rating"    />
         <result property="remark"    column="remark"    />
+        <result property="status"    column="status"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
@@ -42,12 +123,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSmsLeaderAssessmentVo">
-        select person_id, person_name, unit_id, birth_date, age, title, period, 
-               metric_001, metric_002, metric_003, metric_004, metric_005, 
+        select person_id, person_name, unit_id, birth_date, age, title, period,
+               metric_001, metric_002, metric_003, metric_004, metric_005,
                metric_006, metric_007, metric_008, metric_009, metric_010,
                metric_011, metric_012, metric_013, metric_014, metric_015,
                metric_016, metric_017, metric_018, metric_019, metric_020,
-               total_score, total_rating, remark, create_by, create_time, update_by, update_time 
+               metric_021, metric_022, metric_023, metric_024, metric_025,
+               metric_026, metric_027, metric_028, metric_029, metric_030,
+               metric_031, metric_032, metric_033, metric_034, metric_035,
+               metric_036, metric_037, metric_038, metric_039, metric_040,
+               metric_041, metric_042, metric_043, metric_044, metric_045,
+               metric_046, metric_047, metric_048, metric_049, metric_050,
+               metric_051, metric_052, metric_053, metric_054, metric_055,
+               metric_056, metric_057, metric_058, metric_059, metric_060,
+               metric_061, metric_062, metric_063, metric_064, metric_065,
+               metric_066, metric_067, metric_068, metric_069, metric_070,
+               metric_071, metric_072, metric_073, metric_074, metric_075,
+               metric_076, metric_077, metric_078, metric_079, metric_080,
+               metric_081, metric_082, metric_083, metric_084, metric_085,
+               metric_086, metric_087, metric_088, metric_089, metric_090,
+               metric_091, metric_092, metric_093, metric_094, metric_095,
+               metric_096, metric_097, metric_098, metric_099, metric_100,
+               total_score, total_rating, remark, status, create_by, create_time, update_by, update_time 
         from sms_leader_assessment
     </sql>
 

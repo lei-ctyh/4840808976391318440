@@ -378,45 +378,37 @@ export default {
 
     // 将后端数据映射为前端表格数据
     mapBackendDataToFrontend(backendData) {
-      return {
-        personId: backendData.personId,
-        personName: backendData.personName,
-        unitId: backendData.unitId,
-        unitName: this.getUnitDisplayName(backendData.unitId), // 需要根据unitId获取单位名称
-        birthDate: backendData.birthDate,
-        age: backendData.age,
-        title: backendData.title,
-        period: backendData.period,
+      // 透传后端所有metric字段，确保metric016-metric100可展示
+      const result = { ...backendData }
 
-        // 基础科目 20% - 映射到metric001-metric006
-        basicKnowledge: backendData.metric001 || '0', // 基本知识 20%
-        sportsTrack: backendData.metric002 || '0',    // 田径
-        sportsRope: backendData.metric003 || '0',     // 跳绳
-        sportsJump: backendData.metric004 || '0',     // 跳远
-        baseGroupA: backendData.metric005 || '0',     // 共同A 25%
-        baseGroupB: backendData.metric006 || '0',     // 共同B 25%
-        baseTotal: this.calculateBaseTotal(backendData), // 基础科目总成绩
+      // 附加或覆盖表格展示与计算字段
+      result.unitName = this.getUnitDisplayName(backendData.unitId)
+      result.basicKnowledge = backendData.metric001 || '0'
+      result.sportsTrack = backendData.metric002 || '0'
+      result.sportsRope = backendData.metric003 || '0'
+      result.sportsJump = backendData.metric004 || '0'
+      result.baseGroupA = backendData.metric005 || '0'
+      result.baseGroupB = backendData.metric006 || '0'
+      result.baseTotal = this.calculateBaseTotal(backendData)
 
-        // 共同科目 30% - 映射到metric007-metric014
-        commonSubject1: backendData.metric007 || '0',
-        commonSubject2: backendData.metric008 || '0',
-        commonSubject3: backendData.metric009 || '0',
-        commonSubject4: backendData.metric010 || '0',
-        commonSubject5: backendData.metric011 || '0',
-        commonSubject6: backendData.metric012 || '0',
-        commonSubject7: backendData.metric013 || '0',
-        commonSubject8: backendData.metric014 || '0',
-        commonTotal: this.calculateCommonTotal(backendData), // 共同科目总成绩
+      result.commonSubject1 = backendData.metric007 || '0'
+      result.commonSubject2 = backendData.metric008 || '0'
+      result.commonSubject3 = backendData.metric009 || '0'
+      result.commonSubject4 = backendData.metric010 || '0'
+      result.commonSubject5 = backendData.metric011 || '0'
+      result.commonSubject6 = backendData.metric012 || '0'
+      result.commonSubject7 = backendData.metric013 || '0'
+      result.commonSubject8 = backendData.metric014 || '0'
+      result.commonTotal = this.calculateCommonTotal(backendData)
 
-        // 岗位业务 50% - 映射到metric015
-        jobBusiness: backendData.metric015 || '0',
+      result.jobBusiness = backendData.metric015 || '0'
 
-        // 综合成绩
-        totalScore: backendData.totalScore || '0',
-        totalRating: backendData.totalRating || '及格',
-        remark: backendData.remark || '',
-        description: backendData.status || ''
-      }
+      result.totalScore = backendData.totalScore || '0'
+      result.totalRating = backendData.totalRating || '及格'
+      result.remark = backendData.remark || ''
+      result.description = backendData.status || ''
+
+      return result
     },
 
     // 计算基础科目总成绩
