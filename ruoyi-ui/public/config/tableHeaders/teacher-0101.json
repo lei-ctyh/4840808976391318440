@@ -126,11 +126,6 @@
           "width": "100"
         }
       ]
-    },
-    {
-      "label": "备注",
-      "prop": "remark",
-      "minWidth": "150"
     }
   ]
 }

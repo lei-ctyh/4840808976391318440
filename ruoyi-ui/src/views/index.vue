@@ -35,6 +35,7 @@
             <el-tab-pane v-if="visibleTabKeys.includes('teacher')" label="干部成绩" name="teacher">
               <teacher-dashboard
                 :selectedDeptNode="selectedDeptNode"
+                :orgCodePath="orgCodePath"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
@@ -42,6 +43,7 @@
             <el-tab-pane v-if="visibleTabKeys.includes('student')" label="战士成绩" name="student">
               <student-dashboard
                 :selectedDeptNode="selectedDeptNode"
+                :orgCodePath="orgCodePath"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
@@ -49,14 +51,17 @@
             <el-tab-pane v-if="visibleTabKeys.includes('leader')" label="个人成绩" name="leader">
               <leader-dashboard
                 :selectedDeptNode="selectedDeptNode"
+                :orgCodePath="orgCodePath"
                 :orgTypeText="orgTypeText"
                 :organizationPath="organizationPath"
               />
             </el-tab-pane>
-            <el-tab-pane v-if="visibleTabKeys.includes('dept')" label="单位看板" name="dept">
-              <dept-dashboard   :selectedDeptNode="selectedDeptNode"
-                                :orgTypeText="orgTypeText"
-                                :organizationPath="organizationPath" />
+            <el-tab-pane v-if="visibleTabKeys.includes('dept')" label="单位成绩" name="dept">
+              <dept-dashboard
+                :selectedDeptNode="selectedDeptNode"
+                :orgCodePath="orgCodePath"
+                :orgTypeText="orgTypeText"
+                :organizationPath="organizationPath" />
             </el-tab-pane>
           </el-tabs>
           <div v-else class="announcement-container">
@@ -112,6 +117,25 @@ export default {
       if (type === 'leader') return '领导班子'
       if (type === 'teaching') return '教学组织'
       return '其他组织'
+    },
+    // 获取从当前节点到根节点的所有 orgCode（从当前到根）
+    orgCodePath() {
+      if (!this.selectedElNode || !this.selectedDeptNode) {
+        return []
+      }
+
+      const path = []
+      let current = this.selectedElNode
+
+      while (current) {
+        const orgCode = current.data?.orgCode
+        if (orgCode) {
+          path.push(orgCode)
+        }
+        current = current.parent
+      }
+
+      return path // ['0101', '01', ''] - 从当前到根
     },
     organizationPath() {
       if (!this.selectedElNode || !this.selectedDeptNode) {

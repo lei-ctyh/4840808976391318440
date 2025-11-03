@@ -66,6 +66,11 @@ export default {
       type: String,
       default: ''
     },
+    // 机构路径（从当前到根的 orgCode 数组）
+    orgCodePath: {
+      type: Array,
+      default: () => []
+    },
     // 表格属性
     tableProps: {
       type: Object,
@@ -134,8 +139,12 @@ export default {
       this.configError = null
 
       try {
-        // 获取表头配置，orgCode可以为空
-        const config = await getTableHeaderConfig(this.boardType, this.year, this.orgCode || '')
+        // 获取表头配置，传递完整的机构路径用于多级降级
+        const config = await getTableHeaderConfig(
+          this.boardType,
+          this.year,
+          this.orgCodePath.length > 0 ? this.orgCodePath : [this.orgCode || '']
+        )
 
         if (!config || !config.columns) {
           throw new Error('配置格式错误：缺少columns字段')

@@ -3,88 +3,127 @@
  * 用于动态加载和管理表格表头配置
  */
 
-// 导入默认配置
-import defaultTeacherConfig from '@/config/tableHeaders/default-teacher.json'
-import defaultLeaderConfig from '@/config/tableHeaders/default-leader.json'
-import defaultStudentConfig from '@/config/tableHeaders/default-student.json'
-import defaultDeptConfig from '@/config/tableHeaders/default-dept.json'
-
 /**
  * 表头配置管理器
  */
 class TableHeaderConfigManager {
   constructor() {
     this.configCache = new Map()
-    this.defaultConfigs = {
-      teacher: defaultTeacherConfig,
-      leader: defaultLeaderConfig,
-      student: defaultStudentConfig,
-      dept: defaultDeptConfig
-    }
+    // 配置文件的基础路径
+    this.configBasePath = '/config/tableHeaders'
   }
 
   /**
    * 获取表头配置
-   * @param {string} boardType - 看板类型 (teacher/leader)
+   * @param {string} boardType - 看板类型 (teacher/leader/student/dept)
    * @param {string} year - 年份
-   * @param {string} orgCode - 机构编码
+   * @param {Array} orgCodePath - 机构路径数组（从当前到根）['0101', '01', '']
    * @returns {Object} 表头配置对象
    */
-  async getTableHeaderConfig(boardType, year, orgCode) {
+  async getTableHeaderConfig(boardType, year, orgCodePath = []) {
     try {
-      // 生成配置键
-      const configKey = this.generateConfigKey(boardType, year, orgCode)
+      // 确保 orgCodePath 是数组
+      const orgCodes = Array.isArray(orgCodePath) ? orgCodePath : [orgCodePath]
 
-      // 检查缓存
-      if (this.configCache.has(configKey)) {
-        return this.configCache.get(configKey)
-      }
+      // 不使用缓存，每次都重新加载配置文件（实时读取）
+      console.log(`[配置加载] 开始查找配置: boardType=${boardType}, year=${year}, orgCodes=${JSON.stringify(orgCodes)}`)
 
-      // 尝试加载自定义配置
-      const customConfig = await this.loadCustomConfig(boardType, year, orgCode)
+      // 尝试多级降级加载配置
+      const config = await this.tryLoadConfigWithFallback(boardType, year, orgCodes)
 
-      if (customConfig) {
+      if (config) {
         // 验证配置格式
-        const validatedConfig = this.validateConfig(customConfig)
-        this.configCache.set(configKey, validatedConfig)
+        const validatedConfig = this.validateConfig(config)
         return validatedConfig
       }
 
       // 使用默认配置
-      const defaultConfig = this.getDefaultConfig(boardType)
-      this.configCache.set(configKey, defaultConfig)
+      console.log(`[配置加载] 使用默认配置: default-${boardType}.json`)
+      const defaultConfig = await this.getDefaultConfig(boardType)
       return defaultConfig
 
     } catch (error) {
       console.warn(`获取表头配置失败，使用默认配置: ${error.message}`)
-      return this.getDefaultConfig(boardType)
+      return await this.getDefaultConfig(boardType)
     }
   }
 
   /**
-   * 加载自定义配置
+   * 多级降级加载配置
+   * 尝试顺序：类型+年份+机构 → 类型+机构 → 父级机构（重复） → 默认配置
    * @param {string} boardType - 看板类型
    * @param {string} year - 年份
-   * @param {string} orgCode - 机构编码
-   * @returns {Object|null} 自定义配置或null
+   * @param {Array} orgCodePath - 机构路径数组（从当前到根）
+   * @returns {Object|null} 配置对象或null
    */
-  async loadCustomConfig(boardType, year, orgCode) {
-    try {
-      // 如果orgCode为空，直接返回null使用默认配置
-      if (!orgCode) {
-        return null
+  async tryLoadConfigWithFallback(boardType, year, orgCodePath) {
+    // 过滤掉空的 orgCode
+    const validOrgCodes = orgCodePath.filter(code => code && code.trim())
+
+    // 如果没有有效的机构编码，直接返回null使用默认配置
+    if (validOrgCodes.length === 0) {
+      console.log('没有有效的机构编码，将使用默认配置')
+      return null
+    }
+
+    // 遍历每一级机构（从当前到根）
+    for (const orgCode of validOrgCodes) {
+      // 1. 尝试：类型+年份+机构 (teacher-2025-0101.json)
+      const configWithYear = await this.tryLoadConfig(boardType, year, orgCode)
+      if (configWithYear) {
+        console.log(`✓ 找到配置: ${boardType}-${year}-${orgCode}.json`)
+        return configWithYear
       }
 
-      // 构建配置文件名
-      const configFileName = `${boardType}-${year}-${orgCode}.json`
+      // 2. 尝试：类型+机构 (teacher-0101.json)
+      const configWithoutYear = await this.tryLoadConfig(boardType, null, orgCode)
+      if (configWithoutYear) {
+        console.log(`✓ 找到配置: ${boardType}-${orgCode}.json`)
+        return configWithoutYear
+      }
 
-      // 动态导入配置文件
-      const configModule = await import(`@/config/tableHeaders/${configFileName}`)
-      return configModule.default || configModule
+      console.log(`  未找到机构 ${orgCode} 的配置，尝试上级机构...`)
+    }
+
+    // 所有机构层级都没找到配置
+    console.log('所有层级都未找到自定义配置，将使用默认配置')
+    return null
+  }
+
+  /**
+   * 尝试加载单个配置文件
+   * @param {string} boardType - 看板类型
+   * @param {string} year - 年份（可为null）
+   * @param {string} orgCode - 机构编码
+   * @returns {Object|null} 配置对象或null
+   */
+  async tryLoadConfig(boardType, year, orgCode) {
+    try {
+      // 构建配置文件名
+      const configFileName = year
+        ? `${boardType}-${year}-${orgCode}.json`
+        : `${boardType}-${orgCode}.json`
+
+      // 添加时间戳参数禁用浏览器缓存
+      const timestamp = new Date().getTime()
+      const configUrl = `${this.configBasePath}/${configFileName}?t=${timestamp}`
+
+      // 使用 fetch 加载配置文件，禁用缓存
+      const response = await fetch(configUrl, {
+        cache: 'no-store', // 禁用HTTP缓存
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      })
+
+      if (response.ok) {
+        return await response.json()
+      }
+
+      return null
 
     } catch (error) {
-      // 配置文件不存在或加载失败
-      console.log(`自定义配置文件不存在: ${boardType}-${year}-${orgCode}.json`)
       return null
     }
   }
@@ -92,14 +131,33 @@ class TableHeaderConfigManager {
   /**
    * 获取默认配置
    * @param {string} boardType - 看板类型
-   * @returns {Object} 默认配置
+   * @returns {Promise<Object>} 默认配置
    */
-  getDefaultConfig(boardType) {
-    const config = this.defaultConfigs[boardType]
-    if (!config) {
-      throw new Error(`不支持的看板类型: ${boardType}`)
+  async getDefaultConfig(boardType) {
+    try {
+      const configFileName = `default-${boardType}.json`
+
+      // 添加时间戳参数禁用浏览器缓存
+      const timestamp = new Date().getTime()
+      const configUrl = `${this.configBasePath}/${configFileName}?t=${timestamp}`
+
+      const response = await fetch(configUrl, {
+        cache: 'no-store', // 禁用HTTP缓存
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`不支持的看板类型或配置文件不存在: ${boardType}`)
+      }
+
+      return await response.json()
+
+    } catch (error) {
+      throw new Error(`加载默认配置失败: ${error.message}`)
     }
-    return JSON.parse(JSON.stringify(config)) // 深拷贝
   }
 
   /**
@@ -179,7 +237,7 @@ class TableHeaderConfigManager {
       { boardType: 'teacher', year: '2024', orgCode: '0001', description: '2024年机构0001干部成绩配置' },
       { boardType: 'leader', year: '2024', orgCode: '0001', description: '2024年机构0001个人成绩配置' },
       { boardType: 'student', year: '2024', orgCode: '0001', description: '2024年机构0001战士成绩配置' },
-      { boardType: 'dept', year: '2024', orgCode: '0001', description: '2024年机构0001单位看板配置' }
+      { boardType: 'dept', year: '2024', orgCode: '0001', description: '2024年机构0001单位成绩配置' }
       // 可以添加更多配置
     ]
   }
@@ -194,11 +252,11 @@ export default tableHeaderConfigManager
  * 便捷方法：获取表头配置
  * @param {string} boardType - 看板类型
  * @param {string} year - 年份
- * @param {string} orgCode - 机构编码
+ * @param {Array|string} orgCodePath - 机构路径数组（从当前到根）或单个机构编码
  * @returns {Promise<Object>} 表头配置
  */
-export const getTableHeaderConfig = (boardType, year, orgCode) => {
-  return tableHeaderConfigManager.getTableHeaderConfig(boardType, year, orgCode)
+export const getTableHeaderConfig = (boardType, year, orgCodePath) => {
+  return tableHeaderConfigManager.getTableHeaderConfig(boardType, year, orgCodePath)
 }
 
 /**

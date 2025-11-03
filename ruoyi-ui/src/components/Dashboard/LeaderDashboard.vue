@@ -165,6 +165,7 @@
         board-type="leader"
         :year="selectedYear"
         :org-code="currentOrgCode"
+        :org-code-path="orgCodePath"
         :table-props="{
           border: true,
           size: 'small',
@@ -208,6 +209,10 @@ export default {
     selectedDeptNode: {
       type: Object,
       default: () => null
+    },
+    orgCodePath: {
+      type: Array,
+      default: () => []
     },
     orgTypeText: {
       type: String,

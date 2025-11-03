@@ -126,7 +126,7 @@
       </span>
     </el-dialog>
 
-    <!-- 单位看板头部 -->
+    <!-- 单位成绩头部 -->
     <div class="dept-header">
       <div class="dept-left">
         <span class="dept-title">单位成绩年度考核</span>
@@ -151,13 +151,14 @@
       </div>
     </div>
 
-    <!-- 单位看板表格 -->
+    <!-- 单位成绩表格 -->
     <div class="tab-body">
       <dynamic-table
         :data="deptTablePageData"
         board-type="dept"
         :year="selectedYear"
         :org-code="currentOrgCode"
+        :org-code-path="orgCodePath"
         :table-props="{
           border: true,
           size: 'small',
@@ -201,6 +202,10 @@ export default {
     selectedDeptNode: {
       type: Object,
       default: () => null
+    },
+    orgCodePath: {
+      type: Array,
+      default: () => []
     },
     orgTypeText: {
       type: String,
@@ -295,12 +300,12 @@ export default {
   methods: {
     // 动态表格配置加载成功回调
     onTableConfigLoaded(config) {
-      console.log('单位看板表格配置加载成功:', config)
+      console.log('单位成绩表格配置加载成功:', config)
     },
 
     // 动态表格配置加载失败回调
     onTableConfigError(error) {
-      console.error('单位看板表格配置加载失败:', error)
+      console.error('单位成绩表格配置加载失败:', error)
       this.$message.warning('表格配置加载失败，已使用默认配置')
     },
 
