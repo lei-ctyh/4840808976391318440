@@ -129,7 +129,6 @@
     <!-- 个人成绩头部 -->
     <div class="leader-header">
       <div class="leader-left">
-        <span class="leader-title">领导班子年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
         <el-tag size="small" class="leader-dept">{{ organizationPath }}</el-tag>
       </div>

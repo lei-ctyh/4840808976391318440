@@ -129,7 +129,6 @@
     <!-- 战士成绩头部 -->
     <div class="student-header">
       <div class="student-left">
-        <span class="student-title">战士成绩年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
         <el-tag size="small" class="student-dept">{{ organizationPath }}</el-tag>
       </div>

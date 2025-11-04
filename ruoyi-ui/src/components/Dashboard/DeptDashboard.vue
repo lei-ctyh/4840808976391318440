@@ -129,7 +129,6 @@
     <!-- 单位成绩头部 -->
     <div class="dept-header">
       <div class="dept-left">
-        <span class="dept-title">单位成绩年度考核</span>
         <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
         <el-tag size="small" class="dept-dept">{{ organizationPath }}</el-tag>
       </div>

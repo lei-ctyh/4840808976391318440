@@ -310,7 +310,7 @@ export default {
         },
         legend: {
           data: ['优秀率', '良好率', '及格率', '未及格率'],
-          bottom: 0,
+          top: 0,
           itemGap: 15
         },
         grid: { left: 40, right: 20, top: 30, bottom: 50 },
