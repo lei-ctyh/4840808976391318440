@@ -159,7 +159,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="totalScore != null "> and total_score = #{totalScore}</if>
             <if test="totalRating != null  and totalRating != ''"> and total_rating = #{totalRating}</if>
         </where>
-        order by person_id desc
+        order by person_id
     </select>
     
     <select id="selectByPersonIdAndPeriod" resultMap="SmsLeaderAssessmentResult">
