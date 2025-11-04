@@ -129,9 +129,7 @@
     <!-- 个人成绩头部 -->
     <div class="leader-header">
       <div class="leader-left">
-        <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
-        <el-tag size="small" class="leader-dept">{{ organizationPath }}</el-tag>
-      </div>
+            </div>
       <div class="leader-right">
         <el-input
           v-model="searchText"

@@ -129,9 +129,7 @@
     <!-- 单位成绩头部 -->
     <div class="dept-header">
       <div class="dept-left">
-        <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
-        <el-tag size="small" class="dept-dept">{{ organizationPath }}</el-tag>
-      </div>
+              </div>
       <div class="dept-right">
         <el-button type="primary" icon="el-icon-upload" size="small" @click="handleImportClick">导入</el-button>
         <el-button icon="el-icon-download" size="small" @click="handleExportClick">导出</el-button>

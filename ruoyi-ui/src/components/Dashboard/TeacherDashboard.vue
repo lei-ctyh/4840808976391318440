@@ -62,8 +62,6 @@
     <!-- 干部成绩头部 -->
     <div class="teacher-header">
       <div class="teacher-left">
-        <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
-        <el-tag size="small" class="teacher-dept">{{ organizationPath }}</el-tag>
       </div>
       <div class="teacher-right">
         <el-input

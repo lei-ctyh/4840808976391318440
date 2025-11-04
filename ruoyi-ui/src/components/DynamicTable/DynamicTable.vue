@@ -300,7 +300,9 @@ export default {
     }
     ,
     /**
-     * 获取单元格的CSS类名，仅高亮包含“未及格/不及格”的单元格
+     * 获取单元格的CSS类名，高亮显示特殊状态
+     * 未参考 -> 黄色背景
+     * 未及格/不及格 -> 红色背景
      * @param {Object} row - 行数据
      * @param {Object} column - 列对象（含property/prop）
      * @param {number} rowIndex - 行索引
@@ -311,9 +313,17 @@ export default {
       const prop = column?.property || column?.prop
       const value = prop ? row[prop] : ''
       const text = value == null ? '' : String(value)
+
+      // 优先检查"未参考"状态（黄色）
+      if (text.includes('未参考')) {
+        return 'not-participated-cell'
+      }
+
+      // 其次检查"未及格/不及格"状态（红色）
       if (text.includes('未及格') || text.includes('不及格')) {
         return 'failing-cell'
       }
+
       return ''
     }
   }
@@ -377,8 +387,15 @@ export default {
   background-color: #fafafa;
 }
 
-/* 不及格单元格高亮样式 */
+/* 不及格单元格高亮样式（红色） */
 ::v-deep .el-table__body td.failing-cell {
-  background-color: red;
+  background-color: #fef0f0;
+  color: #f56c6c;
+}
+
+/* 未参考单元格高亮样式（黄色） */
+::v-deep .el-table__body td.not-participated-cell {
+  background-color: #fdf6ec;
+  color: #e6a23c;
 }
 </style>

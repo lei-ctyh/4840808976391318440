@@ -129,9 +129,7 @@
     <!-- 战士成绩头部 -->
     <div class="student-header">
       <div class="student-left">
-        <el-tag type="success" size="small">{{ orgTypeText }}</el-tag>
-        <el-tag size="small" class="student-dept">{{ organizationPath }}</el-tag>
-      </div>
+              </div>
       <div class="student-right">
         <el-input
           v-model="searchText"
