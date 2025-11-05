@@ -271,10 +271,8 @@ export default {
       })
     },
     studentTablePageData() {
-      const list = this.studentTableFiltered
-      const start = (this.studentPagination.currentPage - 1) * this.studentPagination.pageSize
-      const end = start + this.studentPagination.pageSize
-      return list.slice(start, end)
+      // 后端分页：不再在前端进行slice，仅做简单过滤
+      return this.studentTableFiltered
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -348,6 +346,7 @@ export default {
       }
     },
     onYearChange() {
+      this.studentPagination.currentPage = 1
       this.loadStudentData()
     },
     handleImportClick() {
@@ -373,14 +372,18 @@ export default {
     async loadStudentData() {
       try {
         this.loading = true
-        const response = await getStudentAssessmentData(this.selectedYear, this.currentOrgCode)
+        const response = await getStudentAssessmentData(
+          this.selectedYear,
+          this.currentOrgCode,
+          this.studentPagination.currentPage,
+          this.studentPagination.pageSize
+        )
 
         if (response.code === 200) {
           // 处理后端返回的数据格式，将metric字段映射为前端表格字段
           const rawData = response.rows || response.data || []
           this.studentTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
-          this.studentPagination.total = this.studentTableFiltered.length
-          this.studentPagination.currentPage = 1
+          this.studentPagination.total = response.total || this.studentTableData.length
         } else {
           this.$message.error(response.msg || '获取数据失败')
           this.studentTableData = []
@@ -505,9 +508,11 @@ export default {
     handleStudentSizeChange(size) {
       this.studentPagination.pageSize = size
       this.studentPagination.currentPage = 1
+      this.loadStudentData()
     },
     handleStudentCurrentChange(page) {
       this.studentPagination.currentPage = page
+      this.loadStudentData()
     },
     // 绑定模板到当前组织
     async bindTemplateToOrg(filePath) {

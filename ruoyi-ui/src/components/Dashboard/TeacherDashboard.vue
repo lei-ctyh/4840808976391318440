@@ -267,10 +267,8 @@ export default {
       })
     },
     teacherTablePageData() {
-      const list = this.teacherTableFiltered
-      const start = (this.teacherPagination.currentPage - 1) * this.teacherPagination.pageSize
-      const end = start + this.teacherPagination.pageSize
-      return list.slice(start, end)
+      // 后端分页：不再在前端进行slice，仅做简单过滤
+      return this.teacherTableFiltered
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -305,7 +303,7 @@ export default {
     },
     searchText() {
       this.teacherPagination.currentPage = 1
-      this.teacherPagination.total = this.teacherTableFiltered.length
+      // 使用后端返回的总数，不在搜索时覆盖
     }
   },
   created() {
@@ -560,13 +558,17 @@ export default {
     async loadTeacherData() {
       try {
         this.$loading({ text: '正在加载数据...' })
-        const response = await getTeacherAssessmentData(this.selectedYear, this.currentOrgCode)
+        const response = await getTeacherAssessmentData(
+          this.selectedYear,
+          this.currentOrgCode,
+          this.teacherPagination.currentPage,
+          this.teacherPagination.pageSize
+        )
 
         if (response.code === 200) {
           const rawData = response.rows || response.data || []
           this.teacherTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
           this.teacherPagination.total = response.total || this.teacherTableData.length
-          this.teacherPagination.currentPage = 1
         } else {
           this.$message.error(response.msg || '获取数据失败')
           this.teacherTableData = []
@@ -648,9 +650,11 @@ export default {
     handleTeacherSizeChange(size) {
       this.teacherPagination.pageSize = size
       this.teacherPagination.currentPage = 1
+      this.loadTeacherData()
     },
     handleTeacherCurrentChange(page) {
       this.teacherPagination.currentPage = page
+      this.loadTeacherData()
     },
     // 绑定模板到当前组织
     async bindTemplateToOrg(filePath) {

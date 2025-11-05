@@ -14,38 +14,44 @@ export function getLeaderAssessmentData(year, unitId = null, pageNum = 1, pageSi
   })
 }
 
-// 获取教师考核看板数据（对齐后端现有列表接口与参数名）
-export function getTeacherAssessmentData(year, unitId = null) {
+// 获取教师考核看板数据（支持分页）
+export function getTeacherAssessmentData(year, unitId = null, pageNum = 1, pageSize = 10) {
   return request({
     url: '/system/teacher-assessment/list',
     method: 'get',
     params: {
       period: year,
-      unitId: unitId
+      unitId: unitId,
+      pageNum,
+      pageSize
     }
   })
 }
 
-// 获取学生考核看板数据
-export function getStudentAssessmentData(year, unitId = null) {
+// 获取学生考核看板数据（支持分页，参数名统一为 period）
+export function getStudentAssessmentData(year, unitId = null, pageNum = 1, pageSize = 10) {
   return request({
     url: '/system/studentAssessment/list',
     method: 'get',
     params: {
-      year,
-      unitId
+      period: year,
+      unitId,
+      pageNum,
+      pageSize
     }
   })
 }
 
-// 获取组织考核统计数据
-export function getDeptAssessmentData(year, unitId = null) {
+// 获取单位考核看板数据（支持分页）
+export function getDeptAssessmentData(year, unitId = null, pageNum = 1, pageSize = 10) {
   return request({
     url: '/system/deptAssessment/list',
     method: 'get',
     params: {
       period: year,
-      unitId: unitId
+      unitId: unitId,
+      pageNum,
+      pageSize
     }
   })
 }

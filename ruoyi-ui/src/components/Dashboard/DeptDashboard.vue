@@ -255,9 +255,8 @@ export default {
   },
   computed: {
     deptTablePageData() {
-      const start = (this.deptPagination.currentPage - 1) * this.deptPagination.pageSize
-      const end = start + this.deptPagination.pageSize
-      return this.deptTableData.slice(start, end)
+      // 后端分页：不再在前端进行slice
+      return this.deptTableData
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -291,7 +290,6 @@ export default {
     }
   },
   created() {
-    this.loadDeptData()
     this.getDeptTreeData()
   },
   methods: {
@@ -310,6 +308,7 @@ export default {
     getDeptTreeData() {
       deptTreeSelect().then(response => {
         this.deptTreeData = response.data || []
+        this.loadDeptData()
       }).catch(error => {
         console.warn('获取部门树数据失败:', error)
         this.deptTreeData = []
@@ -330,6 +329,7 @@ export default {
       }
     },
     onYearChange() {
+      this.deptPagination.currentPage = 1
       this.loadDeptData()
     },
     handleImportClick() {
@@ -355,14 +355,18 @@ export default {
     async loadDeptData() {
       try {
         this.loading = true
-        const response = await getDeptAssessmentData(this.selectedYear, this.currentOrgCode)
+        const response = await getDeptAssessmentData(
+          this.selectedYear,
+          this.currentOrgCode,
+          this.deptPagination.currentPage,
+          this.deptPagination.pageSize
+        )
 
         if (response.code === 200) {
           // 处理后端返回的数据格式，将metric字段映射为前端表格字段
           const rawData = response.rows || response.data || []
           this.deptTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
           this.deptPagination.total = response.total || this.deptTableData.length
-          this.deptPagination.currentPage = 1
         } else {
           this.$message.error(response.msg || '获取数据失败')
           this.deptTableData = []
@@ -441,6 +445,8 @@ export default {
       if (!unitId || !this.deptTreeData) {
         return unitId || ''
       }
+      console.log("打印机构树数据")
+      console.log(this.deptTreeData)
 
       // 递归查找部门节点
       const findDeptNode = (nodes, targetId) => {
@@ -483,9 +489,11 @@ export default {
     handleDeptSizeChange(size) {
       this.deptPagination.pageSize = size
       this.deptPagination.currentPage = 1
+      this.loadDeptData()
     },
     handleDeptCurrentChange(page) {
       this.deptPagination.currentPage = page
+      this.loadDeptData()
     },
     // 绑定模板到当前组织
     async bindTemplateToOrg(filePath) {
