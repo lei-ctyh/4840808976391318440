@@ -1,13 +1,15 @@
 import request from '@/utils/request'
 
-// 获取领导班子考核看板数据 - 调用后端API
-export function getLeaderAssessmentData(year, unitId = null) {
+// 获取领导班子考核看板数据 - 调用后端API（支持分页）
+export function getLeaderAssessmentData(year, unitId = null, pageNum = 1, pageSize = 10) {
   return request({
     url: '/system/leaderAssessment/list',
     method: 'get',
     params: {
       period: year,
-      unitId: unitId
+      unitId: unitId,
+      pageNum,
+      pageSize
     }
   })
 }

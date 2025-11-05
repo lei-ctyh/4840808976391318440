@@ -271,10 +271,8 @@ export default {
       })
     },
     leaderTablePageData() {
-      const list = this.leaderTableFiltered
-      const start = (this.leaderPagination.currentPage - 1) * this.leaderPagination.pageSize
-      const end = start + this.leaderPagination.pageSize
-      return list.slice(start, end)
+      // 使用后端分页时直接返回过滤后的当前页数据
+      return this.leaderTableFiltered
     },
     // 获取当前选中组织的orgCode
     currentOrgCode() {
@@ -348,6 +346,8 @@ export default {
       }
     },
     onYearChange() {
+      // 年度切换重置到第一页并重新加载
+      this.leaderPagination.currentPage = 1
       this.loadLeaderData()
     },
     handleImportClick() {
@@ -373,14 +373,18 @@ export default {
     async loadLeaderData() {
       try {
         this.loading = true
-        const response = await getLeaderAssessmentData(this.selectedYear, this.currentOrgCode)
+        const response = await getLeaderAssessmentData(
+          this.selectedYear,
+          this.currentOrgCode,
+          this.leaderPagination.currentPage,
+          this.leaderPagination.pageSize
+        )
 
         if (response.code === 200) {
           // 处理后端返回的数据格式，将metric字段映射为前端表格字段
           const rawData = response.rows || response.data || []
           this.leaderTableData = rawData.map(item => this.mapBackendDataToFrontend(item))
-          this.leaderPagination.total = response.total || this.leaderTableData.length
-          this.leaderPagination.currentPage = 1
+          this.leaderPagination.total = response.total || 0
         } else {
           this.$message.error(response.msg || '获取数据失败')
           this.leaderTableData = []
@@ -501,9 +505,11 @@ export default {
     handleLeaderSizeChange(size) {
       this.leaderPagination.pageSize = size
       this.leaderPagination.currentPage = 1
+      this.loadLeaderData()
     },
     handleLeaderCurrentChange(page) {
       this.leaderPagination.currentPage = page
+      this.loadLeaderData()
     },
     // 绑定模板到当前组织
     async bindTemplateToOrg(filePath) {
