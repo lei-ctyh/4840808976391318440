@@ -68,9 +68,11 @@ public class SmsDeptAssessmentController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:deptAssessment:import')")
     @Log(title = "单位成绩考核", businessType = BusinessType.IMPORT)
     @PostMapping("/importData")
-    public AjaxResult importData(MultipartFile file, boolean updateSupport, @RequestParam("unitId") String unitId) throws Exception
+    public AjaxResult importData(MultipartFile file, boolean updateSupport,
+                                 @RequestParam("unitId") String unitId,
+                                 @RequestParam("year") String year) throws Exception
     {
-        return smsDeptAssessmentService.importDeptAssessment(file, updateSupport, unitId);
+        return smsDeptAssessmentService.importDeptAssessment(file, updateSupport, unitId, year);
     }
 
 

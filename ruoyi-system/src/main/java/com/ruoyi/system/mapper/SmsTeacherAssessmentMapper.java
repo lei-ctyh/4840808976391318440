@@ -47,6 +47,8 @@ public interface SmsTeacherAssessmentMapper
      */
     public List<SmsTeacherAssessment> selectByUnitIdAndPeriod(@Param("unitId") String unitId, @Param("period") String period);
 
+    public int deleteByUnitIdAndPeriod(@Param("unitId") String unitId, @Param("period") String period);
+
     /**
      * 新增教师考核
      *

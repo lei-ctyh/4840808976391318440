@@ -118,6 +118,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
     </resultMap>
 
+    <delete id="deleteByUnitIdAndPeriod">
+        delete from sms_dept_assessment
+        where unit_id = #{unitId}
+          and period = #{period}
+    </delete>
+
     <sql id="selectSmsDeptAssessmentVo">
         select person_id, unit_id,  period,
                metric_001, metric_002, metric_003, metric_004, metric_005,

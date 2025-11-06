@@ -82,7 +82,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      * @return 导入结果
      */
     @Override
-    public AjaxResult importTeacherAssessment(MultipartFile file, boolean updateSupport, String unitId) throws Exception {
+    public AjaxResult importTeacherAssessment(MultipartFile file, boolean updateSupport, String unitId, String year) throws Exception {
         if (file == null || file.isEmpty()) {
             return AjaxResult.error("上传文件不能为空");
         }
@@ -96,6 +96,11 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
                 workbook = new HSSFWorkbook(is);
             } else {
                 return AjaxResult.error("不支持的文件格式，请上传Excel文件");
+            }
+
+            // 预清理：导入前删除当前单位与年度的旧数据
+            if (StringUtils.isNotEmpty(unitId) && StringUtils.isNotEmpty(year)) {
+                smsTeacherAssessmentMapper.deleteByUnitIdAndPeriod(unitId, year);
             }
 
             Sheet sheet = workbook.getSheetAt(0);

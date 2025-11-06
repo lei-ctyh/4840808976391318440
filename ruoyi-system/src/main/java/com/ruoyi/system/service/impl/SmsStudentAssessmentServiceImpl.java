@@ -85,7 +85,7 @@ public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentSer
      * @return 导入结果
      */
     @Override
-    public AjaxResult importStudentAssessment(MultipartFile file, boolean updateSupport, String unitId) throws Exception
+    public AjaxResult importStudentAssessment(MultipartFile file, boolean updateSupport, String unitId, String year) throws Exception
     {
         if (file == null || file.isEmpty()) {
             return AjaxResult.error("上传文件不能为空");
@@ -109,6 +109,11 @@ public class SmsStudentAssessmentServiceImpl implements ISmsStudentAssessmentSer
                 workbook = new XSSFWorkbook(inputStream);
             } else {
                 workbook = new HSSFWorkbook(inputStream);
+            }
+
+            // 预清理：导入前删除当前单位与年度的旧数据
+            if (StringUtils.isNotEmpty(unitId) && StringUtils.isNotEmpty(year)) {
+                smsStudentAssessmentMapper.deleteByUnitIdAndPeriod(unitId, year);
             }
 
             Sheet sheet = workbook.getSheetAt(0);

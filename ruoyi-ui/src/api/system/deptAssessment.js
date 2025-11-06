@@ -33,12 +33,16 @@ export function getByUnitIdAndPeriod(unitId, period) {
   })
 }
 
-// 导入单位成绩考核数据
-export function importData(data) {
+// 导入单位成绩考核数据（multipart/form-data），支持传递 unitId、year、updateSupport
+export function importData(formData, params = {}) {
   return request({
     url: '/system/deptAssessment/importData',
     method: 'post',
-    data: data
+    data: formData,
+    params: params,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
 
