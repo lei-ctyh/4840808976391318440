@@ -373,7 +373,8 @@ export default {
       }
       this.uploadData = {
         updateSupport: this.updateSupport,
-        year: this.selectedYear
+        year: this.selectedYear,
+        unitId: this.currentOrgCode
       }
     },
 
@@ -399,6 +400,7 @@ export default {
 
       // 更新上传数据
       this.uploadData.updateSupport = this.updateSupport
+      this.uploadData.unitId = this.currentOrgCode
 
       return true
     },

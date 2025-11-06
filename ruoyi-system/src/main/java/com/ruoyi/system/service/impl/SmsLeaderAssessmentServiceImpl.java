@@ -85,7 +85,7 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
      * @return 导入结果
      */
     @Override
-    public AjaxResult importLeaderAssessment(MultipartFile file, boolean updateSupport) throws Exception
+    public AjaxResult importLeaderAssessment(MultipartFile file, boolean updateSupport, String unitId) throws Exception
     {
         if (file == null || file.isEmpty()) {
             return AjaxResult.error("上传文件不能为空");
@@ -133,6 +133,13 @@ public class SmsLeaderAssessmentServiceImpl implements ISmsLeaderAssessmentServi
                     String validationError = validateAssessmentData(assessment);
                     if (StringUtils.isNotEmpty(validationError)) {
                         errorMessages.add("第" + (i + 1) + "行：" + validationError);
+                        errorCount++;
+                        continue;
+                    }
+
+                    // 按当前单位过滤行：仅导入 unitId 匹配的记录
+                    if (StringUtils.isNotEmpty(unitId) && !unitId.equals(assessment.getUnitId())) {
+                        errorMessages.add("第" + (i + 1) + "行：" + "非当单位数据");
                         errorCount++;
                         continue;
                     }

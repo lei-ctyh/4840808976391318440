@@ -47,6 +47,6 @@ public interface ISmsDeptAssessmentService
      * @param updateSupport 是否更新已存在数据
      * @return 导入结果
      */
-    public AjaxResult importDeptAssessment(MultipartFile file, boolean updateSupport) throws Exception;
+    public AjaxResult importDeptAssessment(MultipartFile file, boolean updateSupport, String unitId) throws Exception;
 
 }

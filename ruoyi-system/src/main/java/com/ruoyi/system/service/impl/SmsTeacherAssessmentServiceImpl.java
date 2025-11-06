@@ -82,7 +82,7 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
      * @return 导入结果
      */
     @Override
-    public AjaxResult importTeacherAssessment(MultipartFile file, boolean updateSupport) throws Exception {
+    public AjaxResult importTeacherAssessment(MultipartFile file, boolean updateSupport, String unitId) throws Exception {
         if (file == null || file.isEmpty()) {
             return AjaxResult.error("上传文件不能为空");
         }
@@ -132,6 +132,12 @@ public class SmsTeacherAssessmentServiceImpl implements ISmsTeacherAssessmentSer
                     if (StringUtils.isNotEmpty(validationError)) {
                         errorMessages.add("第" + (i + 1) + "行：" + validationError);
                         errorCount++;
+                        continue;
+                    }
+
+                    // 按当前单位过滤行：仅导入 unitId 匹配的记录
+                    if (StringUtils.isNotEmpty(unitId) && !unitId.equals(assessment.getUnitId())) {
+                        skipCount++;
                         continue;
                     }
 

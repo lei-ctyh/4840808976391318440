@@ -584,7 +584,8 @@ export default {
       }
       this.uploadData = {
         updateSupport: this.updateSupport,
-        year: this.selectedYear
+        year: this.selectedYear,
+        unitId: this.currentOrgCode
       }
     },
 
@@ -629,6 +630,7 @@ export default {
       this.hasImportFile = true
       this.uploadData.updateSupport = this.updateSupport
       this.uploadData.year = this.selectedYear
+      this.uploadData.unitId = this.currentOrgCode
       return true
     },
 

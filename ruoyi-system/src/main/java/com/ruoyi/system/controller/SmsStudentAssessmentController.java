@@ -4,11 +4,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -72,9 +68,9 @@ public class SmsStudentAssessmentController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:studentAssessment:import')")
     @Log(title = "战士成绩考核", businessType = BusinessType.IMPORT)
     @PostMapping("/importData")
-    public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
+    public AjaxResult importData(MultipartFile file, boolean updateSupport, @RequestParam("unitId") String unitId) throws Exception
     {
-        return smsStudentAssessmentService.importStudentAssessment(file, updateSupport);
+        return smsStudentAssessmentService.importStudentAssessment(file, updateSupport, unitId);
     }
 
 
