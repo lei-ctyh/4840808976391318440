@@ -407,30 +407,12 @@ export default {
 
       // 附加或覆盖前端需要的展示与计算字段
       result.unitName = this.getUnitDisplayName(backendData.unitId)
-      result.basicKnowledge = backendData.metric001 || '0'
-      result.sportsTrack = backendData.metric002 || '0'
-      result.sportsRope = backendData.metric003 || '0'
-      result.sportsJump = backendData.metric004 || '0'
-      result.baseGroupA = backendData.metric005 || '0'
-      result.baseGroupB = backendData.metric006 || '0'
-      result.baseTotal = this.calculateBaseTotal(backendData)
 
-      result.commonSubject1 = backendData.metric007 || '0'
-      result.commonSubject2 = backendData.metric008 || '0'
-      result.commonSubject3 = backendData.metric009 || '0'
-      result.commonSubject4 = backendData.metric010 || '0'
-      result.commonSubject5 = backendData.metric011 || '0'
-      result.commonSubject6 = backendData.metric012 || '0'
-      result.commonSubject7 = backendData.metric013 || '0'
-      result.commonSubject8 = backendData.metric014 || '0'
-      result.commonTotal = this.calculateCommonTotal(backendData)
-
-      result.jobBusiness = backendData.metric015 || '0'
 
       result.totalScore = backendData.totalScore || '0'
       result.totalRating = backendData.totalRating || '及格'
       result.remark = backendData.remark || ''
-      result.description = backendData.status || ''
+
 
       return result
     },
@@ -458,49 +440,30 @@ export default {
       return count > 0 ? (total / count).toFixed(1) : '0'
     },
 
-    // 获取单位显示名称 - 通过deptTreeSelect数据构建层级路径
+    // 获取单位显示名称（仅返回当前单位名称）
     getUnitDisplayName(unitId) {
-      if (!unitId || !this.deptTreeData) {
+      if (!unitId || !Array.isArray(this.deptTreeData) || this.deptTreeData.length === 0) {
         return unitId || ''
       }
 
-      // 递归查找部门节点
-      const findDeptNode = (nodes, targetId) => {
+      const target = String(unitId)
+
+      const findNode = (nodes) => {
         for (const node of nodes) {
-          if (node.id === targetId || node.orgCode === unitId) {
+          const nodeId = node.id != null ? String(node.id) : ''
+          if (nodeId === target || node.orgCode === target) {
             return node
           }
-          if (node.children && node.children.length > 0) {
-            const found = findDeptNode(node.children, targetId)
+          if (node.children && node.children.length) {
+            const found = findNode(node.children)
             if (found) return found
           }
         }
         return null
       }
 
-      // 构建层级路径
-      const buildDeptPath = (node, allNodes) => {
-        const path = []
-        let current = node
-
-        // 向上查找父级节点
-        while (current) {
-          path.unshift(current.label)
-          if (!current.parentId) break
-
-          // 查找父节点
-          current = findDeptNode(allNodes, current.parentId)
-        }
-
-        return path.join('/')
-      }
-
-      const deptNode = findDeptNode(this.deptTreeData, unitId)
-      if (deptNode) {
-        return buildDeptPath(deptNode, this.deptTreeData)
-      }
-
-      return unitId || ''
+      const node = findNode(this.deptTreeData)
+      return node ? (node.label || '') : (unitId || '')
     },
     handleLeaderSizeChange(size) {
       this.leaderPagination.pageSize = size

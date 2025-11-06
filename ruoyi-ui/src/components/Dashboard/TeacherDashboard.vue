@@ -731,49 +731,30 @@ export default {
         console.error('获取部门树数据失败:', error)
       }
     },
-    // 根据单位ID获取单位显示名称
+    // 根据单位ID仅返回当前单位名称
     getUnitDisplayName(unitId) {
-      if (!unitId || !this.deptTreeData.length) {
+      if (!unitId || !Array.isArray(this.deptTreeData) || this.deptTreeData.length === 0) {
         return unitId || ''
       }
 
-      // 递归查找部门节点
-      const findDeptNode = (nodes, targetId) => {
+      const target = String(unitId)
+
+      const findNode = (nodes) => {
         for (const node of nodes) {
-          if (node.id === targetId || node.orgCode === targetId) {
+          const nodeId = node.id != null ? String(node.id) : ''
+          if (nodeId === target || node.orgCode === target) {
             return node
           }
-          if (node.children && node.children.length > 0) {
-            const found = findDeptNode(node.children, targetId)
+          if (node.children && node.children.length) {
+            const found = findNode(node.children)
             if (found) return found
           }
         }
         return null
       }
 
-      // 构建层级路径
-      const buildPath = (nodeId) => {
-        const node = findDeptNode(this.deptTreeData, nodeId)
-        if (!node) return unitId
-
-        const path = [node.label]
-        let currentNode = node
-
-        // 向上查找父节点
-        while (currentNode.parentId) {
-          const parentNode = findDeptNode(this.deptTreeData, currentNode.parentId)
-          if (parentNode) {
-            path.unshift(parentNode.label)
-            currentNode = parentNode
-          } else {
-            break
-          }
-        }
-
-        return path.join('/')
-      }
-
-      return buildPath(unitId)
+      const node = findNode(this.deptTreeData)
+      return node ? (node.label || '') : (unitId || '')
     },
 
     // 加载已有模板信息

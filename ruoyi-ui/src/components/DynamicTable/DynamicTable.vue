@@ -311,6 +311,8 @@ export default {
      */
     getCellClassName({ row, column, rowIndex, columnIndex }) {
       const prop = column?.property || column?.prop
+      const label = column?.label || column?.label
+      const isScore = column?.isScore || column?.isScore
       const value = prop ? row[prop] : ''
       const text = value == null ? '' : String(value)
 
@@ -321,6 +323,11 @@ export default {
 
       // 其次检查"未及格/不及格"状态（红色）
       if (text.includes('未及格') || text.includes('不及格')) {
+        return 'failing-cell'
+      }
+      // 其他情况 <60 展示为红色
+      console.log(prop)
+      if (text.length > 0 && Number(text) < 60 &&(label.includes('成绩') || isScore || prop.includes('totalScore'))) {
         return 'failing-cell'
       }
 

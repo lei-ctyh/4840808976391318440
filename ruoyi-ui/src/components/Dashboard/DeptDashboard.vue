@@ -440,51 +440,32 @@ export default {
       return count > 0 ? (total / count).toFixed(1) : '0'
     },
 
-    // 获取单位显示名称 - 通过deptTreeSelect数据构建层级路径
+    // 获取单位显示名称（仅返回当前单位名称）
     getUnitDisplayName(unitId) {
-      if (!unitId || !this.deptTreeData) {
+      if (!unitId || !Array.isArray(this.deptTreeData) || this.deptTreeData.length === 0) {
         return unitId || ''
       }
-      console.log("打印机构树数据")
-      console.log(this.deptTreeData)
 
-      // 递归查找部门节点
-      const findDeptNode = (nodes, targetId) => {
+      const target = String(unitId)
+
+      const findNode = (nodes) => {
         for (const node of nodes) {
-          if (node.id === targetId || node.orgCode === unitId) {
+          const nodeId = node.id != null ? String(node.id) : ''
+          if (nodeId === target || node.orgCode === target) {
             return node
           }
-          if (node.children && node.children.length > 0) {
-            const found = findDeptNode(node.children, targetId)
+          if (node.children && node.children.length) {
+            const found = findNode(node.children)
             if (found) return found
           }
         }
         return null
       }
 
-      // 构建层级路径
-      const buildDeptPath = (node, allNodes) => {
-        const path = []
-        let current = node
 
-        // 向上查找父级节点
-        while (current) {
-          path.unshift(current.label)
-          if (!current.parentId) break
+      const node = findNode(this.deptTreeData)
 
-          // 查找父节点
-          current = findDeptNode(allNodes, current.parentId)
-        }
-
-        return path.join('/')
-      }
-
-      const deptNode = findDeptNode(this.deptTreeData, unitId)
-      if (deptNode) {
-        return buildDeptPath(deptNode, this.deptTreeData)
-      }
-
-      return unitId || ''
+      return node ? (node.label || '') : (unitId || '')
     },
     handleDeptSizeChange(size) {
       this.deptPagination.pageSize = size
