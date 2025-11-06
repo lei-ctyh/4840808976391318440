@@ -326,7 +326,6 @@ export default {
         return 'failing-cell'
       }
       // 其他情况 <60 展示为红色
-      console.log(prop)
       if (text.length > 0 && Number(text) < 60 &&(label.includes('成绩') || isScore || prop.includes('totalScore'))) {
         return 'failing-cell'
       }

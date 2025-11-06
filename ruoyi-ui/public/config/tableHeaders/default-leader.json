@@ -28,7 +28,8 @@
     {
       "label": "年龄",
       "prop": "age",
-      "width": "80"
+      "width": "80",
+      "isScore": true
     },
     {
       "label": "衔级",
