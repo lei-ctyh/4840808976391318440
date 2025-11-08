@@ -587,45 +587,19 @@ export default {
     },
     // 将后端数据映射为前端表格数据（对齐教师表头配置）
     mapBackendDataToFrontend(backendData) {
-      return {
-        personId: backendData.personId,
-        personName: backendData.personName,
-        unitId: backendData.unitId,
-        unitPath: this.getUnitDisplayName(backendData.unitId),
-        birthDate: backendData.birthDate,
-        age: backendData.age,
-        title: backendData.title,
-        period: backendData.period,
+      // 透传后端所有metric字段，确保metric016-metric100可用于动态表格
+      const result = { ...backendData }
 
-        // 基础科目 20% - 映射到metric001-metric006
-        baseBasicKnowledge: backendData.metric001 || '0',
-        baseSportsTrack: backendData.metric002 || '0',
-        baseSportsRope: backendData.metric003 || '0',
-        baseSportsLongJump: backendData.metric004 || '0',
-        baseGroupA: backendData.metric005 || '0',
-        baseGroupB: backendData.metric006 || '0',
-        baseTotal: this.calculateBaseTotal(backendData),
+      // 附加或覆盖前端需要的展示与计算字段
+      result.unitName = this.getUnitDisplayName(backendData.unitId)
 
-        // 共同科目 30% - 映射到metric007-metric014
-        commonSubject1: backendData.metric007 || '0',
-        commonSubject2: backendData.metric008 || '0',
-        commonSubject3: backendData.metric009 || '0',
-        commonSubject4: backendData.metric010 || '0',
-        commonSubject5: backendData.metric011 || '0',
-        commonSubject6: backendData.metric012 || '0',
-        commonSubject7: backendData.metric013 || '0',
-        commonSubject8: backendData.metric014 || '0',
-        commonTotal: this.calculateCommonTotal(backendData),
 
-        // 岗位业务 50% - 映射到metric015
-        jobBusiness: backendData.metric015 || '0',
+      result.totalScore = backendData.totalScore || '0'
+      result.totalRating = backendData.totalRating || '及格'
+      result.remark = backendData.remark || ''
 
-        // 综合成绩与评定
-        totalScore: backendData.totalScore || '0',
-        totalRating: backendData.totalRating || '及格',
-        remark: backendData.remark || '',
-        description: backendData.status || ''
-      }
+
+      return result
     },
     // 计算基础科目总成绩
     calculateBaseTotal(data) {

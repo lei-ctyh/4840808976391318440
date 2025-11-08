@@ -47,7 +47,7 @@
       "children": [
         {
           "label": "专业理论",
-          "prop": "theoryProfessional",
+          "prop": "metric002",
           "width": "120"
         },
         {
