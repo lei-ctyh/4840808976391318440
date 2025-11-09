@@ -262,7 +262,7 @@ export default {
       const excellentValues = this.childrenComparisons.map(c => Number((c.excellentRate * 100).toFixed(1)))
       const goodValues = this.childrenComparisons.map(c => Number((c.goodRate * 100).toFixed(1)))
       const passValues = this.childrenComparisons.map(c => Number((c.passRate * 100).toFixed(1)))
-      const failValues = this.childrenComparisons.map(c => Number(((1 - c.passRate) * 100).toFixed(1)))
+      const failValues = this.childrenComparisons.map(c => Number(((1 - c.passRate-c.excellentRate-c.goodRate) * 100).toFixed(1)))
 
       // 成绩对比图
       this.scoresChart.setOption({

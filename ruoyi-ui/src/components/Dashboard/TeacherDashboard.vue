@@ -591,7 +591,7 @@ export default {
       const result = { ...backendData }
 
       // 附加或覆盖前端需要的展示与计算字段
-      result.unitName = this.getUnitDisplayName(backendData.unitId)
+      result.unitPath = this.getUnitDisplayName(backendData.unitId)
 
 
       result.totalScore = backendData.totalScore || '0'
@@ -715,22 +715,33 @@ export default {
 
       const target = String(unitId)
 
-      const findNode = (nodes) => {
+      // 查找节点并构建路径
+      const findNodePath = (nodes, path = []) => {
         for (const node of nodes) {
+          const currentPath = [...path, node]
           const nodeId = node.id != null ? String(node.id) : ''
+
           if (nodeId === target || node.orgCode === target) {
-            return node
+            return currentPath
           }
+
           if (node.children && node.children.length) {
-            const found = findNode(node.children)
-            if (found) return found
+            const foundPath = findNodePath(node.children, currentPath)
+            if (foundPath) return foundPath
           }
         }
         return null
       }
 
-      const node = findNode(this.deptTreeData)
-      return node ? (node.label || '') : (unitId || '')
+      // 获取节点路径
+      const nodePath = findNodePath(this.deptTreeData)
+
+      if (nodePath && nodePath.length > 0) {
+        // 将路径中的所有节点名称用分隔符连接
+        return nodePath.map(node => node.label || '').join('/')
+      }
+
+      return unitId || ''
     },
 
     // 加载已有模板信息
