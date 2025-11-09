@@ -94,8 +94,8 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
         return new CurrentMetricsDTO(
                 avgScore,
                 ratingDistribution.get("excellent"),
-                ratingDistribution.get("good"),
-                ratingDistribution.get("pass")
+                ratingDistribution.get("good") - ratingDistribution.get("excellent"),
+                ratingDistribution.get("pass") - ratingDistribution.get("excellent") - ratingDistribution.get("good")
         );
     }
 
@@ -204,8 +204,8 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
                     childDept.getDeptName(),
                     avgScore,
                     ratingDistribution.get("excellent"),
-                    ratingDistribution.get("good"),
-                    ratingDistribution.get("pass")
+                    ratingDistribution.get("good") - ratingDistribution.get("excellent"),
+                    ratingDistribution.get("pass") - ratingDistribution.get("excellent") - ratingDistribution.get("good")
             );
 
             comparisons.add(comparison);

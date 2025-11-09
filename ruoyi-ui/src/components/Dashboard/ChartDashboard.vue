@@ -20,7 +20,7 @@
     </div>
 
     <!-- 指标卡片 -->
-    <div class="metric-cards" v-show="metrics.avgScore.toFixed(1) != 0">
+    <div class="metric-cards"  v-show="selectedDeptNode.orgCode != '01'">
       <el-row :gutter="12">
         <el-col :xs="24" :sm="8">
           <el-card shadow="never" class="metric-card">
@@ -65,8 +65,8 @@
 
     <!-- 图表区 -->
     <div class="charts">
-      <el-row :gutter="12">
-        <el-col :xs="24" :sm="12">
+      <el-row :gutter="12" v-show="selectedDeptNode.children && selectedDeptNode.children.length > 0">
+        <el-col :xs="24" :sm="12" >
           <el-card shadow="never">
             <div class="chart-title">成绩对比</div>
             <div ref="scoresChartRef" class="chart-box"></div>
@@ -81,7 +81,7 @@
           </el-card>
         </el-col>
       </el-row>
-      <el-row :gutter="12" style="margin-top: 12px;" >
+      <el-row :gutter="12" style="margin-top: 12px;"  v-show="selectedDeptNode.orgCode != '01'">
         <el-col :xs="24" :sm="12">
           <el-card shadow="never" >
             <div class="chart-title">当前单位优秀/良好/及格/未及格占比</div>
@@ -162,8 +162,13 @@ export default {
   },
   mounted() {
     this.initCharts()
+    console.log(this.selectedDeptNode)
     window.addEventListener('resize', this.resizeCharts)
   },
+  updated() {
+    this.resizeCharts()
+  },
+
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeCharts)
     if (this.scoresChart) this.scoresChart.dispose()
