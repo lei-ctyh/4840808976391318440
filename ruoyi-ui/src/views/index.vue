@@ -223,6 +223,9 @@ export default {
       this.computeVisibleTabs(node)
     },
     computeVisibleTabs(node) {
+      debugger
+      const orgCode = node.data.orgCode
+      const children = node.data.children
       // 优先使用机构编码判断，失败则回退到名称
       const type = this.resolveOrgType(node)
       if (type === 'leader') {
@@ -230,8 +233,19 @@ export default {
         if (!["leader"].includes(this.activeTab)) this.activeTab = "leader"
         return
       }
+      console.log("type:", type, "orgCode:", orgCode.length, "children:", children)
       if (type === 'teaching') {
-        this.visibleTabKeys = ["charts", "teacher", "student", "dept"]
+        if (orgCode === '01') {
+          this.visibleTabKeys = ["charts"];
+        }else if (!children || children.length === 0) {
+          this.visibleTabKeys = ["charts", "student", "dept"];
+        }else if (orgCode.length === 8) {
+          this.visibleTabKeys = ["charts", "teacher", "dept"];
+        } else {
+          this.visibleTabKeys = ["charts", "teacher", "student", "dept"];
+
+        }
+
         if (!this.visibleTabKeys.includes(this.activeTab)) this.activeTab = "charts"
         return
       }

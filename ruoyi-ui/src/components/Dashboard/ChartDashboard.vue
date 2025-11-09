@@ -22,7 +22,7 @@
     <!-- 指标卡片 -->
     <div class="metric-cards"  v-show="selectedDeptNode.orgCode != '01'">
       <el-row :gutter="12">
-        <el-col :xs="24" :sm="8">
+        <el-col :xs="24" :sm="12">
           <el-card shadow="never" class="metric-card">
             <div class="metric">
               <div class="metric-label">综合评定</div>
@@ -30,7 +30,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :xs="24" :sm="8">
+        <el-col :xs="24" :sm="12">
           <el-card shadow="never" class="metric-card">
             <div class="metric">
               <div class="metric-label">综合成绩</div>
@@ -38,28 +38,28 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :xs="24" :sm="8">
-          <el-card shadow="never" class="metric-card">
-            <div class="metric quadruplet">
-              <div class="metric-item">
-                <div class="metric-label">优秀率</div>
-                <div class="metric-value excellent">{{ (metrics.excellentRate * 100).toFixed(1) }}%</div>
-              </div>
-              <div class="metric-item">
-                <div class="metric-label">良好率</div>
-                <div class="metric-value good">{{ ((metrics.goodRate - metrics.excellentRate) * 100).toFixed(1) }}%</div>
-              </div>
-              <div class="metric-item">
-                <div class="metric-label">及格率</div>
-                <div class="metric-value pass">{{ ((metrics.passRate - metrics.goodRate) * 100).toFixed(1) }}%</div>
-              </div>
-              <div class="metric-item">
-                <div class="metric-label">未及格</div>
-                <div class="metric-value fail">{{ ((1 - metrics.passRate) * 100).toFixed(1) }}%</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
+        <!--<el-col :xs="24" :sm="8">-->
+        <!--  <el-card shadow="never" class="metric-card">-->
+        <!--    <div class="metric quadruplet">-->
+        <!--      <div class="metric-item">-->
+        <!--        <div class="metric-label">优秀率</div>-->
+        <!--        <div class="metric-value excellent">{{ (metrics.excellentRate * 100).toFixed(1) }}%</div>-->
+        <!--      </div>-->
+        <!--      <div class="metric-item">-->
+        <!--        <div class="metric-label">良好率</div>-->
+        <!--        <div class="metric-value good">{{ ((metrics.goodRate - metrics.excellentRate) * 100).toFixed(1) }}%</div>-->
+        <!--      </div>-->
+        <!--      <div class="metric-item">-->
+        <!--        <div class="metric-label">及格率</div>-->
+        <!--        <div class="metric-value pass">{{ ((metrics.passRate - metrics.goodRate) * 100).toFixed(1) }}%</div>-->
+        <!--      </div>-->
+        <!--      <div class="metric-item">-->
+        <!--        <div class="metric-label">未及格</div>-->
+        <!--        <div class="metric-value fail">{{ ((1 - metrics.passRate) * 100).toFixed(1) }}%</div>-->
+        <!--      </div>-->
+        <!--    </div>-->
+        <!--  </el-card>-->
+        <!--</el-col>-->
       </el-row>
     </div>
 
