@@ -565,7 +565,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectRatingDistribution" resultType="java.util.HashMap">
         SELECT total_rating as rating, COUNT(*) as count
         FROM sms_teacher_assessment
-        WHERE unit_id = #{unitId} AND period LIKE CONCAT(#{year}, '%')
+        WHERE unit_id LIKE CONCAT(#{unitId} , '%')  AND period LIKE CONCAT(#{year}, '%')
         GROUP BY total_rating
     </select>
 
