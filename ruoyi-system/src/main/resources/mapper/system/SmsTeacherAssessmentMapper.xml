@@ -563,10 +563,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <!-- 统计指定单位和年份的评级分布 -->
     <select id="selectRatingDistribution" resultType="java.util.HashMap">
-        SELECT total_rating as rating, COUNT(*) as count
+        SELECT COALESCE(total_rating, '未及格') as rating, COUNT(*) as count
         FROM sms_teacher_assessment
-        WHERE unit_id LIKE CONCAT(#{unitId} , '%')  AND period LIKE CONCAT(#{year}, '%')
-        GROUP BY total_rating
+        WHERE unit_id LIKE CONCAT(#{unitId}, '%') AND period LIKE CONCAT(#{year}, '%')
+        GROUP BY COALESCE(total_rating, '未及格')
     </select>
 
 </mapper>

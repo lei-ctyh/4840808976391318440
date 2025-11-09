@@ -22,17 +22,21 @@ public class ChildComparisonDTO
     /** 该单位及格率（小数，累计） */
     private Double passRate;
 
+    /** 该单位未及格率（小数，段值） */
+    private Double failRate;
+
     public ChildComparisonDTO()
     {
     }
 
-    public ChildComparisonDTO(String name, Double avgScore, Double excellentRate, Double goodRate, Double passRate)
+    public ChildComparisonDTO(String name, Double avgScore, Double excellentRate, Double goodRate, Double passRate, Double failRate)
     {
         this.name = name;
         this.avgScore = avgScore;
         this.excellentRate = excellentRate;
         this.goodRate = goodRate;
         this.passRate = passRate;
+        this.failRate = failRate;
     }
 
     public String getName()
@@ -83,5 +87,15 @@ public class ChildComparisonDTO
     public void setPassRate(Double passRate)
     {
         this.passRate = passRate;
+    }
+
+    public Double getFailRate()
+    {
+        return failRate;
+    }
+
+    public void setFailRate(Double failRate)
+    {
+        this.failRate = failRate;
     }
 }

@@ -13,22 +13,26 @@ public class CurrentMetricsDTO
     /** 优秀率（小数形式，0-1） */
     private Double excellentRate;
 
-    /** 良好率（小数形式，累计，包含优秀） */
+    /** 良好率（小数形式，0-1，段值） */
     private Double goodRate;
 
-    /** 及格率（小数形式，累计，包含优秀+良好） */
+    /** 及格率（小数形式，0-1，段值） */
     private Double passRate;
+
+    /** 未及格率（小数形式，0-1，段值） */
+    private Double failRate;
 
     public CurrentMetricsDTO()
     {
     }
 
-    public CurrentMetricsDTO(Double avgScore, Double excellentRate, Double goodRate, Double passRate)
+    public CurrentMetricsDTO(Double avgScore, Double excellentRate, Double goodRate, Double passRate, Double failRate)
     {
         this.avgScore = avgScore;
         this.excellentRate = excellentRate;
         this.goodRate = goodRate;
         this.passRate = passRate;
+        this.failRate = failRate;
     }
 
     public Double getAvgScore()
@@ -69,5 +73,15 @@ public class CurrentMetricsDTO
     public void setPassRate(Double passRate)
     {
         this.passRate = passRate;
+    }
+
+    public Double getFailRate()
+    {
+        return failRate;
+    }
+
+    public void setFailRate(Double failRate)
+    {
+        this.failRate = failRate;
     }
 }

@@ -115,7 +115,7 @@ export default {
   data() {
     return {
       selectedYear: String(new Date().getFullYear()),
-      metrics: { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 },
+      metrics: { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0, failRate: 0 },
       childrenComparisons: [],
       scoresChart: null,
       ratesChart: null,
@@ -211,7 +211,7 @@ export default {
 
       if (!orgCode) {
         console.warn('未选择单位或单位缺少 orgCode，显示空数据')
-        this.metrics = { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 }
+        this.metrics = { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0, failRate: 0 }
         this.childrenComparisons = []
         this.yearlyTrend = { years: [], avgScores: [], excellentRates: [], goodRates: [], passRates: [], failRates: [] }
         this.updateCharts()
@@ -227,7 +227,7 @@ export default {
           const data = response.data || response
 
           // 设置当前单位指标
-          this.metrics = data.currentMetrics || { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0 }
+          this.metrics = data.currentMetrics || { avgScore: 0, excellentRate: 0, goodRate: 0, passRate: 0, failRate: 0 }
 
           // 设置下级单位对比数据
           this.childrenComparisons = data.childrenComparisons || []
@@ -254,15 +254,15 @@ export default {
           this.updateCharts()
         })
     },
-    updateCharts() {
-      if (!this.scoresChart || !this.ratesChart || !this.pieChart || !this.trendChart) return
+  updateCharts() {
+    if (!this.scoresChart || !this.ratesChart || !this.pieChart || !this.trendChart) return
 
-      const names = this.childrenComparisons.map(c => c.name)
-      const scoreValues = this.childrenComparisons.map(c => c.avgScore)
-      const excellentValues = this.childrenComparisons.map(c => Number((c.excellentRate * 100).toFixed(1)))
-      const goodValues = this.childrenComparisons.map(c => Number((c.goodRate * 100).toFixed(1)))
-      const passValues = this.childrenComparisons.map(c => Number((c.passRate * 100).toFixed(1)))
-      const failValues = this.childrenComparisons.map(c => Number(((1 - c.passRate-c.excellentRate-c.goodRate) * 100).toFixed(1)))
+    const names = this.childrenComparisons.map(c => c.name)
+    const scoreValues = this.childrenComparisons.map(c => c.avgScore)
+    const excellentValues = this.childrenComparisons.map(c => Number((c.excellentRate * 100).toFixed(1)))
+    const goodValues = this.childrenComparisons.map(c => Number((c.goodRate * 100).toFixed(1)))
+    const passValues = this.childrenComparisons.map(c => Number((c.passRate * 100).toFixed(1)))
+    const failValues = this.childrenComparisons.map(c => Number((c.failRate * 100).toFixed(1)))
 
       // 成绩对比图
       this.scoresChart.setOption({
@@ -399,9 +399,9 @@ export default {
 
       // 当前单位占比饼图（优秀 / 良好 / 及格 / 未及格）
       const excellent = Number((this.metrics.excellentRate * 100).toFixed(1))
-      const good = Number(((this.metrics.goodRate - this.metrics.excellentRate) * 100).toFixed(1))
-      const pass = Number(((this.metrics.passRate - this.metrics.goodRate) * 100).toFixed(1))
-      const fail = Number(((1 - this.metrics.passRate) * 100).toFixed(1))
+      const good = Number((this.metrics.goodRate * 100).toFixed(1))
+      const pass = Number((this.metrics.passRate * 100).toFixed(1))
+      const fail = Number((this.metrics.failRate * 100).toFixed(1))
       this.pieChart.setOption({
         tooltip: {
           trigger: 'item',

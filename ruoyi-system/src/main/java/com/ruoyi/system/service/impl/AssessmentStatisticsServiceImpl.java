@@ -88,14 +88,15 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
             }
         }
 
-        // 计算四级评价占比（从教师和学生考核数据UNION ALL）
+        // 计算四级评价占比（教师与学生合并），直接返回四段占比
         Map<String, Double> ratingDistribution = calculateRatingDistribution(orgCode, year);
 
         return new CurrentMetricsDTO(
                 avgScore,
                 ratingDistribution.get("excellent"),
-                ratingDistribution.get("good") - ratingDistribution.get("excellent"),
-                ratingDistribution.get("pass") - ratingDistribution.get("excellent") - ratingDistribution.get("good")
+                ratingDistribution.get("good"),
+                ratingDistribution.get("pass"),
+                ratingDistribution.get("noPass")
         );
     }
 
@@ -104,10 +105,8 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
      */
     private Map<String, Double> calculateRatingDistribution(String unitId, String year)
     {
-        // 查询教师考核评级分布
+        // 查询教师与学生考核评级分布（SQL已将NULL归为“未及格”）
         List<Map<String, Object>> teacherRatings = teacherAssessmentMapper.selectRatingDistribution(unitId, year);
-
-        // 查询学生考核评级分布
         List<Map<String, Object>> studentRatings = studentAssessmentMapper.selectRatingDistribution(unitId, year);
 
         // 合并统计
@@ -117,18 +116,20 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
         // 统计教师评级
         for (Map<String, Object> item : teacherRatings)
         {
-            String rating = (String) item.get("rating");
+            String rating = item.get("rating") == null ? null : String.valueOf(item.get("rating"));
             Long count = ((Number) item.get("count")).longValue();
-            ratingCounts.put(rating, ratingCounts.getOrDefault(rating, 0) + count.intValue());
+            String normalized = normalizeRating(rating);
+            ratingCounts.put(normalized, ratingCounts.getOrDefault(normalized, 0) + count.intValue());
             total += count.intValue();
         }
 
         // 统计学生评级
         for (Map<String, Object> item : studentRatings)
         {
-            String rating = (String) item.get("rating");
+            String rating = item.get("rating") == null ? null : String.valueOf(item.get("rating"));
             Long count = ((Number) item.get("count")).longValue();
-            ratingCounts.put(rating, ratingCounts.getOrDefault(rating, 0) + count.intValue());
+            String normalized = normalizeRating(rating);
+            ratingCounts.put(normalized, ratingCounts.getOrDefault(normalized, 0) + count.intValue());
             total += count.intValue();
         }
 
@@ -136,17 +137,42 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
         int excellentCount = ratingCounts.getOrDefault("优秀", 0);
         int goodCount = ratingCounts.getOrDefault("良好", 0);
         int passCount = ratingCounts.getOrDefault("及格", 0);
+        int noPassCount = ratingCounts.getOrDefault("未及格", 0);
 
         double excellentRate = total > 0 ? (double) excellentCount / total : 0.0;
-        double goodRate = total > 0 ? (double) (excellentCount + goodCount) / total : 0.0;
-        double passRate = total > 0 ? (double) (excellentCount + goodCount + passCount) / total : 0.0;
+        double goodRate = total > 0 ? (double) (goodCount) / total : 0.0;
+        double passRate = total > 0 ? (double) (passCount) / total : 0.0;
+        double noPassCountRate = total > 0 ? (double) (noPassCount) / total : 0.0;
 
         Map<String, Double> result = new HashMap<>();
         result.put("excellent", excellentRate);
         result.put("good", goodRate);
         result.put("pass", passRate);
+        result.put("noPass", noPassCountRate);
 
         return result;
+    }
+
+    /**
+     * 将评级统一到四类：优秀/良好/及格/未及格；其中NULL或未知值归为未及格。
+     */
+    private String normalizeRating(String rating)
+    {
+        if (rating == null) return "未及格";
+        switch (rating)
+        {
+            case "优秀":
+                return "优秀";
+            case "良好":
+                return "良好";
+            case "及格":
+                return "及格";
+            case "未及格":
+                return "未及格";
+            default:
+                // 任何非标准值按未及格处理
+                return "未及格";
+        }
     }
 
     /**
@@ -204,8 +230,9 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
                     childDept.getDeptName(),
                     avgScore,
                     ratingDistribution.get("excellent"),
-                    ratingDistribution.get("good") - ratingDistribution.get("excellent"),
-                    ratingDistribution.get("pass") - ratingDistribution.get("excellent") - ratingDistribution.get("good")
+                    ratingDistribution.get("good"),
+                    ratingDistribution.get("pass"),
+                    ratingDistribution.get("noPass")
             );
 
             comparisons.add(comparison);
@@ -266,11 +293,11 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
                 // 获取该年度的评级分布
                 Map<String, Double> distribution = calculateRatingDistribution(orgCode, y);
 
-                // 转换为百分比形式
+                // 转换为百分比形式（四段值）
                 excellentRates.add(distribution.get("excellent") * 100);
                 goodRates.add(distribution.get("good") * 100);
                 passRates.add(distribution.get("pass") * 100);
-                failRates.add((1 - distribution.get("pass")) * 100);
+                failRates.add(distribution.get("noPass") * 100);
             }
             else
             {
@@ -291,7 +318,7 @@ public class AssessmentStatisticsServiceImpl implements IAssessmentStatisticsSer
      */
     private DashboardStatisticsDTO createEmptyStatistics()
     {
-        CurrentMetricsDTO emptyMetrics = new CurrentMetricsDTO(0.0, 0.0, 0.0, 0.0);
+        CurrentMetricsDTO emptyMetrics = new CurrentMetricsDTO(0.0, 0.0, 0.0, 0.0, 0.0);
         List<ChildComparisonDTO> emptyComparisons = new ArrayList<>();
 
         // 生成空的年度趋势
